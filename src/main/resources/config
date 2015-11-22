@@ -1,0 +1,3 @@
+db_url=jdbc:mysql://db4free.net:3306/tjin_salesystem
+db_user=salesystem
+db_password=1234567890123
