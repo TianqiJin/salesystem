@@ -27,5 +27,6 @@ public class ProductModel {
         List<Map<String, Object>> dbProductInfo = dbOperation.selectFromDatabase(DBQueries.SelectQueries.Product.SELECT_ALL_PRODUCT);
         //Notify the Interface
     }
+    
 
 }
