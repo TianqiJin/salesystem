@@ -1,3 +1,4 @@
+import model.*;
 import org.apache.log4j.Logger;
 
 /**
@@ -7,6 +8,6 @@ public class saleSystem {
     private static Logger logger= Logger.getLogger(saleSystem.class);
 
     public static void main(String []args){
-
+        ProductModel productModel = new ProductModel();
     }
 }

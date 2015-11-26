@@ -10,7 +10,7 @@ public abstract class DBExecute {
 
     protected static List<Map<String, Object>> selectResult;
 
-    public abstract String selectFromDatabase(int id);
+    public abstract List<Map<String, Object>> selectFromDatabase(String query, Object... params);
     public abstract String insertIntoDatabase();
     public abstract String updateDatabase();
 }

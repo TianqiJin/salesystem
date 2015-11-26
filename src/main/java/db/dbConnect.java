@@ -10,8 +10,8 @@ import java.util.List;
 /**
  * Created by tjin on 2015-11-22.
  */
-public class dbConnect {
-    private static Logger logger= Logger.getLogger(dbConnect.class);
+public class DBConnect {
+    private static Logger logger= Logger.getLogger(DBConnect.class);
     private static final String DB_URL = PropertiesSys.properties.getProperty("db_url");
     private static final String DB_USER = PropertiesSys.properties.getProperty("db_user");
     private static final String DB_PASSWORD = PropertiesSys.properties.getProperty("db_password");
