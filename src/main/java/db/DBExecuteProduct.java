@@ -1,5 +1,6 @@
 package db;
 
+import model.Product;
 import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
@@ -13,15 +14,15 @@ import static db.DBQueries.*;
 public class DBExecuteProduct extends DBExecute{
     public static Logger logger= Logger.getLogger(DBExecuteProduct.class);
 
-    public List<Map<String, Object>> selectFromDatabase(String query, Object... params){
-        try {
-            selectResult = DBConnect.executeQuery(query, ObjectDeserializer.DEFAULT_DESERIALIZER, params);
-            if (selectResult != null) {
-                return selectResult;
-            }
-        } catch (SQLException e) {
-            logger.error(e.getMessage());
-        }
+    public List<Product> selectFromDatabase(String query, Object... params){
+//        try {
+//            selectResult = DBConnect.executeQuery(query, ObjectDeserializer.DEFAULT_DESERIALIZER, params);
+//            if (selectResult != null) {
+//                return selectResult;
+//            }
+//        } catch (SQLException e) {
+//            logger.error(e.getMessage());
+//        }
         return null;
     }
 

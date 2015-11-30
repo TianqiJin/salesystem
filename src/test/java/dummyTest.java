@@ -7,9 +7,9 @@ import org.junit.Test;
  */
 public class dummyTest {
     private static Logger logger= Logger.getLogger(dummyTest.class);
-
-    @Test
-    public void DBTest() throws Exception{
-        logger.info(DBExecute.selectFromProduct(123));
-    }
+//
+//    @Test
+//    public void DBTest() throws Exception{
+//        logger.info(DBExecute.selectFromProduct(123));
+//    }
 }

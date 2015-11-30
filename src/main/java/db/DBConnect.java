@@ -35,7 +35,6 @@ public class DBConnect {
         }
     }
 
-
     public static ResultSet excuteAndReturn(String query, Object...params) throws SQLException{
         PreparedStatement preparedStatement = createStatement(query, params);
         return preparedStatement.executeQuery();
@@ -74,6 +73,4 @@ public class DBConnect {
         }
         return preparedStatement;
     }
-
-
 }

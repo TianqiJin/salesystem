@@ -10,7 +10,7 @@ public class DBQueries {
             public final static String SELECT_PRODUCTID_PROJECT = "SELECT * FROM PRODUCT WHERE ProductID = ?";
         }
         public static class Customer{
-            public final static String SELECTT_ALL_CUSTOMER = "SELECT * FROM CUSTOMER";
+            public final static String SELECT_ALL_CUSTOMER = "SELECT * FROM Customer";
         }
     }
     public static class InsertQueries{
