@@ -14,12 +14,13 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import model.Customer;
 
+
 import java.util.List;
 
 /**
  * Created by tjin on 11/29/2015.
  */
-public class CustomerOverviewController {
+public class CustomerOverviewController implements OverviewController{
     @FXML
     private TableView<Customer> customerTable;
     @FXML

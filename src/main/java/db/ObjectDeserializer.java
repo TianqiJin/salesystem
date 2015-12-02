@@ -1,6 +1,7 @@
 package db;
 
 import model.Customer;
+import model.Product;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -19,6 +20,15 @@ public interface ObjectDeserializer<E> {
             return customer;
         }
     };
+
+    public static final ObjectDeserializer<Product> PRODUCT_OBJECT_DESERIALIZER =  new ObjectDeserializer<Product>() {
+        @Override
+        public Product deserialize(ResultSet rs) throws SQLException {
+            Product product = new Product(rs.getInt("ProductID"), rs.getString("Texture"), rs.getString("Size"), rs.getInt("TotalPiece"));
+            return product;
+        }
+    };
+
     public static final ObjectDeserializer<Map<String, Object>> DEFAULT_DESERIALIZER = new ObjectDeserializer<Map<String, Object>>() {
         @Override
         public Map<String, Object> deserialize(ResultSet rs) throws SQLException {

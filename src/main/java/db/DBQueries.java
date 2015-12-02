@@ -6,7 +6,7 @@ package db;
 public class DBQueries {
     public static class SelectQueries {
         public static class Product{
-            public final static String SELECT_ALL_PRODUCT = "SELECT * FROM PRODUCT";
+            public final static String SELECT_ALL_PRODUCT = "SELECT * FROM product";
             public final static String SELECT_PRODUCTID_PROJECT = "SELECT * FROM PRODUCT WHERE ProductID = ?";
         }
         public static class Customer{

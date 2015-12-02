@@ -1,10 +1,18 @@
 import Controllers.CustomerOverviewController;
+import Controllers.OverviewController;
+import Controllers.ProductOverviewController;
 import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
@@ -13,14 +21,21 @@ import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by tjin on 2015-11-21.
  */
-public class SaleSystem extends Application{
-    private static Logger logger= Logger.getLogger(SaleSystem.class);
+public class saleSystem extends Application{
+    private static Logger logger= Logger.getLogger(saleSystem.class);
     private Stage primaryStage;
     private BorderPane rootLayout;
+    @FXML
+    public TabPane tabPane;
+
+    private String[] tabList = {"Customer", "Product"};
+    private Map<String, OverviewController> tabControllerMap = new HashMap<>();
 
     public static void main(String []args){
         launch(args);
@@ -31,8 +46,42 @@ public class SaleSystem extends Application{
         this.primaryStage.setTitle("Sales System");
 
         initRootLayout();
-        showCustomerOverview();
+        initTab();
+        //showCustomerOverview();
     }
+
+    public void initTab(){
+        for (String tab : tabList) {
+            tabPane.getTabs().add(new Tab(tab));
+        }
+
+        tabPane.getSelectionModel().clearSelection();
+        tabPane.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Tab>() {
+            @Override
+            public void changed(ObservableValue<? extends Tab> observable, Tab oldValue, Tab newValue) {
+                if (newValue.getContent() == null) {
+                    try {
+                        FXMLLoader fXMLLoader = new FXMLLoader();
+                        Parent root = fXMLLoader.load(this.getClass().getResource("/fxml/" + newValue.getText() + "Overview.fxml").openStream());
+                        newValue.setContent(root);
+                        OverviewController controller = fXMLLoader.getController();
+                        controller.loadDataFromDB();
+                        tabControllerMap.put(newValue.getText(), controller);
+
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                } else {
+                    //Parent root = (Parent)newValue.getContent();
+                    OverviewController controller = tabControllerMap.get(newValue.getText());
+                    controller.loadDataFromDB();
+                }
+            }
+        });
+        tabPane.getSelectionModel().selectFirst();
+
+    }
+
     public void initRootLayout(){
         try {
             FXMLLoader loader = new FXMLLoader();
@@ -41,6 +90,12 @@ public class SaleSystem extends Application{
             Scene scene = new Scene(rootLayout);
             primaryStage.setScene(scene);
             primaryStage.show();
+            for (Node node: rootLayout.getChildren()){
+                if (node instanceof TabPane){
+                    tabPane = (TabPane)node;
+                    break;
+                }
+            }
         }catch(IOException e){
             logger.error(e.getMessage());
         }
@@ -48,7 +103,7 @@ public class SaleSystem extends Application{
     public void showCustomerOverview(){
         try{
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(SaleSystem.class.getResource("/fxml/CustomerOverview.fxml"));
+            loader.setLocation(saleSystem.class.getResource("/fxml/CustomerOverview.fxml"));
             AnchorPane customerOverview = loader.load();
             rootLayout.setCenter(customerOverview);
             CustomerOverviewController controller = loader.getController();
@@ -57,4 +112,5 @@ public class SaleSystem extends Application{
             logger.error(e.getMessage());
         }
     }
+
 }
