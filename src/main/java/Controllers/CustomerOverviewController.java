@@ -8,6 +8,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -20,6 +21,8 @@ import java.util.List;
  * Created by tjin on 11/29/2015.
  */
 public class CustomerOverviewController {
+    private DBExecuteCustomer dbExecute;
+
     @FXML
     private TableView<Customer> customerTable;
     @FXML
@@ -36,6 +39,8 @@ public class CustomerOverviewController {
     private Label postalCodeLabel;
     @FXML
     private Label cityLabel;
+    @FXML
+    private Label phoneLabel;
 
     @FXML
     private void initialize(){
@@ -55,12 +60,35 @@ public class CustomerOverviewController {
     @FXML
     private void handleDeleteCustomer(){
         int selectedIndex = customerTable.getSelectionModel().getSelectedIndex();
-        customerTable.getItems().remove(selectedIndex);
-        //TODO: delete the corresponding info in the database
-        //TODO: add if-else block for selectedIndex = -1 situation
+        if(selectedIndex >= 0){
+            String tempFirstName = customerTable.getItems().get(selectedIndex).getFirstName();
+            String tempLastName = customerTable.getItems().get(selectedIndex).getLastName();
+            if(dbExecute.deleteDatabase(DBQueries.DeleteQueries.Customer.DELETE_FROM_CUSTOMER, tempFirstName, tempLastName) == 0){
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Delete Customer Error");
+                alert.setHeaderText(null);
+                alert.setContentText("Error when deleting customer "+tempFirstName+" "+tempLastName);
+                alert.showAndWait();
+            }
+            else{
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Delete Customer Successfully");
+                alert.setHeaderText(null);
+                alert.setContentText("Successfully deteled customer "+tempFirstName+" "+tempLastName);
+                alert.showAndWait();
+            }
+            customerTable.getItems().remove(selectedIndex);
+        }
+        else{
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("No Customer Selected");
+            alert.setHeaderText(null);
+            alert.setContentText("Please select a person in the table.");
+            alert.showAndWait();
+        }
+
     }
 
-    private DBExecuteCustomer dbExecute;
     public CustomerOverviewController(){
         dbExecute = new DBExecuteCustomer();
     }
@@ -77,6 +105,7 @@ public class CustomerOverviewController {
             streetLabel.setText(customer.getStreet());
             postalCodeLabel.setText(customer.getPostalCode());
             cityLabel.setText(customer.getCity());
+            phoneLabel.setText(customer.getPhone());
         }
         else{
             firstNameLabel.setText("");
@@ -84,7 +113,7 @@ public class CustomerOverviewController {
             streetLabel.setText("");
             postalCodeLabel.setText("");
             cityLabel.setText("");
+            phoneLabel.setText("");
         }
     }
-
 }

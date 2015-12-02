@@ -1,7 +1,12 @@
 package model;
 
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by tjin on 11/29/2015.
@@ -12,6 +17,9 @@ public class Customer {
     private final StringProperty street;
     private final StringProperty postalCode;
     private final StringProperty city;
+    //private final StringProperty userName;
+    //TODO: generate userName
+    private final StringProperty phone;
 
     public Customer(String... params){
         this.firstName = new SimpleStringProperty(params[0]);
@@ -19,6 +27,7 @@ public class Customer {
         this.street = new SimpleStringProperty(params[2]);
         this.postalCode = new SimpleStringProperty(params[3]);
         this.city = new SimpleStringProperty(params[4]);
+        this.phone = new SimpleStringProperty(params[5]);
     }
 
     public String getFirstName() {
@@ -79,6 +88,17 @@ public class Customer {
 
     public void setCity(String city) {
         this.city.set(city);
+    }
+    public String getPhone() {
+        return phone.get();
+    }
+
+    public StringProperty phoneProperty() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone.set(phone);
     }
 
 }

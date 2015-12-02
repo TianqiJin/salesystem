@@ -12,5 +12,6 @@ public abstract class DBExecute<T> {
     public abstract List<T> selectFromDatabase(String query, Object... params);
     public abstract String insertIntoDatabase();
     public abstract String updateDatabase();
+    public abstract int deleteDatabase(String query, Object... params);
 
 }

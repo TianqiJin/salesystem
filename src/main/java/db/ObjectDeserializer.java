@@ -15,7 +15,7 @@ public interface ObjectDeserializer<E> {
     public static final ObjectDeserializer<Customer> CUSTOMER_OBJECT_DESERIALIZER =  new ObjectDeserializer<Customer>() {
         @Override
         public Customer deserialize(ResultSet rs) throws SQLException {
-            Customer customer = new Customer(rs.getString("FirstName"), rs.getString("LastName"), rs.getString("Street"), rs.getString("PostalCode"), rs.getString("City"));
+            Customer customer = new Customer(rs.getString("FirstName"), rs.getString("LastName"), rs.getString("Street"), rs.getString("PostalCode"), rs.getString("City"), rs.getString("Phone"));
             return customer;
         }
     };

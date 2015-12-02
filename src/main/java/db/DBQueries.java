@@ -13,6 +13,11 @@ public class DBQueries {
             public final static String SELECT_ALL_CUSTOMER = "SELECT * FROM Customer";
         }
     }
+    public static class DeleteQueries{
+        public static class Customer{
+            public final static String DELETE_FROM_CUSTOMER = "DELETE FROM Customer WHERE FirstName = ? AND LastName = ?";
+        }
+    }
     public static class InsertQueries{
 
     }

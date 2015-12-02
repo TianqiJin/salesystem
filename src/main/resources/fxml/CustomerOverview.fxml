@@ -37,7 +37,7 @@
                 <Label text="Street" GridPane.columnIndex="0" GridPane.rowIndex="3" />
                 <Label fx:id="firstNameLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="0" />
                 <Label fx:id="lastNameLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                <Label id="streettLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                <Label id="streettLabel" fx:id="phoneLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                 <Label fx:id="streetLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="3" />
                 <Label text="City" GridPane.columnIndex="0" GridPane.rowIndex="4" />
                 <Label text="Postal Code" GridPane.columnIndex="0" GridPane.rowIndex="5" />
