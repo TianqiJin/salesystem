@@ -5,8 +5,13 @@ package db;
  */
 public class DBQueries {
     public static class SelectQueries {
-        protected static final String SELECT_ALL_PRODUCT = "SELECT * FROM PRODUCT";
-        protected static final String SELECT_ALL_CUSTOMER = "SELECT * FROM CUSTOMER";
+        public static class Product{
+            public final static String SELECT_ALL_PRODUCT = "SELECT * FROM PRODUCT";
+            public final static String SELECT_PRODUCTID_PROJECT = "SELECT * FROM PRODUCT WHERE ProductID = ?";
+        }
+        public static class Customer{
+            public final static String SELECT_ALL_CUSTOMER = "SELECT * FROM Customer";
+        }
     }
     public static class InsertQueries{
 

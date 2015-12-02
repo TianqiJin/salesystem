@@ -1,16 +1,16 @@
 package db;
 
+import model.Customer;
+
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by jiawei.liu on 11/22/15.
  */
-public abstract class DBExecute {
+public abstract class DBExecute<T> {
 
-    protected static List<Map<String, Object>> selectResult;
-
-    public abstract String selectFromDatabase(int id);
+    public abstract List<T> selectFromDatabase(String query, Object... params);
     public abstract String insertIntoDatabase();
     public abstract String updateDatabase();
+
 }
