@@ -12,7 +12,7 @@ import java.util.List;
  * Created by tjin on 11/29/2015.
  */
 public class Customer {
-    private final StringProperty firstName;
+    private final StringProperty firstName;    //lol....interesting.....
     private final StringProperty lastName;
     private final StringProperty street;
     private final StringProperty postalCode;
