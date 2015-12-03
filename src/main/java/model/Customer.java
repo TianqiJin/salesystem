@@ -12,22 +12,28 @@ import java.util.List;
  * Created by tjin on 11/29/2015.
  */
 public class Customer {
+    private final StringProperty userName;
     private final StringProperty firstName;    //lol....interesting.....
     private final StringProperty lastName;
     private final StringProperty street;
     private final StringProperty postalCode;
     private final StringProperty city;
-    //private final StringProperty userName;
-    //TODO: generate userName
     private final StringProperty phone;
+    private final StringProperty userClass;
+    private final StringProperty email;
+    private final IntegerProperty storeCredit;
 
-    public Customer(String... params){
-        this.firstName = new SimpleStringProperty(params[0]);
-        this.lastName = new SimpleStringProperty(params[1]);
-        this.street = new SimpleStringProperty(params[2]);
-        this.postalCode = new SimpleStringProperty(params[3]);
-        this.city = new SimpleStringProperty(params[4]);
-        this.phone = new SimpleStringProperty(params[5]);
+    public Customer(Object... params){
+        this.userName = new SimpleStringProperty((String)params[0]);
+        this.firstName = new SimpleStringProperty((String)params[1]);
+        this.lastName = new SimpleStringProperty((String)params[2]);
+        this.street = new SimpleStringProperty((String)params[3]);
+        this.postalCode = new SimpleStringProperty((String)params[4]);
+        this.city = new SimpleStringProperty((String)params[5]);
+        this.phone = new SimpleStringProperty((String)params[6]);
+        this.userClass = new SimpleStringProperty((String)params[7]);
+        this.email = new SimpleStringProperty((String)params[8]);
+        this.storeCredit = new SimpleIntegerProperty((Integer)params[9]);
     }
 
     public String getFirstName() {
@@ -99,6 +105,47 @@ public class Customer {
 
     public void setPhone(String phone) {
         this.phone.set(phone);
+    }
+
+    public String getUserName() {
+        return userName.get();
+    }
+
+
+    public String getUserClass() {
+        return userClass.get();
+    }
+
+    public StringProperty userClassProperty() {
+        return userClass;
+    }
+
+    public void setUserClass(String userClass) {
+        this.userClass.set(userClass);
+    }
+
+    public String getEmail() {
+        return email.get();
+    }
+
+    public StringProperty emailProperty() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email.set(email);
+    }
+
+    public int getStoreCredit() {
+        return storeCredit.get();
+    }
+
+    public IntegerProperty storeCreditProperty() {
+        return storeCredit;
+    }
+
+    public void setStoreCredit(int storeCredit) {
+        this.storeCredit.set(storeCredit);
     }
 
 }

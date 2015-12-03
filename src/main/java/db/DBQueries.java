@@ -15,7 +15,7 @@ public class DBQueries {
     }
     public static class DeleteQueries{
         public static class Customer{
-            public final static String DELETE_FROM_CUSTOMER = "DELETE FROM Customer WHERE FirstName = ? AND LastName = ?";
+            public final static String DELETE_FROM_CUSTOMER = "DELETE FROM Customer WHERE UserName = ?";
         }
     }
     public static class InsertQueries{

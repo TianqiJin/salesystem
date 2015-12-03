@@ -41,6 +41,12 @@ public class CustomerOverviewController implements OverviewController{
     private Label cityLabel;
     @FXML
     private Label phoneLabel;
+    @FXML
+    private Label classLabel;
+    @FXML
+    private Label emailLabel;
+    @FXML
+    private Label storeCreditLabel;
 
     @FXML
     private void initialize(){
@@ -63,7 +69,8 @@ public class CustomerOverviewController implements OverviewController{
         if(selectedIndex >= 0){
             String tempFirstName = customerTable.getItems().get(selectedIndex).getFirstName();
             String tempLastName = customerTable.getItems().get(selectedIndex).getLastName();
-            if(dbExecute.deleteDatabase(DBQueries.DeleteQueries.Customer.DELETE_FROM_CUSTOMER, tempFirstName, tempLastName) == 0){
+            if(dbExecute.deleteDatabase(DBQueries.DeleteQueries.Customer.DELETE_FROM_CUSTOMER,
+                    customerTable.getItems().get(selectedIndex).getUserName()) == 0){
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Delete Customer Error");
                 alert.setHeaderText(null);
@@ -106,6 +113,9 @@ public class CustomerOverviewController implements OverviewController{
             postalCodeLabel.setText(customer.getPostalCode());
             cityLabel.setText(customer.getCity());
             phoneLabel.setText(customer.getPhone());
+            classLabel.setText(customer.getUserClass());
+            emailLabel.setText(customer.getEmail());
+            storeCreditLabel.setText(String.valueOf(customer.getStoreCredit()));
         }
         else{
             firstNameLabel.setText("");
@@ -114,6 +124,9 @@ public class CustomerOverviewController implements OverviewController{
             postalCodeLabel.setText("");
             cityLabel.setText("");
             phoneLabel.setText("");
+            classLabel.setText("");
+            emailLabel.setText("");
+            storeCreditLabel.setText("");
         }
     }
 }

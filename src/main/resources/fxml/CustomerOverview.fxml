@@ -44,12 +44,21 @@
                 <Label fx:id="cityLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="4" />
                 <Label fx:id="postalCodeLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="5" />
                 <Label text="Contact Phone" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                <Label text="Class" GridPane.columnIndex="0" GridPane.rowIndex="6" />
+                <Label id="class" fx:id="classLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                <Label text="Email" GridPane.columnIndex="0" GridPane.rowIndex="7" />
+                <Label fx:id="emailLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+                <Label text="Store Credit" GridPane.columnIndex="0" GridPane.rowIndex="8" />
+                <Label fx:id="storeCreditLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="8" />
               </children>
               <columnConstraints>
                 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
               </columnConstraints>
               <rowConstraints>
+                <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                 <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                 <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                 <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
