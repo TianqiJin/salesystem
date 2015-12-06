@@ -1,5 +1,6 @@
 package Controllers;
 
+import com.sun.deploy.util.ArrayUtil;
 import db.DBExecuteCustomer;
 import db.DBQueries;
 import javafx.beans.value.ChangeListener;
@@ -12,6 +13,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import jdk.nashorn.internal.ir.LiteralNode;
 import model.Customer;
 import MainClass.SaleSystem;
 
@@ -121,6 +123,14 @@ public class CustomerOverviewController implements OverviewController{
         Customer selectedCustomer = customerTable.getSelectionModel().getSelectedItem();
         if(selectedCustomer != null){
             boolean onClicked = saleSystem.showCustomerEditDialog(selectedCustomer);
+            if(dbExecute.updateDatabase(DBQueries.UpdateQueries.Customer.UPDATE_CUSTOMER,
+                    selectedCustomer.getAllPropertiesForUpdate()) == 0){
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Unable To Edit New Customer");
+                alert.setHeaderText(null);
+                alert.setContentText("Unable To Edit Customer" + selectedCustomer.getFirstName() + " " + selectedCustomer.getLastName());
+                alert.showAndWait();
+            }
             if(onClicked){
                 showCustomerDetail(selectedCustomer);
             }

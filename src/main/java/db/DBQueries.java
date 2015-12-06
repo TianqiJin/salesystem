@@ -26,6 +26,10 @@ public class DBQueries {
         }
     }
     public static class UpdateQueries{
-
+        public static class Customer{
+            public final static String UPDATE_CUSTOMER = "UPDATE Customer "
+                    +"SET FirstName = ?, LastName = ?, Street = ?, PostalCode = ?, City = ?, Phone = ?, Class = ?, Email = ?, StoreCredit = ? "
+                    +"WHERE UserName = ? ";
+        }
     }
 }

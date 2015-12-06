@@ -27,26 +27,4 @@ public class DBExecuteCustomer extends DBExecute<Customer>{
         }
         return null;
     }
-
-    public int deleteDatabase(String query, Object... params){
-        try{
-            return DBConnect.executeUpdate(query, params);
-        }catch (SQLException e){
-            logger.error(e.getMessage());
-        }
-        return 0;
-    }
-    public int insertIntoDatabase(String query, Object... params){
-        try{
-            return DBConnect.executeUpdate(query, params);
-        }catch(SQLException e){
-            logger.error(e.getMessage());
-        }
-        return 0;
-    }
-
-    public String updateDatabase(){
-        return "Nothing";
-    }
-
 }

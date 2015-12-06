@@ -181,4 +181,9 @@ public class Customer {
         return (new Object[]{getUserName(), getFirstName(), getLastName(), getStreet(), getPostalCode(), getCity(),
             getPhone(), getUserClass(), getEmail(), getStoreCredit()});
     }
+
+    public Object[] getAllPropertiesForUpdate(){
+        return (new Object[]{getFirstName(), getLastName(), getStreet(), getPostalCode(), getCity(),
+                getPhone(), getUserClass(), getEmail(), getStoreCredit(), getUserName()});
+    }
 }
