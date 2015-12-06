@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.paint.*?>
 
-<AnchorPane id="AnchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2">
+<AnchorPane id="AnchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="Controllers.CustomerEditDialogController">
   <children>
     <GridPane AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
       <children>
@@ -17,12 +17,18 @@
         <Label text="Street" GridPane.columnIndex="0" GridPane.rowIndex="3" />
         <Label text="City" GridPane.columnIndex="0" GridPane.rowIndex="4" />
         <Label text="Postal Code" GridPane.columnIndex="0" GridPane.rowIndex="5" />
-        <Label text="Label" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-        <Label text="Label" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-        <Label text="Label" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-        <Label text="Label" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-        <Label text="Label" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-        <Label text="Label" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+        <Label text="Email" GridPane.columnIndex="0" GridPane.rowIndex="6" />
+        <Label text="Class" GridPane.columnIndex="0" GridPane.rowIndex="7" />
+        <Label text="Store Credit" GridPane.columnIndex="0" GridPane.rowIndex="8" />
+        <TextField fx:id="firstNameField" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+        <TextField fx:id="lastNameField" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+        <TextField fx:id="phoneField" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+        <TextField fx:id="streetField" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+        <TextField fx:id="cityField" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+        <TextField fx:id="postalCodeField" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+        <TextField fx:id="emailField" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+        <TextField fx:id="classField" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+        <TextField fx:id="storeCreditField" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="8" />
       </children>
       <columnConstraints>
         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -35,16 +41,19 @@
         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
       </rowConstraints>
     </GridPane>
     <HBox prefHeight="-1.0" prefWidth="-1.0" AnchorPane.bottomAnchor="25.0" AnchorPane.leftAnchor="350.0" AnchorPane.rightAnchor="51.0">
       <children>
-        <Button mnemonicParsing="false" prefHeight="30.0" prefWidth="100.0" text="OK">
+        <Button mnemonicParsing="false" onAction="#handleOk" prefHeight="30.0" prefWidth="100.0" text="OK">
           <HBox.margin>
             <Insets right="5.0" />
           </HBox.margin>
         </Button>
-        <Button mnemonicParsing="false" prefHeight="30.0" prefWidth="100.0" text="Cancle">
+        <Button mnemonicParsing="false" onAction="#handleCancle" prefHeight="30.0" prefWidth="100.0" text="Cancel">
           <HBox.margin>
             <Insets left="5.0" />
           </HBox.margin>

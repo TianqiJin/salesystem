@@ -5,7 +5,10 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -13,7 +16,7 @@ import java.util.List;
  */
 public class Customer {
     private final StringProperty userName;
-    private final StringProperty firstName;    //lol....interesting.....
+    private final StringProperty firstName;
     private final StringProperty lastName;
     private final StringProperty street;
     private final StringProperty postalCode;
@@ -24,16 +27,31 @@ public class Customer {
     private final IntegerProperty storeCredit;
 
     public Customer(Object... params){
-        this.userName = new SimpleStringProperty((String)params[0]);
-        this.firstName = new SimpleStringProperty((String)params[1]);
-        this.lastName = new SimpleStringProperty((String)params[2]);
-        this.street = new SimpleStringProperty((String)params[3]);
-        this.postalCode = new SimpleStringProperty((String)params[4]);
-        this.city = new SimpleStringProperty((String)params[5]);
-        this.phone = new SimpleStringProperty((String)params[6]);
-        this.userClass = new SimpleStringProperty((String)params[7]);
-        this.email = new SimpleStringProperty((String)params[8]);
-        this.storeCredit = new SimpleIntegerProperty((Integer)params[9]);
+        if(params.length == 10){
+            this.userName = new SimpleStringProperty((String)params[0]);
+            this.firstName = new SimpleStringProperty((String)params[1]);
+            this.lastName = new SimpleStringProperty((String)params[2]);
+            this.street = new SimpleStringProperty((String)params[3]);
+            this.postalCode = new SimpleStringProperty((String)params[4]);
+            this.city = new SimpleStringProperty((String)params[5]);
+            this.phone = new SimpleStringProperty((String)params[6]);
+            this.userClass = new SimpleStringProperty((String)params[7]);
+            this.email = new SimpleStringProperty((String)params[8]);
+            this.storeCredit = new SimpleIntegerProperty((Integer)params[9]);
+        }
+        else{
+            this.userName = new SimpleStringProperty(null);
+            this.firstName = new SimpleStringProperty(null);
+            this.lastName = new SimpleStringProperty(null);
+            this.street = new SimpleStringProperty(null);
+            this.postalCode = new SimpleStringProperty(null);
+            this.city = new SimpleStringProperty(null);
+            this.phone = new SimpleStringProperty(null);
+            this.userClass = new SimpleStringProperty("C");
+            this.email = new SimpleStringProperty(null);
+            this.storeCredit = new SimpleIntegerProperty(0) {
+            };
+        }
     }
 
     public String getFirstName() {
@@ -107,6 +125,10 @@ public class Customer {
         this.phone.set(phone);
     }
 
+    public void setUserName() {
+        this.userName.set(generateUserName());
+    }
+
     public String getUserName() {
         return userName.get();
     }
@@ -148,4 +170,15 @@ public class Customer {
         this.storeCredit.set(storeCredit);
     }
 
+    private String generateUserName(){
+        SimpleDateFormat sdf = new SimpleDateFormat("HHmmss");
+        String tmpUserName = getFirstName().substring(0,1) + getLastName() +
+                sdf.format(Calendar.getInstance().getTime());
+        return tmpUserName;
+    }
+
+    public Object[] getAllProperties(){
+        return (new Object[]{getUserName(), getFirstName(), getLastName(), getStreet(), getPostalCode(), getCity(),
+            getPhone(), getUserClass(), getEmail(), getStoreCredit()});
+    }
 }

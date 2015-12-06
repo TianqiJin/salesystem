@@ -19,7 +19,11 @@ public class DBQueries {
         }
     }
     public static class InsertQueries{
-
+        public static class Customer{
+            public final static String INSERT_INTO_CUSTOMER = "INSERT INTO Customer "
+                    +"(UserName, FirstName, LastName, Street, PostalCode, City, Phone, Class, Email, StoreCredit)"
+                    +"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        }
     }
     public static class UpdateQueries{
 

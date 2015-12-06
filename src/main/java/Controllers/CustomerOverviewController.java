@@ -1,6 +1,5 @@
 package Controllers;
 
-import com.sun.xml.internal.bind.v2.TODO;
 import db.DBExecuteCustomer;
 import db.DBQueries;
 import javafx.beans.value.ChangeListener;
@@ -14,15 +13,16 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import model.Customer;
-
-
-import java.util.List;
+import MainClass.SaleSystem;
 
 /**
  * Created by tjin on 11/29/2015.
  */
 public class CustomerOverviewController implements OverviewController{
     private DBExecuteCustomer dbExecute;
+    private ObservableList<Customer> customerList;
+    private SaleSystem saleSystem;
+
     @FXML
     private TableView<Customer> customerTable;
     @FXML
@@ -96,15 +96,60 @@ public class CustomerOverviewController implements OverviewController{
 
     }
 
+    @FXML
+    private void handleAddCustomer(){
+        Customer newCustomer = new Customer();
+        boolean okClicked = saleSystem.showCustomerEditDialog(newCustomer);
+        if(okClicked){
+            newCustomer.setUserName();
+            if(dbExecute.insertIntoDatabase(DBQueries.InsertQueries.Customer.INSERT_INTO_CUSTOMER,
+                    newCustomer.getAllProperties()) == 0){
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Unable To Add New Customer");
+                alert.setHeaderText(null);
+                alert.setContentText("Unable To Add New Customer" + newCustomer.getFirstName() + " " + newCustomer.getLastName());
+                alert.showAndWait();
+            }
+            else{
+                customerList.add(newCustomer);
+            }
+        }
+    }
+
+    @FXML
+    private void handleEditCustomer(){
+        Customer selectedCustomer = customerTable.getSelectionModel().getSelectedItem();
+        if(selectedCustomer != null){
+            boolean onClicked = saleSystem.showCustomerEditDialog(selectedCustomer);
+            if(onClicked){
+                showCustomerDetail(selectedCustomer);
+            }
+        }
+        else{
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("No Customer Selected");
+            alert.setHeaderText(null);
+            alert.setContentText("Please select a person in the table.");
+            alert.showAndWait();
+        }
+    }
+
     public CustomerOverviewController(){
         dbExecute = new DBExecuteCustomer();
     }
+
     public void loadDataFromDB(){
-        ObservableList<Customer> customerList = FXCollections.observableArrayList(
+        customerList = FXCollections.observableArrayList(
                 dbExecute.selectFromDatabase(DBQueries.SelectQueries.Customer.SELECT_ALL_CUSTOMER)
         );
         customerTable.setItems(customerList);
     }
+
+    @Override
+    public void setMainClass(SaleSystem saleSystem) {
+        this.saleSystem = saleSystem;
+    }
+
     public void showCustomerDetail(Customer customer){
         if(customer != null){
             firstNameLabel.setText(customer.getFirstName());

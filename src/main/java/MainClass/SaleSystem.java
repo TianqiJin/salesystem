@@ -1,11 +1,11 @@
+package MainClass;
+
+import Controllers.CustomerEditDialogController;
 import Controllers.CustomerOverviewController;
 import Controllers.OverviewController;
-import Controllers.ProductOverviewController;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -15,11 +15,10 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
-import model.*;
+import model.Customer;
 import org.apache.log4j.Logger;
-
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -47,7 +46,6 @@ public class SaleSystem extends Application{
 
         initRootLayout();
         initTab();
-        //showCustomerOverview();
     }
 
     public void initTab(){
@@ -66,6 +64,7 @@ public class SaleSystem extends Application{
                         newValue.setContent(root);
                         OverviewController controller = fXMLLoader.getController();
                         controller.loadDataFromDB();
+                        controller.setMainClass(SaleSystem.this);
                         tabControllerMap.put(newValue.getText(), controller);
 
                     } catch (IOException ex) {
@@ -110,6 +109,32 @@ public class SaleSystem extends Application{
             controller.loadDataFromDB();
         }catch(IOException e){
             logger.error(e.getMessage());
+        }
+    }
+
+    public boolean showCustomerEditDialog(Customer customer){
+        try{
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(SaleSystem.class.getResource("/fxml/CustomerEditDialog.fxml"));
+            AnchorPane page = loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Edit Customer");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(primaryStage);
+            Scene scene = new Scene(page);
+            dialogStage.setScene(scene);
+
+            CustomerEditDialogController controller = loader.getController();
+            controller.setDialogStage(dialogStage);
+
+            controller.setTextField(customer);
+
+            dialogStage.showAndWait();
+            return controller.isOKClicked();
+        }catch(IOException e){
+            e.printStackTrace();
+            return false;
         }
     }
 

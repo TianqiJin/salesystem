@@ -70,12 +70,12 @@
             <Separator prefWidth="200.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0" />
             <HBox id="HBox" alignment="BOTTOM_RIGHT" spacing="5.0" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0">
               <children>
-                <Button mnemonicParsing="false" text="New">
+                <Button mnemonicParsing="false" onAction="#handleAddCustomer" text="New">
                   <HBox.margin>
                     <Insets />
                   </HBox.margin>
                 </Button>
-                <Button mnemonicParsing="false" text="Edit" />
+                <Button mnemonicParsing="false" onAction="#handleEditCustomer" text="Edit" />
                 <Button mnemonicParsing="false" onAction="#handleDeleteCustomer" text="Delete" />
               </children>
             </HBox>
