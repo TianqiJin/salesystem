@@ -20,7 +20,7 @@ public abstract class DBExecute<T> {
             logger.error(e.getMessage());
         }
         return 0;
-    };
+    }
     public int updateDatabase(String query, Object... params){
         try{
             return DBConnect.executeUpdate(query, params);
@@ -28,7 +28,7 @@ public abstract class DBExecute<T> {
             logger.error(e.getMessage());
         }
         return 0;
-    };
+    }
     public int deleteDatabase(String query, Object... params){
         try{
             return DBConnect.executeUpdate(query, params);
@@ -36,6 +36,6 @@ public abstract class DBExecute<T> {
             logger.error(e.getMessage());
         }
         return 0;
-    };
+    }
 
 }
