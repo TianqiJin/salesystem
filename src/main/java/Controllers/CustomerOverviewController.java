@@ -1,6 +1,6 @@
 package Controllers;
 
-import com.sun.xml.internal.bind.v2.TODO;
+import com.sun.deploy.util.ArrayUtil;
 import db.DBExecuteCustomer;
 import db.DBQueries;
 import javafx.beans.value.ChangeListener;
@@ -8,19 +8,24 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import jdk.nashorn.internal.ir.LiteralNode;
 import model.Customer;
-
-
-import java.util.List;
+import MainClass.SaleSystem;
 
 /**
  * Created by tjin on 11/29/2015.
  */
 public class CustomerOverviewController implements OverviewController{
+
+    private DBExecuteCustomer dbExecute;
+    private ObservableList<Customer> customerList;
+    private SaleSystem saleSystem;
+
     @FXML
     private TableView<Customer> customerTable;
     @FXML
@@ -37,6 +42,14 @@ public class CustomerOverviewController implements OverviewController{
     private Label postalCodeLabel;
     @FXML
     private Label cityLabel;
+    @FXML
+    private Label phoneLabel;
+    @FXML
+    private Label classLabel;
+    @FXML
+    private Label emailLabel;
+    @FXML
+    private Label storeCreditLabel;
 
     @FXML
     private void initialize(){
@@ -56,21 +69,98 @@ public class CustomerOverviewController implements OverviewController{
     @FXML
     private void handleDeleteCustomer(){
         int selectedIndex = customerTable.getSelectionModel().getSelectedIndex();
-        customerTable.getItems().remove(selectedIndex);
-        //TODO: delete the corresponding info in the database
-        //TODO: add if-else block for selectedIndex = -1 situation
+        if(selectedIndex >= 0){
+            String tempFirstName = customerTable.getItems().get(selectedIndex).getFirstName();
+            String tempLastName = customerTable.getItems().get(selectedIndex).getLastName();
+            if(dbExecute.deleteDatabase(DBQueries.DeleteQueries.Customer.DELETE_FROM_CUSTOMER,
+                    customerTable.getItems().get(selectedIndex).getUserName()) == 0){
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Delete Customer Error");
+                alert.setHeaderText(null);
+                alert.setContentText("Error when deleting customer "+tempFirstName+" "+tempLastName);
+                alert.showAndWait();
+            }
+            else{
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Delete Customer Successfully");
+                alert.setHeaderText(null);
+                alert.setContentText("Successfully deteled customer "+tempFirstName+" "+tempLastName);
+                alert.showAndWait();
+            }
+            customerTable.getItems().remove(selectedIndex);
+        }
+        else{
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("No Customer Selected");
+            alert.setHeaderText(null);
+            alert.setContentText("Please select a person in the table.");
+            alert.showAndWait();
+        }
+
     }
 
-    private DBExecuteCustomer dbExecute;
+    @FXML
+    private void handleAddCustomer(){
+        Customer newCustomer = new Customer();
+        boolean okClicked = saleSystem.showCustomerEditDialog(newCustomer);
+        if(okClicked){
+            newCustomer.setUserName();
+            if(dbExecute.insertIntoDatabase(DBQueries.InsertQueries.Customer.INSERT_INTO_CUSTOMER,
+                    newCustomer.getAllProperties()) == 0){
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Unable To Add New Customer");
+                alert.setHeaderText(null);
+                alert.setContentText("Unable To Add New Customer" + newCustomer.getFirstName() + " " + newCustomer.getLastName());
+                alert.showAndWait();
+            }
+            else{
+                customerList.add(newCustomer);
+            }
+        }
+    }
+
+    @FXML
+    private void handleEditCustomer(){
+        Customer selectedCustomer = customerTable.getSelectionModel().getSelectedItem();
+        if(selectedCustomer != null){
+            boolean onClicked = saleSystem.showCustomerEditDialog(selectedCustomer);
+            if(dbExecute.updateDatabase(DBQueries.UpdateQueries.Customer.UPDATE_CUSTOMER,
+                    selectedCustomer.getAllPropertiesForUpdate()) == 0){
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Unable To Edit New Customer");
+                alert.setHeaderText(null);
+                alert.setContentText("Unable To Edit Customer" + selectedCustomer.getFirstName() + " " + selectedCustomer.getLastName());
+                alert.showAndWait();
+            }
+            if(onClicked){
+                showCustomerDetail(selectedCustomer);
+            }
+        }
+        else{
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("No Customer Selected");
+            alert.setHeaderText(null);
+            alert.setContentText("Please select a person in the table.");
+            alert.showAndWait();
+        }
+    }
+
     public CustomerOverviewController(){
         dbExecute = new DBExecuteCustomer();
     }
+
     public void loadDataFromDB(){
-        ObservableList<Customer> customerList = FXCollections.observableArrayList(
+        customerList = FXCollections.observableArrayList(
                 dbExecute.selectFromDatabase(DBQueries.SelectQueries.Customer.SELECT_ALL_CUSTOMER)
         );
         customerTable.setItems(customerList);
     }
+
+    @Override
+    public void setMainClass(SaleSystem saleSystem) {
+        this.saleSystem = saleSystem;
+    }
+
     public void showCustomerDetail(Customer customer){
         if(customer != null){
             firstNameLabel.setText(customer.getFirstName());
@@ -78,6 +168,10 @@ public class CustomerOverviewController implements OverviewController{
             streetLabel.setText(customer.getStreet());
             postalCodeLabel.setText(customer.getPostalCode());
             cityLabel.setText(customer.getCity());
+            phoneLabel.setText(customer.getPhone());
+            classLabel.setText(customer.getUserClass());
+            emailLabel.setText(customer.getEmail());
+            storeCreditLabel.setText(String.valueOf(customer.getStoreCredit()));
         }
         else{
             firstNameLabel.setText("");
@@ -85,7 +179,10 @@ public class CustomerOverviewController implements OverviewController{
             streetLabel.setText("");
             postalCodeLabel.setText("");
             cityLabel.setText("");
+            phoneLabel.setText("");
+            classLabel.setText("");
+            emailLabel.setText("");
+            storeCreditLabel.setText("");
         }
     }
-
 }

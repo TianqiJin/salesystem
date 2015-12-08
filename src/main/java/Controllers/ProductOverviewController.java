@@ -1,5 +1,7 @@
 package Controllers;
 
+
+import MainClass.SaleSystem;
 import db.DBExecuteCustomer;
 import db.DBExecuteProduct;
 import db.DBQueries;
@@ -17,6 +19,9 @@ import model.Product;
 
 
 public class ProductOverviewController implements OverviewController{
+
+    private SaleSystem saleSystem;
+
     @FXML
     private TableView<Product> productTable;
     @FXML
@@ -65,6 +70,12 @@ public class ProductOverviewController implements OverviewController{
         );
         productTable.setItems(productList);
     }
+
+    @Override
+    public void setMainClass(SaleSystem saleSystem) {
+        this.saleSystem = saleSystem;
+    }
+
     public void showProductDetail(Product product){
         if(product != null){
             productIdLabel.setText(String.valueOf(product.getProductId()));

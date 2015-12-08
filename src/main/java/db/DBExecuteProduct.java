@@ -9,9 +9,10 @@ import java.util.List;
 /**
  * Created by tjin on 2015-11-22.
  */
-public class DBExecuteProduct extends DBExecute{
+public class DBExecuteProduct{
     public static Logger logger= Logger.getLogger(DBExecuteProduct.class);
     private static List<Product> selectResult;
+
 
     public List<Product> selectFromDatabase(String query, Object... params){
         try {
@@ -32,4 +33,5 @@ public class DBExecuteProduct extends DBExecute{
     public String updateDatabase(){
         return "Nothing";
     }
+
 }
