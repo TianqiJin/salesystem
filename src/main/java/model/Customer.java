@@ -15,6 +15,7 @@ import java.util.List;
  * Created by tjin on 11/29/2015.
  */
 public class Customer {
+
     private final StringProperty userName;
     private final StringProperty firstName;
     private final StringProperty lastName;

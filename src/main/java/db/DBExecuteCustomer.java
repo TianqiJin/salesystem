@@ -18,7 +18,6 @@ public class DBExecuteCustomer extends DBExecute<Customer>{
     public List<Customer> selectFromDatabase(String query, Object... params){
         try {
             selectResult = DBConnect.executeQuery(query, ObjectDeserializer.CUSTOMER_OBJECT_DESERIALIZER, params);
-            logger.info(selectResult);
             if (selectResult != null) {
                 return selectResult;
             }

@@ -1,6 +1,5 @@
 package Controllers;
 
-import com.sun.deploy.util.ArrayUtil;
 import db.DBExecuteCustomer;
 import db.DBQueries;
 import javafx.beans.value.ChangeListener;
@@ -13,7 +12,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
-import jdk.nashorn.internal.ir.LiteralNode;
 import model.Customer;
 import MainClass.SaleSystem;
 
@@ -21,6 +19,7 @@ import MainClass.SaleSystem;
  * Created by tjin on 11/29/2015.
  */
 public class CustomerOverviewController implements OverviewController{
+
     private DBExecuteCustomer dbExecute;
     private ObservableList<Customer> customerList;
     private SaleSystem saleSystem;
