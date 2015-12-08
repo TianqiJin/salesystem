@@ -2,7 +2,6 @@ package Controllers;
 
 
 import MainClass.SaleSystem;
-import db.DBExecuteCustomer;
 import db.DBExecuteProduct;
 import db.DBQueries;
 import javafx.beans.value.ChangeListener;
@@ -14,7 +13,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
-import model.Customer;
 import model.Product;
 
 

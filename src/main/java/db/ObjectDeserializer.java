@@ -1,8 +1,13 @@
 package db;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import model.Customer;
 import model.Product;
+import model.Staff;
+import model.Transaction;
 
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -28,6 +33,51 @@ public interface ObjectDeserializer<E> {
         public Product deserialize(ResultSet rs) throws SQLException {
             Product product = new Product(rs.getInt("ProductID"), rs.getString("Texture"), rs.getString("Size"), rs.getInt("TotalPiece"));
             return product;
+        }
+    };
+
+    public static final ObjectDeserializer<Transaction> TRANSACTION_OBJECT_DESERIALIZER =  new ObjectDeserializer<Transaction>() {
+        @Override
+        public Transaction deserialize(ResultSet rs) throws SQLException {
+            ObjectMapper mapper = new ObjectMapper();
+            String type = null, info = null;
+            try {
+                JsonNode root = mapper.readValue(rs.getString("Type"),JsonNode.class);
+                type = root.path("type").textValue();
+                info = root.path("info").textValue();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            Transaction transaction = new Transaction.TranscationBuilder()
+                    .transcationId(rs.getInt("TransactionID"))
+                    .productId(rs.getInt("ProductID"))
+                    .numofBoxes(rs.getInt("NumOfBoxes"))
+                    .numofPieces(rs.getInt("NumofPieces"))
+                    .date(rs.getDate("Date").toString())
+                    .payment(rs.getDouble("Payment"))
+                    .paymentType(rs.getString("PaymentType"))
+                    .staffId(rs.getInt("StaffID"))
+                    .type(Transaction.TransactionType.getType(type))
+                    .info(info)
+                    .build();
+            return transaction;
+        }
+    };
+
+    public static final ObjectDeserializer<Staff> STAFF_OBJECT_DESERIALIZER =  new ObjectDeserializer<Staff>() {
+        @Override
+        public Staff deserialize(ResultSet rs) throws SQLException {
+
+            Staff staff = new Staff.StaffBuilder()
+                    .staffId(rs.getInt("StaffID"))
+                    .userName(rs.getString("UserName"))
+                    .password(rs.getString("Password"))
+                    .fullName(rs.getString("FullName"))
+                    .position(Staff.Position.getPosition(rs.getString("Position")))
+                    .location(Staff.Location.getLocation(rs.getString("Location")))
+                    .build();
+            return staff;
         }
     };
 

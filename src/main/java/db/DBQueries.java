@@ -12,6 +12,13 @@ public class DBQueries {
         public static class Customer{
             public final static String SELECT_ALL_CUSTOMER = "SELECT * FROM Customer";
         }
+
+        public static class Transaction{
+            public final static String SELECT_ALL_TRANSACTION = "SELECT * FROM transaction";
+        }
+        public static class Staff{
+            public final static String SELECT_ALL_STAFF = "SELECT * FROM staff";
+        }
     }
     public static class DeleteQueries{
         public static class Customer{
@@ -31,5 +38,13 @@ public class DBQueries {
                     +"SET FirstName = ?, LastName = ?, Street = ?, PostalCode = ?, City = ?, Phone = ?, Class = ?, Email = ?, StoreCredit = ? "
                     +"WHERE UserName = ? ";
         }
+    }
+
+    public static class SearchQueries{
+        public static class Staff{
+            public final static String AUTHENTICATION = "SELECT Password,Position from staff WHERE UserName = ?";
+
+        }
+
     }
 }
