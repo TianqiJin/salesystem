@@ -11,13 +11,12 @@ import java.util.Map;
  * Created by tjin on 11/29/2015.
  */
 public class DBExecuteCustomer extends DBExecute<Customer>{
-    public static Logger logger= Logger.getLogger(DBExecuteProduct.class);
+    public static Logger logger= Logger.getLogger(DBExecuteCustomer.class);
     private static List<Customer> selectResult;
 
     public List<Customer> selectFromDatabase(String query, Object... params){
         try {
             selectResult = DBConnect.executeQuery(query, ObjectDeserializer.CUSTOMER_OBJECT_DESERIALIZER, params);
-            logger.info(selectResult);
             if (selectResult != null) {
                 return selectResult;
             }
