@@ -7,7 +7,7 @@ public class DBQueries {
     public static class SelectQueries {
         public static class Product{
             public final static String SELECT_ALL_PRODUCT = "SELECT * FROM product";
-            public final static String SELECT_PRODUCTID_PROJECT = "SELECT * FROM PRODUCT WHERE ProductID = ?";
+            public final static String SELECT_PRODUCTID_PROJECT = "SELECT * FROM product WHERE ProductID = ?";
         }
         public static class Customer{
             public final static String SELECT_ALL_CUSTOMER = "SELECT * FROM Customer";
@@ -18,6 +18,7 @@ public class DBQueries {
         }
         public static class Staff{
             public final static String SELECT_ALL_STAFF = "SELECT * FROM staff";
+            public final static String SELECT_USERNAME_STAFF = "SELECT * FROM staff WHERE UserName = ?";
         }
     }
     public static class DeleteQueries{

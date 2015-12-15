@@ -10,23 +10,24 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import model.ProductTransaction;
 import model.Transaction;
+import util.DateUtil;
 
 public class TransactionOverviewController implements OverviewController{
 
     private SaleSystem saleSystem;
     private ObservableList<Transaction> transactionList;
-
+    private ObservableList<ProductTransaction> transactionDetailList;
 
     @FXML
     private TableView<Transaction> transactionTable;
-    //@FXML
-    //private TableColumn<Transaction, Integer> transactionIdCol;
     @FXML
-    private TableColumn<Transaction, Integer> productIdCol;
+    private TableColumn<Transaction, Integer> transactionIdCol;
     @FXML
     private TableColumn<Transaction, String> dateCol;
     @FXML
@@ -35,12 +36,6 @@ public class TransactionOverviewController implements OverviewController{
     private TableColumn<Transaction, String> infoCol;
     @FXML
     private Label transactionIdLabel;
-    @FXML
-    private Label productIdLabel;
-    @FXML
-    private Label numBoxesLabel;
-    @FXML
-    private Label numPiecesLabel;
     @FXML
     private Label dateLabel;
     @FXML
@@ -53,20 +48,21 @@ public class TransactionOverviewController implements OverviewController{
     private Label typeLabel;
     @FXML
     private Label infoLabel;
+    @FXML
+    private ListView transactionDetailListView;
 
     @FXML
     private void initialize(){
-        //transactionIdCol.setCellValueFactory(new PropertyValueFactory<>("TransactionId"));
-        productIdCol.setCellValueFactory(new PropertyValueFactory<>("ProductId"));
+        transactionIdCol.setCellValueFactory(new PropertyValueFactory<>("transactionId"));
         dateCol.setCellValueFactory(new PropertyValueFactory<>("Date"));
         typeCol.setCellValueFactory(new PropertyValueFactory<>("Type"));
         infoCol.setCellValueFactory(new PropertyValueFactory<>("Info"));
-        showProductDetail(null);
+        showTransactionDetail(null);
         transactionTable.getSelectionModel().selectedItemProperty().addListener(
                 new ChangeListener<Transaction>() {
                     @Override
                     public void changed(ObservableValue<? extends Transaction> observable, Transaction oldValue, Transaction newValue) {
-                        showProductDetail(newValue);
+                        showTransactionDetail(newValue);
                     }
                 }
         );
@@ -78,6 +74,11 @@ public class TransactionOverviewController implements OverviewController{
         transactionTable.getItems().remove(selectedIndex);
         //TODO: delete the corresponding info in the database
         //TODO: add if-else block for selectedIndex = -1 situation
+    }
+
+    @FXML
+    private void handleAddTransaction(){
+        saleSystem.showGenerateCustomerTransactionDialog();
     }
 
     private DBExecuteTransaction dbExecute;
@@ -99,24 +100,19 @@ public class TransactionOverviewController implements OverviewController{
     }
 
 
-    public void showProductDetail(Transaction transaction){
+    public void showTransactionDetail(Transaction transaction){
         if(transaction != null){
             transactionIdLabel.setText(String.valueOf(transaction.getTransactionId()));
-            productIdLabel.setText(String.valueOf(transaction.getProductId()));
-            numBoxesLabel.setText(String.valueOf(transaction.getNumofBoxes()));
-            numPiecesLabel.setText(String.valueOf(transaction.getNumofPieces()));
-            dateLabel.setText(transaction.getDate());
+            dateLabel.setText(DateUtil.format(transaction.getDate()));
             paymentLabel.setText(String.valueOf(transaction.getPayment()));
             paymentTypeLabel.setText(transaction.getPaymentType());
             staffLabel.setText(String.valueOf(transaction.getStaffId()));
             typeLabel.setText(transaction.getType().name());
             infoLabel.setText(transaction.getInfo());
+            transactionDetailListView.setItems(FXCollections.observableArrayList(transaction.getProductTransactionListRevised()));
         }
         else{
             transactionIdLabel.setText("");
-            productIdLabel.setText("");
-            numBoxesLabel.setText("");
-            numPiecesLabel.setText("");
             dateLabel.setText("");
             paymentLabel.setText("");
             paymentTypeLabel.setText("");
@@ -125,4 +121,5 @@ public class TransactionOverviewController implements OverviewController{
             infoLabel.setText("");
         }
     }
+
 }

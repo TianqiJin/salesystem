@@ -1,9 +1,6 @@
 package MainClass;
 
-import Controllers.CustomerEditDialogController;
-import Controllers.CustomerOverviewController;
-import Controllers.LoginDialogController;
-import Controllers.OverviewController;
+import Controllers.*;
 import db.DBExecuteStaff;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -38,6 +35,7 @@ public class SaleSystem extends Application{
     private Stage primaryStage;
     private BorderPane rootLayout;
     private static int state=0;
+    private static int staffId;
     @FXML
     public TabPane tabPane;
 
@@ -173,15 +171,43 @@ public class SaleSystem extends Application{
             dialogStage.setTitle("Login Dialog");
             Scene scene = new Scene(page);
             dialogStage.setScene(scene);
+            dialogStage.initModality(Modality.WINDOW_MODAL);
 
             LoginDialogController controller = loader.getController();
             controller.settDialogStage(dialogStage);
             dialogStage.showAndWait();
             this.state = controller.returnState();
+            this.staffId = controller.returnStaffId();
 
         }catch(IOException e){
             e.printStackTrace();
         }
+    }
 
+    public void showGenerateCustomerTransactionDialog(){
+        try{
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(SaleSystem.class.getResource("/fxml/GenerateCustomerTransaction.fxml"));
+            AnchorPane page = loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Create Customer Transaction");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(primaryStage);
+            Scene scene = new Scene(page);
+            dialogStage.setScene(scene);
+
+            GenerateCustomerTransactController controller = loader.getController();
+            controller.setMainClass(SaleSystem.this);
+            controller.setDialogStage(dialogStage);
+            dialogStage.showAndWait();
+
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    public int getStaffId(){
+        return this.staffId;
     }
 }

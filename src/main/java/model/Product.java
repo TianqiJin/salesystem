@@ -2,33 +2,55 @@ package model;
 
 import org.apache.log4j.Logger;
 
+import java.math.BigDecimal;
+import java.util.Arrays;
+
 /**
  * Created by tjin on 2015-11-22.
  */
-public class Product{
+public class Product extends ProductBase{
     public static Logger logger= Logger.getLogger(Product.class);
-    private int productId;
+
     private String texture;
     private String size;
-    private int totalNum;
-
 
     public Product(Object... params){
-        this.productId = (Integer)params[0];
-        this.texture = (String) params[1];
-        this.size = (String) params[2];
-        this.totalNum= (Integer) params[3];
+        super(Arrays.copyOfRange(params, 0 ,3));
+        this.texture = (String) params[3];
+        this.size = (String) params[4];
     }
 
+    public static class ProductBuilder{
+        private int productId;
+        private int totalNum;
+        private BigDecimal unitPrice;
+        private String texture = null;
+        private String size = null;
 
-    public int getProductId() {
-        return productId;
+        public ProductBuilder productId(int productId){
+            this.productId = productId;
+            return this;
+        }
+        public ProductBuilder totalNum(int totalNum){
+            this.totalNum = totalNum;
+            return this;
+        }
+        public ProductBuilder unitPrice(BigDecimal unitPrice){
+            this.unitPrice = unitPrice;
+            return this;
+        }
+        public ProductBuilder texture(String texture){
+            this.texture = texture;
+            return this;
+        }
+        public ProductBuilder size(String size){
+            this.size = size;
+            return this;
+        }
+        public Product build(){
+            return new Product(productId, totalNum, unitPrice, texture, size);
+        }
     }
-
-    public void setProductId(int productId) {
-        this.productId = productId;
-    }
-
     public String getTexture() {
         return texture;
     }
@@ -44,14 +66,5 @@ public class Product{
     public void setSize(String size) {
         this.size = size;
     }
-
-    public int getTotalNum() {
-        return totalNum;
-    }
-
-    public void setTotalNum(int totalNum) {
-        this.totalNum = totalNum;
-    }
-
 
 }

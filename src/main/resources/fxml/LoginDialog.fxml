@@ -23,12 +23,12 @@
       </GridPane>
       <HBox layoutX="348.0" layoutY="336.0" AnchorPane.bottomAnchor="5.0" AnchorPane.rightAnchor="10.0">
          <children>
-            <Button fx:id="loginButton" disable="true" mnemonicParsing="false" onAction="#handleLogin" text="Login">
+            <Button fx:id="loginButton" defaultButton="true" disable="true" mnemonicParsing="false" onAction="#handleLogin" text="Login">
                <HBox.margin>
                   <Insets left="50.0" right="50.0" />
                </HBox.margin>
             </Button>
-            <Button mnemonicParsing="false" onAction="#handleCancel" text="Cancel">
+            <Button cancelButton="true" mnemonicParsing="false" onAction="#handleCancel" text="Cancel">
                <HBox.margin>
                   <Insets left="50.0" right="50.0" />
                </HBox.margin>
