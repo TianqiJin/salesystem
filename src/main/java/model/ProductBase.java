@@ -1,6 +1,8 @@
 package model;
 
+import javafx.beans.property.FloatProperty;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleFloatProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
 import java.math.BigDecimal;
@@ -11,12 +13,13 @@ import java.math.BigDecimal;
 public abstract class ProductBase {
     private int productId;
     private int totalNum;
-    private SimpleObjectProperty<BigDecimal> unitPrice;
+    private FloatProperty unitPrice;
+
 
     public ProductBase(Object... params){
         this.productId = (Integer)params[0];
         this.totalNum = (Integer)params[1];
-        this.unitPrice = new SimpleObjectProperty<>((BigDecimal) params[2]);
+        this.unitPrice = new SimpleFloatProperty((Float) params[2]);
     }
 
     public int getProductId() {
@@ -27,6 +30,18 @@ public abstract class ProductBase {
         this.productId = productId;
     }
 
+    public float getUnitPrice() {
+        return unitPrice.get();
+    }
+
+    public FloatProperty unitPriceProperty() {
+        return unitPrice;
+    }
+
+    public void setUnitPrice(float unitPrice) {
+        this.unitPrice.set(unitPrice);
+    }
+
     public int getTotalNum() {
         return totalNum;
     }
@@ -35,15 +50,6 @@ public abstract class ProductBase {
         this.totalNum = totalNum;
     }
 
-    public BigDecimal getUnitPrice() {
-        return unitPrice.get();
-    }
 
-    public SimpleObjectProperty<BigDecimal> unitPriceProperty() {
-        return unitPrice;
-    }
 
-    public void setUnitPrice(BigDecimal unitPrice) {
-        this.unitPrice.set(unitPrice);
-    }
 }

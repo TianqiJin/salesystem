@@ -1,14 +1,15 @@
 package model;
 
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.FloatBinding;
 import javafx.beans.binding.NumberBinding;
 import javafx.beans.binding.ObjectBinding;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.*;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 
 import java.math.BigDecimal;
+import java.text.NumberFormat;
 import java.util.Arrays;
 
 /**
@@ -16,27 +17,21 @@ import java.util.Arrays;
  */
 public class ProductTransaction extends ProductBase{
     private IntegerProperty quantity;
-    private ObjectProperty<BigDecimal> subTotal;
+    private FloatProperty subTotal;
 
     public ProductTransaction(Object... params){
         super(Arrays.copyOfRange(params, 0, 3));
-        this.quantity = new SimpleIntegerProperty((Integer) params[3]);
-        this.subTotal = new SimpleObjectProperty<>((BigDecimal)params[4]);
-        ObjectBinding<BigDecimal> subTotalBinding = new ObjectBinding<BigDecimal>() {
-            @Override
-            protected BigDecimal computeValue() {
-                return getUnitPrice().multiply(new BigDecimal(getQuantity()));
-            }
-        };
-        this.subTotal.bind(subTotalBinding);
+        this.quantity = new SimpleIntegerProperty((Integer)params[3]);
+        this.subTotal = new SimpleFloatProperty((Float)params[4]);
+        this.subTotal.bind(quantity.multiply(unitPriceProperty()));
     }
 
     public static class ProductTransactionBuilder{
         private int productId;
         private int totalNum;
-        private BigDecimal unitPrice;
+        private float unitPrice;
         private int quantity = 0;
-        private BigDecimal subTotal = new BigDecimal("0.00").setScale(2, BigDecimal.ROUND_HALF_EVEN);
+        private float subTotal = 0;
 
         public ProductTransactionBuilder productId(int productId){
             this.productId = productId;
@@ -46,7 +41,7 @@ public class ProductTransaction extends ProductBase{
             this.totalNum = totalNum;
             return this;
         }
-        public ProductTransactionBuilder unitPrice(BigDecimal unitPrice){
+        public ProductTransactionBuilder unitPrice(float unitPrice){
             this.unitPrice = unitPrice;
             return this;
         }
@@ -54,7 +49,7 @@ public class ProductTransaction extends ProductBase{
             this.quantity = quantity;
             return this;
         }
-        public ProductTransactionBuilder subTotal(BigDecimal subTotal){
+        public ProductTransactionBuilder subTotal(float subTotal){
             this.subTotal = subTotal;
             return this;
         }
@@ -75,22 +70,15 @@ public class ProductTransaction extends ProductBase{
         this.quantity.set(quantity);
     }
 
-    public BigDecimal getSubTotal() {
+    public float getSubTotal() {
         return subTotal.get();
     }
 
-    public ObjectProperty<BigDecimal> subTotalProperty() {
+    public FloatProperty subTotalProperty() {
         return subTotal;
     }
 
-    public void setSubTotal(BigDecimal subTotal) {
+    public void setSubTotal(float subTotal) {
         this.subTotal.set(subTotal);
-    }
-
-    public boolean isEnoughStock(){
-        if(getTotalNum() >= getQuantity()){
-            return true;
-        }
-        return false;
     }
 }

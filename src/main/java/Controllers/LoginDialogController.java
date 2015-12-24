@@ -88,5 +88,10 @@ public class LoginDialogController {
         return this.state;
     }
 
-    public int returnStaffId(){return this.returnedStaff.get(0).getStaffId();}
+    public int returnStaffId(){
+        if(returnedStaff != null){
+            return this.returnedStaff.get(0).getStaffId();
+        }
+        return Integer.MIN_VALUE;
+    }
 }

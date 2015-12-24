@@ -32,12 +32,22 @@ public class DBQueries {
                     +"(UserName, FirstName, LastName, Street, PostalCode, City, Phone, Class, Email, StoreCredit)"
                     +"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         }
+        public static class Transaction{
+            public final static String INSERT_INTO_TRANSACTION = "INSERT INTO transaction "
+                    +"(ProductInfo, Date, Payment, PaymentType, StaffID, Type)"
+                    +"VALUES (?, ?, ?, ?, ?, ?)";
+        }
     }
     public static class UpdateQueries{
         public static class Customer{
             public final static String UPDATE_CUSTOMER = "UPDATE Customer "
                     +"SET FirstName = ?, LastName = ?, Street = ?, PostalCode = ?, City = ?, Phone = ?, Class = ?, Email = ?, StoreCredit = ? "
                     +"WHERE UserName = ? ";
+        }
+        public static class Product{
+            public final static String UPDATE_PRODUCT_QUANTITY = "UPDATE product "
+                    +"SET TotalNum = ? "
+                    +"WHERE ProductID = ?";
         }
     }
 

@@ -1,5 +1,6 @@
 package model;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import javafx.beans.property.*;
 import org.apache.log4j.Logger;
 import util.DateUtil;

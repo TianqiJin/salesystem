@@ -14,15 +14,17 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.util.converter.BigDecimalStringConverter;
 import model.ProductTransaction;
 import model.Transaction;
 import util.DateUtil;
+
+import java.math.BigDecimal;
 
 public class TransactionOverviewController implements OverviewController{
 
     private SaleSystem saleSystem;
     private ObservableList<Transaction> transactionList;
-    private ObservableList<ProductTransaction> transactionDetailList;
 
     @FXML
     private TableView<Transaction> transactionTable;
@@ -49,7 +51,13 @@ public class TransactionOverviewController implements OverviewController{
     @FXML
     private Label infoLabel;
     @FXML
-    private ListView transactionDetailListView;
+    private TableView<ProductTransaction> transactionDetaiTableView;
+    @FXML
+    private TableColumn<ProductTransaction, Integer> productIdCol;
+    @FXML
+    private TableColumn<ProductTransaction, Integer> qtyCol;
+    @FXML
+    private TableColumn<ProductTransaction, BigDecimal> subTotalCol;
 
     @FXML
     private void initialize(){
@@ -109,7 +117,10 @@ public class TransactionOverviewController implements OverviewController{
             staffLabel.setText(String.valueOf(transaction.getStaffId()));
             typeLabel.setText(transaction.getType().name());
             infoLabel.setText(transaction.getInfo());
-            transactionDetailListView.setItems(FXCollections.observableArrayList(transaction.getProductTransactionListRevised()));
+            transactionDetaiTableView.setItems(FXCollections.observableArrayList(transaction.getProductTransactionList()));
+            productIdCol.setCellValueFactory(new PropertyValueFactory<>("productId"));
+            qtyCol.setCellValueFactory(new PropertyValueFactory<>("quantity"));
+            subTotalCol.setCellValueFactory(new PropertyValueFactory<>("subTotal"));
         }
         else{
             transactionIdLabel.setText("");

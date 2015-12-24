@@ -35,6 +35,11 @@ public class DBConnect {
         }
     }
 
+    public static Connection getConnection() {
+        return connection;
+    }
+
+
     public static ResultSet excuteAndReturn(String query, Object...params) throws SQLException{
         PreparedStatement preparedStatement = createStatement(query, params);
         return preparedStatement.executeQuery();

@@ -23,7 +23,7 @@ public class Product extends ProductBase{
     public static class ProductBuilder{
         private int productId;
         private int totalNum;
-        private BigDecimal unitPrice;
+        private float unitPrice;
         private String texture = null;
         private String size = null;
 
@@ -35,7 +35,7 @@ public class Product extends ProductBase{
             this.totalNum = totalNum;
             return this;
         }
-        public ProductBuilder unitPrice(BigDecimal unitPrice){
+        public ProductBuilder unitPrice(float unitPrice){
             this.unitPrice = unitPrice;
             return this;
         }

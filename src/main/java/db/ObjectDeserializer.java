@@ -29,9 +29,9 @@ public interface ObjectDeserializer<E> {
         @Override
         public Product deserialize(ResultSet rs) throws SQLException {
             Product product = new Product.ProductBuilder()
-                    .productId(rs.getInt("ProductID"))
-                    .totalNum(rs.getInt("TotalPiece"))
-                    .unitPrice(rs.getBigDecimal("UnitPrice").setScale(2, BigDecimal.ROUND_HALF_EVEN))
+                    .productId(rs.getInt("ProductId"))
+                    .totalNum(rs.getInt("TotalNum"))
+                    .unitPrice(rs.getBigDecimal("UnitPrice").setScale(2, BigDecimal.ROUND_HALF_EVEN).floatValue())
                     .size(rs.getString("Size"))
                     .texture(rs.getString("Texture"))
                     .build();
@@ -52,11 +52,11 @@ public interface ObjectDeserializer<E> {
                 root = mapper.readValue(rs.getString("ProductInfo"), JsonNode.class);
                 for(JsonNode tmpNode: root){
                     list.add(new ProductTransaction.ProductTransactionBuilder()
-                            .productId(tmpNode.path("ProductID").asInt())
-                            .totalNum(tmpNode.path("TotalPiece").asInt())
-                            .unitPrice(new BigDecimal(String.valueOf(tmpNode.path("UnitPrice").asDouble())).setScale(2, BigDecimal.ROUND_HALF_EVEN))
-                            .quantity(tmpNode.path("Quantity").asInt())
-                            .subTotal(new BigDecimal(String.valueOf(tmpNode.path("SubTotal").asDouble())).setScale(2, BigDecimal.ROUND_HALF_EVEN))
+                            .productId(tmpNode.path("productId").asInt())
+                            .totalNum(tmpNode.path("totalNum").asInt())
+                            .unitPrice(Float.valueOf(String.valueOf(tmpNode.path("unitPrice").asDouble())))
+                            .quantity(tmpNode.path("quantity").asInt())
+                            .subTotal(new BigDecimal(String.valueOf(tmpNode.path("subTotal").asDouble())).setScale(2, BigDecimal.ROUND_HALF_EVEN).floatValue())
                             .build()
                     );
                 }

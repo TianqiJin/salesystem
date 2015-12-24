@@ -210,4 +210,6 @@ public class SaleSystem extends Application{
     public int getStaffId(){
         return this.staffId;
     }
+    //TODO: set DialogStage for each tab?
+
 }
