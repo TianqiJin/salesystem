@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.collections.*?>
 <?import java.lang.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
@@ -38,7 +39,7 @@
         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
           <children>
             <Accordion layoutX="-29.0" layoutY="36.0" />
-            <SplitPane dividerPositions="0.25, 0.55, 0.8" focusTraversable="true" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <SplitPane dividerPositions="0.2, 0.5, 0.75" focusTraversable="true" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
               <items>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                   <children>
@@ -125,6 +126,7 @@
                                 <rowConstraints>
                                   <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                   <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                   <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                 </rowConstraints>
                                  <children>
@@ -138,10 +140,25 @@
                                                 <String fx:value="Credit" />
                                             </FXCollections>
                                         </items>
+                                       <padding>
+                                          <Insets bottom="1.0" top="1.0" />
+                                       </padding>
                                     </ChoiceBox>
-                                    <TextField fx:id="paymentField" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                                    <Label text="Balance" GridPane.rowIndex="2" />
-                                    <Label fx:id="balanceLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                    <TextField fx:id="paymentField" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                       <GridPane.margin>
+                                          <Insets />
+                                       </GridPane.margin>
+                                       <padding>
+                                          <Insets bottom="1.0" top="1.0" />
+                                       </padding></TextField>
+                                    <Label text="Balance" GridPane.rowIndex="3" />
+                                    <Label fx:id="balanceLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                    <TextField fx:id="storeCreditField" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                       <padding>
+                                          <Insets bottom="1.0" top="1.0" />
+                                       </padding>
+                                    </TextField>
+                                    <CheckBox fx:id="storeCreditCheckBox" mnemonicParsing="false" text="Use SC" GridPane.rowIndex="2" />
                                  </children>
                               </GridPane>
                            </children>

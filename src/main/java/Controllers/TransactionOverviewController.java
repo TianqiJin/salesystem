@@ -2,8 +2,7 @@ package Controllers;
 
 
 import MainClass.SaleSystem;
-import db.DBExecuteTransaction;
-import db.DBQueries;
+import db.*;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -19,12 +18,17 @@ import model.ProductTransaction;
 import model.Transaction;
 import util.DateUtil;
 
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Arrays;
 
 public class TransactionOverviewController implements OverviewController{
 
     private SaleSystem saleSystem;
     private ObservableList<Transaction> transactionList;
+    private DBExecuteTransaction dbExecuteTransaction;
 
     @FXML
     private TableView<Transaction> transactionTable;
@@ -86,18 +90,20 @@ public class TransactionOverviewController implements OverviewController{
 
     @FXML
     private void handleAddTransaction(){
-        saleSystem.showGenerateCustomerTransactionDialog();
+        Transaction newTransaction = saleSystem.showGenerateCustomerTransactionDialog();
+        if(newTransaction != null){
+            transactionList.add(newTransaction);
+        }
     }
 
-    private DBExecuteTransaction dbExecute;
     public TransactionOverviewController(){
-        dbExecute = new DBExecuteTransaction();
+        dbExecuteTransaction = new DBExecuteTransaction();
     }
 
     @Override
     public void loadDataFromDB() {
         transactionList = FXCollections.observableArrayList(
-                dbExecute.selectFromDatabase(DBQueries.SelectQueries.Transaction.SELECT_ALL_TRANSACTION)
+                dbExecuteTransaction.selectFromDatabase(DBQueries.SelectQueries.Transaction.SELECT_ALL_TRANSACTION)
         );
         transactionTable.setItems(transactionList);
     }
@@ -132,5 +138,6 @@ public class TransactionOverviewController implements OverviewController{
             infoLabel.setText("");
         }
     }
+
 
 }

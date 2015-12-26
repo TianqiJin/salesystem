@@ -7,13 +7,12 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import model.Customer;
 import MainClass.SaleSystem;
+
+import java.util.Optional;
 
 /**
  * Created by tjin on 11/29/2015.
@@ -70,22 +69,26 @@ public class CustomerOverviewController implements OverviewController{
         if(selectedIndex >= 0){
             String tempFirstName = customerTable.getItems().get(selectedIndex).getFirstName();
             String tempLastName = customerTable.getItems().get(selectedIndex).getLastName();
-            if(dbExecute.deleteDatabase(DBQueries.DeleteQueries.Customer.DELETE_FROM_CUSTOMER,
-                    customerTable.getItems().get(selectedIndex).getUserName()) == 0){
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Delete Customer Error");
-                alert.setHeaderText(null);
-                alert.setContentText("Error when deleting customer "+tempFirstName+" "+tempLastName);
-                alert.showAndWait();
+            Alert alertConfirm = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete this customer?");
+            Optional<ButtonType> result =  alertConfirm.showAndWait();
+            if(result.isPresent() && result.get() == ButtonType.OK){
+                if(dbExecute.deleteDatabase(DBQueries.DeleteQueries.Customer.DELETE_FROM_CUSTOMER,
+                        customerTable.getItems().get(selectedIndex).getUserName()) == 0){
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Delete Customer Error");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Error when deleting customer "+tempFirstName+" "+tempLastName);
+                    alert.showAndWait();
+                }
+                else{
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("Delete Customer Successfully");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Successfully deteled customer "+tempFirstName+" "+tempLastName);
+                    alert.showAndWait();
+                }
+                customerTable.getItems().remove(selectedIndex);
             }
-            else{
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("Delete Customer Successfully");
-                alert.setHeaderText(null);
-                alert.setContentText("Successfully deteled customer "+tempFirstName+" "+tempLastName);
-                alert.showAndWait();
-            }
-            customerTable.getItems().remove(selectedIndex);
         }
         else{
             Alert alert = new Alert(Alert.AlertType.WARNING);

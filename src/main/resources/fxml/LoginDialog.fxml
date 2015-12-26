@@ -18,7 +18,7 @@
         </rowConstraints>
          <children>
             <TextField fx:id="userNameField" promptText="Username" />
-            <TextField fx:id="passwordField" promptText="Password" GridPane.rowIndex="1" />
+            <PasswordField fx:id="passwordField" promptText="Password" GridPane.rowIndex="1" />
          </children>
       </GridPane>
       <HBox layoutX="348.0" layoutY="336.0" AnchorPane.bottomAnchor="5.0" AnchorPane.rightAnchor="10.0">

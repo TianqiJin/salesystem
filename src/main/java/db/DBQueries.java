@@ -43,6 +43,9 @@ public class DBQueries {
             public final static String UPDATE_CUSTOMER = "UPDATE Customer "
                     +"SET FirstName = ?, LastName = ?, Street = ?, PostalCode = ?, City = ?, Phone = ?, Class = ?, Email = ?, StoreCredit = ? "
                     +"WHERE UserName = ? ";
+            public final static String UPDATE_CUSTOMER_STORE_CREDIT = "UPDATE Customer "
+                    +"SET StoreCredit = ? "
+                    +"WHERE UserName = ?";
         }
         public static class Product{
             public final static String UPDATE_PRODUCT_QUANTITY = "UPDATE product "

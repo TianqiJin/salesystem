@@ -21,6 +21,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Pair;
 import model.Customer;
+import model.Transaction;
 import org.apache.log4j.Logger;
 import java.io.IOException;
 import java.util.HashMap;
@@ -184,7 +185,7 @@ public class SaleSystem extends Application{
         }
     }
 
-    public void showGenerateCustomerTransactionDialog(){
+    public Transaction showGenerateCustomerTransactionDialog(){
         try{
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(SaleSystem.class.getResource("/fxml/GenerateCustomerTransaction.fxml"));
@@ -201,10 +202,13 @@ public class SaleSystem extends Application{
             controller.setMainClass(SaleSystem.this);
             controller.setDialogStage(dialogStage);
             dialogStage.showAndWait();
-
+            if(controller.isConfirmedClicked()){
+                return controller.returnNewTrasaction();
+            }
         }catch(IOException e){
             e.printStackTrace();
         }
+        return null;
     }
 
     public int getStaffId(){
