@@ -1,8 +1,10 @@
 package Controllers;
 
 import MainClass.SaleSystem;
+import com.sun.prism.impl.Disposer;
 import db.*;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -15,12 +17,14 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 import javafx.util.StringConverter;
 import model.Customer;
 import model.Product;
 import model.ProductTransaction;
 import model.Transaction;
 import util.AutoCompleteComboBoxListener;
+import util.ButtonCell;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -58,6 +62,8 @@ public class GenerateCustomerTransactController {
     private TableColumn<ProductTransaction, Integer> qtyCol;
     @FXML
     private TableColumn<ProductTransaction, BigDecimal> subTotalCol;
+    @FXML
+    private TableColumn deleteCol;
 
     @FXML
     private Label firstNameLabel;
@@ -118,11 +124,27 @@ public class GenerateCustomerTransactController {
             public void handle(TableColumn.CellEditEvent<ProductTransaction, Integer> event) {
                 (event.getTableView().getItems().get(event.getTablePosition().getRow()))
                         .setQuantity(event.getNewValue());
-                showPaymentDetails(transaction, customer);
+                showPaymentDetails(productTransactionObservableList, customer);
             }
         });
         subTotalCol.setCellValueFactory(new PropertyValueFactory<>("subTotal"));
+        deleteCol.setCellValueFactory(
+                new Callback<TableColumn.CellDataFeatures<ProductTransaction, Boolean>,
+                                        ObservableValue<Boolean>>() {
+                    @Override
+                    public ObservableValue<Boolean> call(TableColumn.CellDataFeatures<ProductTransaction, Boolean> p) {
+                        return new SimpleBooleanProperty(p.getValue() != null);
+                    }
+                });
 
+        deleteCol.setCellFactory(
+                new Callback<TableColumn<ProductTransaction, Boolean>, TableCell<ProductTransaction, Boolean>>() {
+                    @Override
+                    public TableCell<ProductTransaction, Boolean> call(TableColumn<ProductTransaction, Boolean> p) {
+                        return new ButtonCell(transactionTableView);
+                    }
+
+                });
         productIdField.textProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
@@ -140,56 +162,17 @@ public class GenerateCustomerTransactController {
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
                 if((paymentField.getText().trim().isEmpty() || transactionTableView.getItems().isEmpty())){
                     confirmButton.setDisable(true);
-                    if(storeCreditCheckBox.isSelected() && !storeCreditField.getText().trim().isEmpty()
-                            && isStoreCreditValid()){
-                        BigDecimal balance = new BigDecimal(totalLabel.getText()).setScale(2, BigDecimal.ROUND_HALF_EVEN);
-                        balance = balance.subtract(new BigDecimal(storeCreditField.getText()));
-                        balanceLabel.setText(balance.toString());
-                    }
-                    else{
-                        balanceLabel.setText("");
-                    }
                 }
                 else{
                     confirmButton.setDisable(false);
-                    if(isPaymentValid()){
-                        BigDecimal balance = new BigDecimal(totalLabel.getText()).setScale(2, BigDecimal.ROUND_HALF_EVEN);
-                        balance = balance.subtract(new BigDecimal(paymentField.getText()));
-                        if(storeCreditCheckBox.isSelected() && !storeCreditField.getText().trim().isEmpty()
-                                && isStoreCreditValid()){
-                            balance = balance.subtract(new BigDecimal(storeCreditField.getText()));
-                        }
-                        balanceLabel.setText(balance.toString());
-                    }
                 }
+                showBalanceDetails();
             }
         });
         storeCreditField.textProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                if(!storeCreditCheckBox.isSelected() || storeCreditField.getText().trim().isEmpty()){
-                    if(!paymentField.getText().trim().isEmpty() && isPaymentValid()){
-                        BigDecimal balance = new BigDecimal(totalLabel.getText()).setScale(2, BigDecimal.ROUND_HALF_EVEN);
-                        balance = balance.subtract(new BigDecimal(paymentField.getText()));
-                        balanceLabel.setText(balance.toString());
-                    }
-                    else{
-                        balanceLabel.setText("");
-                    }
-
-                }
-                else{
-                    if(isStoreCreditValid()){
-                        BigDecimal balance;
-                        balance = new BigDecimal(totalLabel.getText()).setScale(2, BigDecimal.ROUND_HALF_EVEN);
-                        balance = balance.subtract(new BigDecimal(storeCreditField.getText()));
-                        if(!paymentField.getText().trim().isEmpty()
-                                && isPaymentValid()){
-                            balance = balance.subtract(new BigDecimal(paymentField.getText()));
-                        }
-                        balanceLabel.setText(balance.toString());
-                    }
-                }
+                showBalanceDetails();
             }
         });
         showCustomerDetails(null);
@@ -254,7 +237,6 @@ public class GenerateCustomerTransactController {
                     .totalNum(productResult.get(0).getTotalNum())
                     .unitPrice(productResult.get(0).getUnitPrice())
                     .build();
-            transaction.getProductTransactionList().add(newTransaction);
             productTransactionObservableList.add(newTransaction);
         }
 
@@ -288,14 +270,17 @@ public class GenerateCustomerTransactController {
 
     @FXML
     public Transaction handleConfirmButton() throws IOException, SQLException {
+        transaction.getProductTransactionList().addAll(productTransactionObservableList);
         if(!isTransactionValid()){
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Transaction Is Invalid");
             alert.setHeaderText("Please fix the following errors before proceed");
             alert.setContentText(errorMsgBuilder.toString());
             alert.showAndWait();
+            transaction.getProductTransactionList().clear();
         }
         else{
+            transaction.setPayment(Double.valueOf(paymentField.getText()));
             StringBuffer overviewTransactionString = new StringBuffer();
             StringBuffer overviewProductTransactionString = new StringBuffer();
             for(ProductTransaction tmp: transaction.getProductTransactionList()){
@@ -314,7 +299,6 @@ public class GenerateCustomerTransactController {
                     .append("Payment Type: " + transaction.getPaymentType() + "\n")
                     .append("Date: " + transaction.getDate() + "\n");
 
-            transaction.setPayment(Double.valueOf(paymentField.getText()));
             Alert alert = new Alert(Alert.AlertType.INFORMATION, overviewTransactionString.toString(), ButtonType.OK, ButtonType.CANCEL);
             alert.setTitle("Transaction Overview");
             alert.setHeaderText("Please confirm the following transaction");
@@ -361,9 +345,9 @@ public class GenerateCustomerTransactController {
     /**
      * Show payment details grid pane
      */
-    private void showPaymentDetails(Transaction transaction, Customer customer){
+    private void showPaymentDetails(ObservableList<ProductTransaction> transactions, Customer customer){
         if(transaction != null ){
-            Iterator<ProductTransaction> iterator = transaction.getProductTransactionList().iterator();
+            Iterator<ProductTransaction> iterator = transactions.iterator();
             BigDecimal subTotalAll = new BigDecimal(0.00).setScale(2, BigDecimal.ROUND_HALF_EVEN);
             while(iterator.hasNext()){
                 subTotalAll = subTotalAll.add(
@@ -371,9 +355,10 @@ public class GenerateCustomerTransactController {
                 );
             }
             BigDecimal total = subTotalAll.multiply(new BigDecimal(1.05)).setScale(2,BigDecimal.ROUND_HALF_EVEN);
-            itemsCountLabel.setText(String.valueOf(transaction.getProductTransactionList().size()));
+            itemsCountLabel.setText(String.valueOf(transactions.size()));
             subTotalLabel.setText(subTotalAll.toString());
             totalLabel.setText(total.toString());
+            showBalanceDetails();
         }
         else{
             itemsCountLabel.setText("");
@@ -383,6 +368,28 @@ public class GenerateCustomerTransactController {
         }
     }
 
+    private void showBalanceDetails(){
+        BigDecimal balance;
+        if((storeCreditCheckBox.isSelected() && !storeCreditField.getText().trim().isEmpty() && isStoreCreditValid())
+                &&(!paymentField.getText().trim().isEmpty() && isPaymentValid())){
+            balance = new BigDecimal(totalLabel.getText()).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+            balance = balance.subtract(new BigDecimal(paymentField.getText())).subtract(new BigDecimal(storeCreditField.getText()));
+            balanceLabel.setText(balance.toString());
+        }
+        else if(storeCreditCheckBox.isSelected() && !storeCreditField.getText().trim().isEmpty() && isStoreCreditValid()){
+            balance = new BigDecimal(totalLabel.getText()).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+            balance = balance.subtract(new BigDecimal(storeCreditField.getText()));
+            balanceLabel.setText(balance.toString());
+        }
+        else if(!paymentField.getText().trim().isEmpty() && isPaymentValid()){
+            balance = new BigDecimal(totalLabel.getText()).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+            balance = balance.subtract(new BigDecimal(paymentField.getText()));
+            balanceLabel.setText(balance.toString());
+        }
+        else{
+            balanceLabel.setText("");
+        }
+    }
     /*
     * Initilize the main class for this class
     * */
@@ -401,7 +408,7 @@ public class GenerateCustomerTransactController {
             public void onChanged(Change<? extends ProductTransaction> c) {
                 while(c.next()){
                     if( c.wasAdded() || c.wasRemoved()){
-                        showPaymentDetails(transaction, customer);
+                        showPaymentDetails(productTransactionObservableList, customer);
                     }
                 }
             }
