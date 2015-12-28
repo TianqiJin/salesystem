@@ -1,13 +1,19 @@
 package Controllers;
 
+import db.DBExecute;
 import db.DBExecuteStaff;
+import db.DBQueries;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import model.Staff;
+
+import java.util.List;
 
 /**
  * Created by tjin on 12/8/2015.
@@ -15,11 +21,13 @@ import javafx.stage.Stage;
 public class LoginDialogController {
     private Stage dialogStage;
     private int state;
+    private static List<Staff> returnedStaff;
+    private DBExecuteStaff dbExecute;
 
     @FXML
     private TextField userNameField;
     @FXML
-    private TextField passwordField;
+    private PasswordField passwordField;
     @FXML
     private Button loginButton;
 
@@ -56,6 +64,9 @@ public class LoginDialogController {
             }else {
                 this.state = 2;
             }
+            returnedStaff = dbExecute.selectFromDatabase(DBQueries.SelectQueries.Staff.SELECT_USERNAME_STAFF,
+                    userName);
+
             dialogStage.close();
         }
     }
@@ -67,6 +78,7 @@ public class LoginDialogController {
 
     public LoginDialogController() {
         this.state = 0;
+        this.dbExecute = new DBExecuteStaff();
     }
 
     public void settDialogStage(Stage dialogStage){
@@ -75,5 +87,12 @@ public class LoginDialogController {
 
     public int returnState(){
         return this.state;
+    }
+
+    public int returnStaffId(){
+        if(returnedStaff != null){
+            return this.returnedStaff.get(0).getStaffId();
+        }
+        return Integer.MIN_VALUE;
     }
 }

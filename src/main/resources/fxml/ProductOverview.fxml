@@ -8,17 +8,17 @@
 <?import javafx.scene.paint.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane id="AnchorPane" maxHeight="-1.0" maxWidth="-1.0" minHeight="-1.0" minWidth="-1.0" prefHeight="-1.0" prefWidth="-1.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="Controllers.ProductOverviewController">
+<AnchorPane id="AnchorPane" maxHeight="-1.0" maxWidth="-1.0" minHeight="-1.0" minWidth="-1.0" prefHeight="-1.0" prefWidth="-1.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.ProductOverviewController">
   <children>
-    <SplitPane dividerPositions="0.4331103678929766" focusTraversable="true" prefHeight="400.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+    <SplitPane dividerPositions="0.4331103678929766" focusTraversable="true" prefHeight="600.0" prefWidth="1000.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
       <items>
         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
           <children>
             <TableView fx:id="productTable" editable="false" prefHeight="200.0" prefWidth="200.0" tableMenuButtonVisible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-              <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/></columnResizePolicy>
+              <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY" /></columnResizePolicy>
               <columns>
-                <TableColumn editable="true" prefWidth="128.0" text="ProductId" fx:id="productIdCol" />
-                <TableColumn prefWidth="128.0" text="Total Number" fx:id="totalNumCol" />
+                <TableColumn fx:id="productIdCol" editable="true" prefWidth="128.0" text="ProductId" />
+                <TableColumn fx:id="totalNumCol" prefWidth="128.0" text="Total Number" />
               </columns>
             </TableView>
           </children>
@@ -40,6 +40,8 @@
                 <Label fx:id="textualLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                 <Label fx:id="sizeLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                 <Label fx:id="totalNumLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                        <Label text="Unit Price" GridPane.rowIndex="4" />
+                        <Label fx:id="unitPriceLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="4" />
               </children>
               <columnConstraints>
                 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />

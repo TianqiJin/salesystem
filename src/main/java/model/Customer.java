@@ -23,6 +23,7 @@ public class Customer {
     private final StringProperty userClass;
     private final StringProperty email;
     private final IntegerProperty storeCredit;
+    private String customerInfo;
 
     public Customer(Object... params){
         if(params.length == 10){
@@ -183,5 +184,21 @@ public class Customer {
     public Object[] getAllPropertiesForUpdate(){
         return (new Object[]{getFirstName(), getLastName(), getStreet(), getPostalCode(), getCity(),
                 getPhone(), getUserClass(), getEmail(), getStoreCredit(), getUserName()});
+    }
+
+    public void constructCustomerInfo(){
+        this.customerInfo = new StringBuffer()
+                .append(getFirstName())
+                .append(" ")
+                .append(getLastName())
+                .append(" ")
+                .append("(")
+                .append(getUserName())
+                .append(")")
+                .toString();
+    }
+
+    public String getCustomerInfo(){
+        return this.customerInfo;
     }
 }

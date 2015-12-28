@@ -2,16 +2,13 @@ package db;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import model.Customer;
-import model.Product;
-import model.Staff;
-import model.Transaction;
+import model.*;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 
 public interface ObjectDeserializer<E> {
@@ -31,7 +28,13 @@ public interface ObjectDeserializer<E> {
     public static final ObjectDeserializer<Product> PRODUCT_OBJECT_DESERIALIZER =  new ObjectDeserializer<Product>() {
         @Override
         public Product deserialize(ResultSet rs) throws SQLException {
-            Product product = new Product(rs.getInt("ProductID"), rs.getString("Texture"), rs.getString("Size"), rs.getInt("TotalPiece"));
+            Product product = new Product.ProductBuilder()
+                    .productId(rs.getInt("ProductId"))
+                    .totalNum(rs.getInt("TotalNum"))
+                    .unitPrice(rs.getBigDecimal("UnitPrice").setScale(2, BigDecimal.ROUND_HALF_EVEN).floatValue())
+                    .size(rs.getString("Size"))
+                    .texture(rs.getString("Texture"))
+                    .build();
             return product;
         }
     };
@@ -41,19 +44,29 @@ public interface ObjectDeserializer<E> {
         public Transaction deserialize(ResultSet rs) throws SQLException {
             ObjectMapper mapper = new ObjectMapper();
             String type = null, info = null;
+            List<ProductTransaction> list = new ArrayList<>();
             try {
                 JsonNode root = mapper.readValue(rs.getString("Type"),JsonNode.class);
                 type = root.path("type").textValue();
                 info = root.path("info").textValue();
+                root = mapper.readValue(rs.getString("ProductInfo"), JsonNode.class);
+                for(JsonNode tmpNode: root){
+                    list.add(new ProductTransaction.ProductTransactionBuilder()
+                            .productId(tmpNode.path("productId").asInt())
+                            .totalNum(tmpNode.path("totalNum").asInt())
+                            .unitPrice(Float.valueOf(String.valueOf(tmpNode.path("unitPrice").asDouble())))
+                            .quantity(tmpNode.path("quantity").asInt())
+                            .subTotal(new BigDecimal(String.valueOf(tmpNode.path("subTotal").asDouble())).setScale(2, BigDecimal.ROUND_HALF_EVEN).floatValue())
+                            .build()
+                    );
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
-            Transaction transaction = new Transaction.TranscationBuilder()
-                    .transcationId(rs.getInt("TransactionID"))
-                    .productId(rs.getInt("ProductID"))
-                    .numofBoxes(rs.getInt("NumOfBoxes"))
-                    .numofPieces(rs.getInt("NumofPieces"))
+            Transaction transaction = new Transaction.TransactionBuilder()
+                    .transactionId(rs.getInt("TransactionID"))
+                    .productInfoList(list)
                     .date(rs.getDate("Date").toString())
                     .payment(rs.getDouble("Payment"))
                     .paymentType(rs.getString("PaymentType"))

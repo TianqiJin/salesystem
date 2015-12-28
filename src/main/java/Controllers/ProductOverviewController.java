@@ -34,6 +34,8 @@ public class ProductOverviewController implements OverviewController{
     private Label sizeLabel;
     @FXML
     private Label totalNumLabel;
+    @FXML
+    private Label unitPriceLabel;
 
     @FXML
     private void initialize(){
@@ -80,12 +82,14 @@ public class ProductOverviewController implements OverviewController{
             textualLabel.setText(product.getTexture());
             sizeLabel.setText(product.getSize());
             totalNumLabel.setText(String.valueOf(product.getTotalNum()));
+            unitPriceLabel.setText(String.valueOf(product.getUnitPrice()));
         }
         else{
             productIdLabel.setText("");
             textualLabel.setText("");
             sizeLabel.setText("");
             totalNumLabel.setText("");
+            unitPriceLabel.setText("");
         }
     }
 

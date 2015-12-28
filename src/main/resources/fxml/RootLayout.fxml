@@ -8,18 +8,22 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.paint.*?>
 
-<BorderPane id="BorderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
   <top>
     <MenuBar>
       <menus>
-        <Menu mnemonicParsing="false" text="File">
+        <Menu mnemonicParsing="false" text="Report">
           <items>
-            <MenuItem mnemonicParsing="false" text="Close" />
+            <MenuItem mnemonicParsing="false" text="Generate Transaction Report" />
+            <MenuItem mnemonicParsing="false" text="Generate Sale Report" />
+            <MenuItem mnemonicParsing="false" text="Generate Customer Report" />
+            <SeparatorMenuItem/>
+            <MenuItem mnemonicParsing="false" text="Exit" />
           </items>
         </Menu>
         <Menu mnemonicParsing="false" text="Edit">
           <items>
-            <MenuItem mnemonicParsing="false" text="Delete" />
+            <MenuItem mnemonicParsing="false" text="Setting" />
           </items>
         </Menu>
         <Menu mnemonicParsing="false" text="Help">
@@ -31,7 +35,7 @@
     </MenuBar>
   </top>
    <left>
-      <TabPane id="tabPane" fx:id="tabPane" prefHeight="371.0" prefWidth="609.0" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER" >
+      <TabPane fx:id="tabPane" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
         <tabs>
         </tabs>
      </TabPane>
