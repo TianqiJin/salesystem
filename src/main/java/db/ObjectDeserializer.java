@@ -81,7 +81,6 @@ public interface ObjectDeserializer<E> {
     public static final ObjectDeserializer<Staff> STAFF_OBJECT_DESERIALIZER =  new ObjectDeserializer<Staff>() {
         @Override
         public Staff deserialize(ResultSet rs) throws SQLException {
-
             Staff staff = new Staff.StaffBuilder()
                     .staffId(rs.getInt("StaffID"))
                     .userName(rs.getString("UserName"))

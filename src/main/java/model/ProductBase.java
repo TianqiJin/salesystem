@@ -1,9 +1,6 @@
 package model;
 
-import javafx.beans.property.FloatProperty;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleFloatProperty;
-import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.*;
 
 import java.math.BigDecimal;
 
@@ -11,23 +8,28 @@ import java.math.BigDecimal;
  * Created by tjin on 12/13/2015.
  */
 public abstract class ProductBase {
-    private int productId;
-    private int totalNum;
+    private IntegerProperty productId;
+    private IntegerProperty totalNum;
     private FloatProperty unitPrice;
 
-
     public ProductBase(Object... params){
-        this.productId = (Integer)params[0];
-        this.totalNum = (Integer)params[1];
-        this.unitPrice = new SimpleFloatProperty((Float) params[2]);
+        if (params[0]!=null) {
+            this.productId = new SimpleIntegerProperty((Integer) params[0]);
+            this.totalNum = new SimpleIntegerProperty((Integer) params[1]);
+            this.unitPrice = new SimpleFloatProperty((Float) params[2]);
+        }else{
+            this.productId = new SimpleIntegerProperty(0) ;
+            this.totalNum = new SimpleIntegerProperty(0) ;
+            this.unitPrice = new SimpleFloatProperty(0);
+        }
     }
 
     public int getProductId() {
-        return productId;
+        return productId.get();
     }
 
     public void setProductId(int productId) {
-        this.productId = productId;
+        this.productId.set(productId);
     }
 
     public float getUnitPrice() {
@@ -43,11 +45,11 @@ public abstract class ProductBase {
     }
 
     public int getTotalNum() {
-        return totalNum;
+        return totalNum.get();
     }
 
     public void setTotalNum(int totalNum) {
-        this.totalNum = totalNum;
+        this.totalNum.set(totalNum);
     }
 
 

@@ -43,4 +43,16 @@ public class DBExecuteStaff extends DBExecute<Staff>{
         return null;
     }
 
+    public int getMaxNum(String query){
+        try {
+            selectResult = DBConnect.executeQuery(query, ObjectDeserializer.STAFF_OBJECT_DESERIALIZER);
+            if (selectResult != null) {
+                return selectResult.get(0).getStaffId()+1;
+            }
+        } catch (SQLException e) {
+            logger.error(e.getMessage());
+        }
+        return 0;
+    }
+
 }

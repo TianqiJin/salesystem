@@ -21,6 +21,8 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Pair;
 import model.Customer;
+import model.Product;
+import model.Staff;
 import model.Transaction;
 import org.apache.log4j.Logger;
 import java.io.IOException;
@@ -153,6 +155,58 @@ public class SaleSystem extends Application{
             controller.setDialogStage(dialogStage);
 
             controller.setTextField(customer);
+
+            dialogStage.showAndWait();
+            return controller.isOKClicked();
+        }catch(IOException e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean showProductEditDialog(Product product){
+        try{
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(SaleSystem.class.getResource("/fxml/ProductEditDialog.fxml"));
+            AnchorPane page = loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Edit Product");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(primaryStage);
+            Scene scene = new Scene(page);
+            dialogStage.setScene(scene);
+
+            ProductEditDialogController controller = loader.getController();
+            controller.setDialogStage(dialogStage);
+
+            controller.setTextField(product);
+
+            dialogStage.showAndWait();
+            return controller.isOKClicked();
+        }catch(IOException e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean showStaffEditDialog(Staff staff){
+        try{
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(SaleSystem.class.getResource("/fxml/StaffEditDialog.fxml"));
+            AnchorPane page = loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Edit Staff");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(primaryStage);
+            Scene scene = new Scene(page);
+            dialogStage.setScene(scene);
+
+            StaffEditDialogController controller = loader.getController();
+            controller.setDialogStage(dialogStage);
+
+            controller.setTextField(staff);
 
             dialogStage.showAndWait();
             return controller.isOKClicked();
