@@ -7,11 +7,9 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.util.converter.BigDecimalStringConverter;
 import model.ProductTransaction;
@@ -32,6 +30,8 @@ public class TransactionOverviewController implements OverviewController{
 
     @FXML
     private TableView<Transaction> transactionTable;
+    @FXML
+    private TextField filterField;
     @FXML
     private TableColumn<Transaction, Integer> transactionIdCol;
     @FXML
@@ -69,7 +69,28 @@ public class TransactionOverviewController implements OverviewController{
         dateCol.setCellValueFactory(new PropertyValueFactory<>("Date"));
         typeCol.setCellValueFactory(new PropertyValueFactory<>("Type"));
         infoCol.setCellValueFactory(new PropertyValueFactory<>("Info"));
+        loadDataFromDB();
         showTransactionDetail(null);
+        FilteredList<Transaction> filteredData = new FilteredList<Transaction>(transactionList,p->true);
+        filterField.textProperty().addListener((observable,oldVal,newVal)->{
+            filteredData.setPredicate(transaction -> {
+                if (newVal == null || newVal.isEmpty()){
+                    return true;
+                }
+                String lowerCase = newVal.toLowerCase();
+                if (String.valueOf(transaction.getTransactionId()).equals(lowerCase)){
+                    return true;
+                }else if (transaction.getType().name().toLowerCase().contains(lowerCase)){
+                    return true;
+                }else if (transaction.getDate().toString().toLowerCase().contains(lowerCase)){
+                    return true;
+                }else if (transaction.getInfo().toLowerCase().contains(lowerCase)){
+                    return true;
+                }
+                return false;
+            });
+            transactionTable.setItems(filteredData);
+        });
         transactionTable.getSelectionModel().selectedItemProperty().addListener(
                 new ChangeListener<Transaction>() {
                     @Override

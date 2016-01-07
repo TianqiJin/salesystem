@@ -1,5 +1,9 @@
 package model;
 
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import org.apache.log4j.Logger;
 
 /**
@@ -7,20 +11,54 @@ import org.apache.log4j.Logger;
  */
 public class Staff {
     private static Logger logger = Logger.getLogger(Staff.class);
-    private int staffId;
-    private String userName;
-    private String password;
-    private String fullName;
+    private  IntegerProperty staffId;
+    private  StringProperty userName;
+    private  StringProperty password;
+    private  StringProperty fullName;
     private Position position;
     private Location location;
 
     public Staff (Object ... params){
-        this.staffId = (Integer)params[0];
-        this.userName = (String)params[1];
-        this.password = (String)params[2];
-        this.fullName = (String)params[3];
-        this.position = (Position)params[4];
-        this.location = (Location)params[5];
+        if (params.length==6) {
+            this.staffId = new SimpleIntegerProperty((Integer) params[0]);
+            this.userName = new SimpleStringProperty((String) params[1]);
+            this.password = new SimpleStringProperty((String) params[2]);
+            this.fullName = new SimpleStringProperty((String) params[3]);
+            this.position = (Position) params[4];
+            this.location = (Location) params[5];
+        }else{
+            this.staffId = new SimpleIntegerProperty(0);
+            this.userName = new SimpleStringProperty(null);
+            this.password = new SimpleStringProperty(null);
+            this.fullName = new SimpleStringProperty(null);
+            this.position = null;
+            this.location = null;
+        }
+    }
+
+
+    public void setStaffId(int staffId) {
+        this.staffId.set(staffId);
+    }
+
+    public void setUserName(String userName) {
+        this.userName.set(userName);
+    }
+
+    public void setPassword(String password) {
+        this.password.set(password);
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName.set(fullName);
+    }
+
+    public void setPosition(Position position) {
+        this.position = position;
+    }
+
+    public void setLocation(Location location) {
+        this.location = location;
     }
 
     public static class StaffBuilder{
@@ -63,19 +101,19 @@ public class Staff {
     }
 
     public int getStaffId() {
-        return staffId;
+        return staffId.get();
     }
 
     public String getUserName() {
-        return userName;
+        return userName.get();
     }
 
     public String getPassword() {
-        return password;
+        return password.get();
     }
 
     public String getFullName() {
-        return fullName;
+        return fullName.get();
     }
 
     public Position getPosition() {
@@ -85,6 +123,15 @@ public class Staff {
     public Location getLocation() {
         return location;
     }
+
+    public Object[] getAllProperties(){
+        return (new Object[]{getUserName(), getPassword(), getFullName(), getPosition().name(), getLocation().name()});
+    }
+
+    public Object[] getAllPropertiesForUpdate(){
+        return (new Object[]{getUserName(), getPassword(), getFullName(), getPosition().name(), getLocation().name(),getStaffId()});
+    }
+
 
 
     public enum Location{

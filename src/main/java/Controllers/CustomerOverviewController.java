@@ -6,6 +6,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -25,6 +26,8 @@ public class CustomerOverviewController implements OverviewController{
 
     @FXML
     private TableView<Customer> customerTable;
+    @FXML
+    private TextField filterField;
     @FXML
     private TableColumn<Customer, String> firstNameCol;
     @FXML
@@ -52,7 +55,24 @@ public class CustomerOverviewController implements OverviewController{
     private void initialize(){
         firstNameCol.setCellValueFactory(new PropertyValueFactory<Customer, String>("firstName"));
         lastNameCol.setCellValueFactory(new PropertyValueFactory<Customer, String>("lastName"));
+        loadDataFromDB();
         showCustomerDetail(null);
+        FilteredList<Customer> filteredData = new FilteredList<Customer>(customerList,p->true);
+        filterField.textProperty().addListener((observable,oldVal,newVal)->{
+            filteredData.setPredicate(customer -> {
+                if (newVal == null || newVal.isEmpty()){
+                    return true;
+                }
+                String lowerCase = newVal.toLowerCase();
+                if (customer.getFirstName().toLowerCase().contains(lowerCase)){
+                    return true;
+                }else if (customer.getLastName().toLowerCase().contains(lowerCase)){
+                    return true;
+                }
+                return false;
+            });
+            customerTable.setItems(filteredData);
+        });
         customerTable.getSelectionModel().selectedItemProperty().addListener(
                 new ChangeListener<Customer>() {
                     @Override
@@ -61,6 +81,8 @@ public class CustomerOverviewController implements OverviewController{
                     }
                 }
         );
+
+
     }
 
     @FXML
@@ -101,7 +123,7 @@ public class CustomerOverviewController implements OverviewController{
     }
 
     @FXML
-    private void handleAddCustomer(){
+     private void handleAddCustomer(){
         Customer newCustomer = new Customer();
         boolean okClicked = saleSystem.showCustomerEditDialog(newCustomer);
         if(okClicked){

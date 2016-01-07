@@ -1,5 +1,7 @@
 package model;
 
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import org.apache.log4j.Logger;
 
 import java.math.BigDecimal;
@@ -11,13 +13,19 @@ import java.util.Arrays;
 public class Product extends ProductBase{
     public static Logger logger= Logger.getLogger(Product.class);
 
-    private String texture;
-    private String size;
+    private StringProperty texture;
+    private StringProperty size;
+
 
     public Product(Object... params){
-        super(Arrays.copyOfRange(params, 0 ,3));
-        this.texture = (String) params[3];
-        this.size = (String) params[4];
+        super(Arrays.copyOfRange(params, 0, 3));
+        if (params.length==5) {
+            this.texture = new SimpleStringProperty((String) params[3]);
+            this.size = new SimpleStringProperty((String) params[4]);
+        }else{
+            this.texture = new SimpleStringProperty(null);
+            this.size = new SimpleStringProperty(null);
+        }
     }
 
     public static class ProductBuilder{
@@ -52,19 +60,28 @@ public class Product extends ProductBase{
         }
     }
     public String getTexture() {
-        return texture;
+        return texture.get();
     }
 
     public void setTexture(String texture) {
-        this.texture = texture;
+        this.texture.set(texture);
     }
 
     public String getSize() {
-        return size;
+        return size.get();
     }
 
     public void setSize(String size) {
-        this.size = size;
+        this.size.set(size);
+    }
+
+
+    public Object[] getAllProperties(){
+        return (new Object[]{getProductId(), getTexture(), getSize(), getTotalNum(), getUnitPrice()});
+    }
+
+    public Object[] getAllPropertiesForUpdate(){
+        return (new Object[]{getTexture(), getSize(), getTotalNum(), getUnitPrice(),getProductId()});
     }
 
 }
