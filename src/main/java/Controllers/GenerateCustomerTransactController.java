@@ -178,6 +178,7 @@ public class GenerateCustomerTransactController {
         showCustomerDetails(null);
         showPaymentDetails(null, null);
 
+
         paymentTypeChoiceBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
@@ -281,6 +282,9 @@ public class GenerateCustomerTransactController {
         }
         else{
             transaction.setPayment(Double.valueOf(paymentField.getText()));
+            if(storeCreditCheckBox.isSelected()){
+                transaction.setStoreCredit(Integer.valueOf(storeCreditField.getText()));
+            }
             StringBuffer overviewTransactionString = new StringBuffer();
             StringBuffer overviewProductTransactionString = new StringBuffer();
             for(ProductTransaction tmp: transaction.getProductTransactionList()){
@@ -400,6 +404,7 @@ public class GenerateCustomerTransactController {
                 .staffId(saleSystem.getStaffId())
                 .date(new SimpleDateFormat("yyyy-MM-dd").format(new Date()))
                 .type(Transaction.TransactionType.OUT)
+                .storeCredit(0)
                 .build();
         productTransactionObservableList = FXCollections.observableArrayList(transaction.getProductTransactionList());
         transactionTableView.setItems(productTransactionObservableList);
@@ -468,27 +473,30 @@ public class GenerateCustomerTransactController {
 
     private void commitTransactionToDatabase() throws SQLException, IOException {
         Connection connection = DBConnect.getConnection();
+        int flag = 1;
         try{
             connection.setAutoCommit(false);
             Object[] objects = ObjectSerializer.TRANSACTION_OBJECT_SERIALIZER.serialize(transaction);
             System.out.println(Arrays.toString(objects));
-            dbExecuteTransaction.insertIntoDatabase(DBQueries.InsertQueries.Transaction.INSERT_INTO_TRANSACTION,
+            flag *= dbExecuteTransaction.insertIntoDatabase(DBQueries.InsertQueries.Transaction.INSERT_INTO_TRANSACTION,
                     objects);
             for(ProductTransaction tmp : transaction.getProductTransactionList()){
                 int remain = tmp.getTotalNum() - tmp.getQuantity();
-                dbExecuteProduct.updateDatabase(DBQueries.UpdateQueries.Product.UPDATE_PRODUCT_QUANTITY,
+                flag *= dbExecuteProduct.updateDatabase(DBQueries.UpdateQueries.Product.UPDATE_PRODUCT_QUANTITY,
                         remain, tmp.getProductId());
             }
             if(storeCreditCheckBox.isSelected()){
                 int remainStoreCredit = customer.getStoreCredit() - Integer.valueOf(storeCreditField.getText());
-                dbExecuteCustomer.updateDatabase(DBQueries.UpdateQueries.Customer.UPDATE_CUSTOMER_STORE_CREDIT,
+                flag *= dbExecuteCustomer.updateDatabase(DBQueries.UpdateQueries.Customer.UPDATE_CUSTOMER_STORE_CREDIT,
                         remainStoreCredit, customer.getUserName());
             }
             connection.commit();
         }catch(SQLException e){
+        }
+        if(flag == 0){
+            connection.rollback(); //TODO: CRITICAL BUG!!!
             Alert alert = new Alert(Alert.AlertType.ERROR, "Unable to store transaction to database!");
             alert.showAndWait();
-            connection.rollback();
         }
         connection.setAutoCommit(true);
     }

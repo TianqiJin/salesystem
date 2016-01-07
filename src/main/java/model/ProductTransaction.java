@@ -81,4 +81,14 @@ public class ProductTransaction extends ProductBase{
     public void setSubTotal(float subTotal) {
         this.subTotal.set(subTotal);
     }
+
+    public String toString(){
+        StringBuffer tmpString = new StringBuffer();
+        tmpString
+                .append("Product ID: " + this.getProductId() + " ")
+                .append("Unit Price: " + this.getUnitPrice() + " ")
+                .append("Quantity: " + this.getQuantity() + " ")
+                .append("Sub Total: " + this.getSubTotal() + "\n");
+        return tmpString.toString();
+    }
 }

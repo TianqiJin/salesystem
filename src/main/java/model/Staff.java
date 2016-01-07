@@ -17,6 +17,7 @@ public class Staff {
     private  StringProperty fullName;
     private Position position;
     private Location location;
+    private String info;
 
     public Staff (Object ... params){
         if (params.length==6) {
@@ -161,7 +162,12 @@ public class Staff {
             }
             return null;
         }
-
     }
 
+    public String getInfo() {
+        return info;
+    }
+    public void setInfo() {
+        this.info = this.getFullName() + "(" + this.getStaffId() + ")";
+    }
 }

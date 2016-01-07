@@ -61,16 +61,18 @@
                             <Label text="Date" GridPane.columnIndex="0" GridPane.rowIndex="1" />
                             <Label text="Payment" textAlignment="CENTER" GridPane.columnIndex="0" GridPane.rowIndex="2" />
                             <Label text="PaymentType" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-                            <Label text="Staff" GridPane.columnIndex="0" GridPane.rowIndex="4" />
-                            <Label text="Tpye" GridPane.columnIndex="0" GridPane.rowIndex="5" />
-                            <Label text="Info" GridPane.columnIndex="0" GridPane.rowIndex="6" />
+                            <Label text="Staff" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+                            <Label text="Type" GridPane.columnIndex="0" GridPane.rowIndex="6" />
+                            <Label text="Info" GridPane.columnIndex="0" GridPane.rowIndex="7" />
                             <Label fx:id="transactionIdLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="0" />
                             <Label fx:id="dateLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                             <Label fx:id="paymentLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                             <Label fx:id="paymentTypeLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                            <Label fx:id="staffLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-                            <Label fx:id="typeLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="5" />
-                            <Label fx:id="infoLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                            <Label fx:id="staffLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                            <Label fx:id="typeLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                            <Label fx:id="infoLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+                                    <Label text="Store Credit" GridPane.rowIndex="4" />
+                                    <Label fx:id="storeCreditLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="4" />
                           </children>
                           <columnConstraints>
                             <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -80,6 +82,7 @@
                             <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                             <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                             <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" />
                                     <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" />
                                     <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" />
                                     <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" />

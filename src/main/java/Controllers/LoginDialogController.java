@@ -81,7 +81,7 @@ public class LoginDialogController {
         this.dbExecute = new DBExecuteStaff();
     }
 
-    public void settDialogStage(Stage dialogStage){
+    public void setDialogStage(Stage dialogStage){
         this.dialogStage = dialogStage;
     }
 

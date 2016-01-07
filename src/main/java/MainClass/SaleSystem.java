@@ -6,6 +6,8 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
@@ -25,6 +27,8 @@ import model.Product;
 import model.Staff;
 import model.Transaction;
 import org.apache.log4j.Logger;
+import util.PropertiesSys;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,12 +39,15 @@ import java.util.Optional;
  */
 public class SaleSystem extends Application{
     private static Logger logger= Logger.getLogger(SaleSystem.class);
+    private static String productLimit = PropertiesSys.properties.getProperty("product_limit");
     private Stage primaryStage;
     private BorderPane rootLayout;
     private static int state=0;
     private static int staffId;
     @FXML
     public TabPane tabPane;
+    @FXML
+    public MenuBar menuBar;
 
     private String[] tabList = {"Customer", "Product","Transaction"};
     private String[] tabList_High = {"Customer", "Product","Transaction","Staff"};
@@ -53,7 +60,7 @@ public class SaleSystem extends Application{
     public void start(Stage primaryStage) throws Exception {
         showLoginDialog();
         if (state!=0){
-        showMainLayOut(primaryStage);
+            showMainLayOut(primaryStage);
         }
     }
 
@@ -61,10 +68,31 @@ public class SaleSystem extends Application{
         this.primaryStage = primaryStage;
         this.primaryStage.setTitle("Sales System");
         initRootLayout();
+        initMenuBar();
         initTab();
     }
 
+    public void initMenuBar(){
+        Menu menuReport = new Menu("Report");
+        Menu menuEdit = new Menu("Edit");
+        Menu menuHelp = new Menu("Help");
+        MenuItem generateReportMenuItem = new MenuItem("Generate Report");
+        MenuItem settingsMenuItem = new MenuItem("Settings");
+        MenuItem aboutMenuItem = new MenuItem("About");
+        menuReport.getItems().add(generateReportMenuItem);
+        menuEdit.getItems().add(settingsMenuItem);
+        menuHelp.getItems().add(aboutMenuItem);
+        menuBar.getMenus().add(menuReport);
+        menuBar.getMenus().add(menuEdit);
+        menuBar.getMenus().add(menuHelp);
 
+        generateReportMenuItem.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                showPDFGenerateDialog();
+            }
+        });
+    }
     public void initTab(){
         switch (state){
             case 1:
@@ -78,7 +106,6 @@ public class SaleSystem extends Application{
                 }
                 break;
         }
-
         tabPane.getSelectionModel().clearSelection();
         tabPane.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Tab>() {
             @Override
@@ -104,7 +131,6 @@ public class SaleSystem extends Application{
             }
         });
         tabPane.getSelectionModel().selectFirst();
-
     }
 
     public void initRootLayout(){
@@ -118,7 +144,8 @@ public class SaleSystem extends Application{
             for (Node node: rootLayout.getChildren()){
                 if (node instanceof TabPane){
                     tabPane = (TabPane)node;
-                    break;
+                }else if(node instanceof MenuBar){
+                    menuBar = (MenuBar)node;
                 }
             }
         }catch(IOException e){
@@ -229,10 +256,33 @@ public class SaleSystem extends Application{
             dialogStage.initModality(Modality.WINDOW_MODAL);
 
             LoginDialogController controller = loader.getController();
-            controller.settDialogStage(dialogStage);
+            controller.setDialogStage(dialogStage);
             dialogStage.showAndWait();
             this.state = controller.returnState();
             this.staffId = controller.returnStaffId();
+
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    public void showPDFGenerateDialog(){
+        try{
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(SaleSystem.class.getResource("/fxml/GeneratePDFReportDialog.fxml"));
+            AnchorPane page = loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Generate Report");
+            Scene scene = new Scene(page);
+            dialogStage.setScene(scene);
+            dialogStage.initOwner(primaryStage);
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+
+            GeneratePDFReportDialog controller = loader.getController();
+            System.out.println(controller);
+            controller.setDialogStage(dialogStage);
+            dialogStage.showAndWait();
 
         }catch(IOException e){
             e.printStackTrace();
@@ -267,6 +317,16 @@ public class SaleSystem extends Application{
 
     public int getStaffId(){
         return this.staffId;
+    }
+
+    public static String getProductLimit() {
+        return productLimit;
+    }
+
+    public static void setProductLimit(String productLimit) {
+        SaleSystem.productLimit = productLimit;
+        PropertiesSys.properties.setProperty("product_limit", SaleSystem.productLimit);
+        //TODO: write property into file
     }
     //TODO: set DialogStage for each tab?
 

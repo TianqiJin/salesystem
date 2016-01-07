@@ -19,6 +19,7 @@ public class Transaction {
     private ObjectProperty<LocalDate> date;
     private DoubleProperty payment;
     private StringProperty paymentType;
+    private IntegerProperty storeCredit;
     private IntegerProperty staffId;
     private TransactionType type;
     private StringProperty info;
@@ -31,9 +32,10 @@ public class Transaction {
         this.date = new SimpleObjectProperty<>(LocalDate.parse((String)params[2]));
         this.payment = new SimpleDoubleProperty((double) params[3]);
         this.paymentType = new SimpleStringProperty((String) params[4]);
-        this.staffId = new SimpleIntegerProperty((Integer) params[5]);
-        this.type = (TransactionType) params[6];
-        this.info = new SimpleStringProperty((String) params[7]);
+        this.storeCredit = new SimpleIntegerProperty((Integer)params[5]);
+        this.staffId = new SimpleIntegerProperty((Integer) params[6]);
+        this.type = (TransactionType) params[7];
+        this.info = new SimpleStringProperty((String) params[8]);
     }
 
     public static class TransactionBuilder {
@@ -43,6 +45,7 @@ public class Transaction {
         private double payment = 0.0;
         private String paymentType = null;
         private int staffId = 0;
+        private int storeCredit = 0;
         private TransactionType type = null;
         private String info = null;
 
@@ -87,8 +90,13 @@ public class Transaction {
             return this;
         }
 
+        public TransactionBuilder storeCredit(int storeCredit){
+            this.storeCredit = storeCredit;
+            return this;
+        }
+
         public Transaction build() {
-            return new Transaction(transactionId, productTransactionList, date, payment, paymentType, staffId, type, info);
+            return new Transaction(transactionId, productTransactionList, date, payment, paymentType, storeCredit, staffId, type, info);
         }
     }
 
@@ -169,6 +177,18 @@ public class Transaction {
 
     public List<ProductTransaction> getProductTransactionList() {
         return productTransactionList;
+    }
+
+    public int getStoreCredit() {
+        return storeCredit.get();
+    }
+
+    public IntegerProperty storeCreditProperty() {
+        return storeCredit;
+    }
+
+    public void setStoreCredit(int storeCredit) {
+        this.storeCredit.set(storeCredit);
     }
 
     public List<String> getProductTransactionListRevised(){

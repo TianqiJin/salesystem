@@ -70,6 +70,7 @@ public interface ObjectDeserializer<E> {
                     .date(rs.getDate("Date").toString())
                     .payment(rs.getDouble("Payment"))
                     .paymentType(rs.getString("PaymentType"))
+                    .storeCredit(rs.getInt("storeCredit"))
                     .staffId(rs.getInt("StaffID"))
                     .type(Transaction.TransactionType.getType(type))
                     .info(info)

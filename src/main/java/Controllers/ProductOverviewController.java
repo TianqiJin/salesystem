@@ -12,7 +12,7 @@ import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import model.Customer;
+import javafx.util.Callback;
 import model.Product;
 
 import java.util.Optional;
@@ -46,6 +46,7 @@ public class ProductOverviewController implements OverviewController{
     @FXML
     private void initialize(){
         productIdCol.setCellValueFactory(new PropertyValueFactory<Product, Integer>("ProductId"));
+
         totalNumCol.setCellValueFactory(new PropertyValueFactory<Product, Integer>("totalNum"));
         loadDataFromDB();
         showProductDetail(null);

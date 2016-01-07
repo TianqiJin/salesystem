@@ -6,6 +6,8 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -21,12 +23,15 @@ import java.util.Map;
 public class rootLayerController {
     @FXML
     private TabPane tabPane;
+    @FXML
+    private MenuItem generateReportMenuItem;
 
     private FXMLLoader fXMLLoader = new FXMLLoader();
 
     private String[] tabList = {"Customer", "Product"};
 
     private Map<String, Object> tabControllerMap = new HashMap<String, Object>();
+
 
     @FXML
     private void init(){
@@ -57,7 +62,6 @@ public class rootLayerController {
             }
         });
         tabPane.getSelectionModel().selectFirst();
-
     }
 
 }

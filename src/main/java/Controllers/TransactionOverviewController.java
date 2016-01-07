@@ -49,6 +49,8 @@ public class TransactionOverviewController implements OverviewController{
     @FXML
     private Label paymentTypeLabel;
     @FXML
+    private Label storeCreditLabel;
+    @FXML
     private Label staffLabel;
     @FXML
     private Label typeLabel;
@@ -114,6 +116,7 @@ public class TransactionOverviewController implements OverviewController{
         Transaction newTransaction = saleSystem.showGenerateCustomerTransactionDialog();
         if(newTransaction != null){
             transactionList.add(newTransaction);
+            loadDataFromDB();
         }
     }
 
@@ -141,6 +144,7 @@ public class TransactionOverviewController implements OverviewController{
             dateLabel.setText(DateUtil.format(transaction.getDate()));
             paymentLabel.setText(String.valueOf(transaction.getPayment()));
             paymentTypeLabel.setText(transaction.getPaymentType());
+            storeCreditLabel.setText(String.valueOf(transaction.getStoreCredit()));
             staffLabel.setText(String.valueOf(transaction.getStaffId()));
             typeLabel.setText(transaction.getType().name());
             infoLabel.setText(transaction.getInfo());
@@ -154,6 +158,7 @@ public class TransactionOverviewController implements OverviewController{
             dateLabel.setText("");
             paymentLabel.setText("");
             paymentTypeLabel.setText("");
+            storeCreditLabel.setText("");
             staffLabel.setText("");
             typeLabel.setText("");
             infoLabel.setText("");

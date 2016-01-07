@@ -34,6 +34,12 @@
                         <Button fx:id="cancelButton" mnemonicParsing="false" onAction="#handleCancelButton" text="Cancle" />
                      </children>
                   </HBox>
+                  <HBox layoutX="328.0" layoutY="-9.0" spacing="5.0" AnchorPane.leftAnchor="350.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="20.0">
+                     <children>
+                        <RadioButton mnemonicParsing="false" text="Out" />
+                        <RadioButton mnemonicParsing="false" text="Return" />
+                     </children>
+                  </HBox>
           </children>
         </AnchorPane>
         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">

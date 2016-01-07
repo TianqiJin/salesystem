@@ -16,7 +16,6 @@ public class
         properties = new java.util.Properties();
 
         InputStream input = null;
-
         try {
             try {
                 String filePath = new File("").getAbsolutePath();

@@ -15,6 +15,7 @@ public class DBQueries {
 
         public static class Transaction{
             public final static String SELECT_ALL_TRANSACTION = "SELECT * FROM transaction";
+            public final static String SELECT_ALL_TRANSACTION_FOR_REPORT = "SELECT * FROM transaction WHERE Date BETWEEN ? AND ?";
         }
         public static class Staff{
             public final static String SELECT_ALL_STAFF = "SELECT * FROM staff";
@@ -46,8 +47,8 @@ public class DBQueries {
         }
         public static class Transaction{
             public final static String INSERT_INTO_TRANSACTION = "INSERT INTO transaction "
-                    +"(ProductInfo, Date, Payment, PaymentType, StaffID, Type)"
-                    +"VALUES (?, ?, ?, ?, ?, ?)";
+                    +"(ProductInfo, Date, Payment, PaymentType, StoreCredit, StaffID, Type)"
+                    +"VALUES (?, ?, ?, ?, ?, ?, ?)";
         }
         public static class Staff{
             public final static String INSERT_INTO_STAFF = "INSERT INTO staff "
