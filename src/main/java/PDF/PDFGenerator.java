@@ -90,7 +90,7 @@ public class PDFGenerator {
 
         public PDFGeneratorBuilder destination(String destination){
             this.destination =
-                    new File(destination, "Customer_Report_" + new SimpleDateFormat("yyyy-MM-dd'at'HH:mm:ss").format(new Date()) + ".pdf").getPath();
+                    new File(destination, "Customer_Report_" + new SimpleDateFormat("yyyy-MM-dd'at'HH-mm-ss").format(new Date()) + ".pdf").getPath();
             return this;
         }
         public PDFGeneratorBuilder productId(Integer productId){

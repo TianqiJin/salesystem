@@ -15,6 +15,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.util.Callback;
 import model.Product;
 
+import java.sql.SQLException;
 import java.util.Optional;
 
 
@@ -85,23 +86,30 @@ public class ProductOverviewController implements OverviewController{
             int temptotalNum = productTable.getItems().get(selectedIndex).getTotalNum();
             Alert alertConfirm = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete this product?");
             Optional<ButtonType> result =  alertConfirm.showAndWait();
+            boolean flag = true;
             if(result.isPresent() && result.get() == ButtonType.OK){
-                if(dbExecute.deleteDatabase(DBQueries.DeleteQueries.Product.DELETE_FROM_PRODUCT,
-                        productTable.getItems().get(selectedIndex).getProductId()) == 0){
+                try{
+                    dbExecute.deleteDatabase(DBQueries.DeleteQueries.Product.DELETE_FROM_PRODUCT,
+                            productTable.getItems().get(selectedIndex).getProductId());
+                }catch(SQLException e){
+                    e.printStackTrace();
+                    flag = false;
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Delete Product Error");
                     alert.setHeaderText(null);
                     alert.setContentText("Error when deleting product: "+tempID+" "+temptotalNum+"pieces");
                     alert.showAndWait();
+                }finally{
+                    if(flag){
+                        productTable.getItems().remove(selectedIndex);
+                        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                        alert.setTitle("Delete Product Successfully");
+                        alert.setHeaderText(null);
+                        alert.setContentText("Successfully deteled product: "+tempID+" "+temptotalNum+"pieces");
+                        alert.showAndWait();
+                    }
                 }
-                else{
-                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                    alert.setTitle("Delete Product Successfully");
-                    alert.setHeaderText(null);
-                    alert.setContentText("Successfully deteled product: "+tempID+" "+temptotalNum+"pieces");
-                    alert.showAndWait();
-                }
-                productTable.getItems().remove(selectedIndex);
+
             }
         }
         else{
@@ -119,16 +127,17 @@ public class ProductOverviewController implements OverviewController{
         Product newProduct = new Product();
         boolean okClicked = saleSystem.showProductEditDialog(newProduct);
         if(okClicked){
-            if(dbExecute.insertIntoDatabase(DBQueries.InsertQueries.Product.INSERT_INTO_PRODUCT,
-                    newProduct.getAllProperties()) == 0){
+            try{
+                dbExecute.insertIntoDatabase(DBQueries.InsertQueries.Product.INSERT_INTO_PRODUCT,
+                        newProduct.getAllProperties());
+            }catch(SQLException e){
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Unable To Add New Product");
                 alert.setHeaderText(null);
                 alert.setContentText("Unable To Add New Product");
                 alert.showAndWait();
-            }
-            else{
-                productList.add(newProduct);
+            }finally{
+                loadDataFromDB();
             }
         }
     }
@@ -138,17 +147,22 @@ public class ProductOverviewController implements OverviewController{
         Product selectedProduct = productTable.getSelectionModel().getSelectedItem();
         if(selectedProduct != null){
             boolean onClicked = saleSystem.showProductEditDialog(selectedProduct);
-            if(dbExecute.updateDatabase(DBQueries.UpdateQueries.Product.UPDATE_PRODUCT,
-                    selectedProduct.getAllPropertiesForUpdate()) == 0){
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Unable To Edit Product");
-                alert.setHeaderText(null);
-                alert.setContentText("Unable To Edit Product" + selectedProduct.getProductId());
-                alert.showAndWait();
-            }
             if(onClicked){
-                showProductDetail(selectedProduct);
+                try{
+                    dbExecute.updateDatabase(DBQueries.UpdateQueries.Product.UPDATE_PRODUCT,
+                            selectedProduct.getAllPropertiesForUpdate());
+                }catch(SQLException e){
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Unable To Edit Product");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Unable To Edit Product" + selectedProduct.getProductId());
+                    alert.showAndWait();
+                }finally{
+                    showProductDetail(selectedProduct);
+                }
             }
+
+
         }
         else{
             Alert alert = new Alert(Alert.AlertType.WARNING);

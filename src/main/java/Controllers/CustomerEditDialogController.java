@@ -66,7 +66,7 @@ public class CustomerEditDialogController {
             customer.setStreet(streetField.getText());
             customer.setUserClass(classField.getText());
             customer.setEmail(emailField.getText());
-            customer.setStoreCredit(Integer.valueOf(storeCreditField.getText()));
+            customer.setStoreCredit(Double.valueOf(storeCreditField.getText()));
 
             okClicked = true;
             dialogStage.close();
@@ -96,9 +96,9 @@ public class CustomerEditDialogController {
             errorMsg += "Last Name should not be empty! \n";
         }
         try{
-            Integer.parseInt(storeCreditField.getText());
+            Double.parseDouble(storeCreditField.getText());
         }catch (NumberFormatException e){
-            errorMsg += "Store Credit must be integer! \n";
+            errorMsg += "Store Credit must be numbers! \n";
         }
         //TODO: inpsect the validation for emailField
 

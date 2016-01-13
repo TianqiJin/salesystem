@@ -120,6 +120,15 @@ public class TransactionOverviewController implements OverviewController{
         }
     }
 
+    @FXML
+    private void handleReturnTransaction(){
+        Transaction newTransaction = saleSystem.showGenerateReturnTransactionDialog();
+        if(newTransaction != null){
+            transactionList.add(newTransaction);
+            loadDataFromDB();
+        }
+    }
+
     public TransactionOverviewController(){
         dbExecuteTransaction = new DBExecuteTransaction();
     }

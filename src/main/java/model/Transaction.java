@@ -19,7 +19,7 @@ public class Transaction {
     private ObjectProperty<LocalDate> date;
     private DoubleProperty payment;
     private StringProperty paymentType;
-    private IntegerProperty storeCredit;
+    private DoubleProperty storeCredit;
     private IntegerProperty staffId;
     private TransactionType type;
     private StringProperty info;
@@ -32,7 +32,7 @@ public class Transaction {
         this.date = new SimpleObjectProperty<>(LocalDate.parse((String)params[2]));
         this.payment = new SimpleDoubleProperty((double) params[3]);
         this.paymentType = new SimpleStringProperty((String) params[4]);
-        this.storeCredit = new SimpleIntegerProperty((Integer)params[5]);
+        this.storeCredit = new SimpleDoubleProperty((Double) params[5]);
         this.staffId = new SimpleIntegerProperty((Integer) params[6]);
         this.type = (TransactionType) params[7];
         this.info = new SimpleStringProperty((String) params[8]);
@@ -45,7 +45,7 @@ public class Transaction {
         private double payment = 0.0;
         private String paymentType = null;
         private int staffId = 0;
-        private int storeCredit = 0;
+        private double storeCredit = 0.0;
         private TransactionType type = null;
         private String info = null;
 
@@ -90,7 +90,7 @@ public class Transaction {
             return this;
         }
 
-        public TransactionBuilder storeCredit(int storeCredit){
+        public TransactionBuilder storeCredit(double storeCredit){
             this.storeCredit = storeCredit;
             return this;
         }
@@ -179,16 +179,20 @@ public class Transaction {
         return productTransactionList;
     }
 
-    public int getStoreCredit() {
+    public double getStoreCredit() {
         return storeCredit.get();
     }
 
-    public IntegerProperty storeCreditProperty() {
+    public DoubleProperty storeCreditProperty() {
         return storeCredit;
     }
 
-    public void setStoreCredit(int storeCredit) {
+    public void setStoreCredit(double storeCredit) {
         this.storeCredit.set(storeCredit);
+    }
+
+    public void setType(TransactionType type) {
+        this.type = type;
     }
 
     public List<String> getProductTransactionListRevised(){

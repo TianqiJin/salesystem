@@ -47,6 +47,7 @@
                     <Insets />
                   </HBox.margin>
                 </Button>
+                        <Button mnemonicParsing="false" onAction="#handleReturnTransaction" text="Return" />
                 <Button mnemonicParsing="false" text="Edit" />
                 <Button mnemonicParsing="false" onAction="#handleDeleteTransaction" text="Delete" />
               </children>

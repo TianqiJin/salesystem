@@ -1,27 +1,21 @@
 package MainClass;
 
 import Controllers.*;
-import db.DBExecuteStaff;
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.util.Pair;
 import model.Customer;
 import model.Product;
 import model.Staff;
@@ -32,7 +26,6 @@ import util.PropertiesSys;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * Created by tjin on 2015-11-21.
@@ -303,6 +296,32 @@ public class SaleSystem extends Application{
             dialogStage.setScene(scene);
 
             GenerateCustomerTransactController controller = loader.getController();
+            controller.setMainClass(SaleSystem.this);
+            controller.setDialogStage(dialogStage);
+            dialogStage.showAndWait();
+            if(controller.isConfirmedClicked()){
+                return controller.returnNewTrasaction();
+            }
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public Transaction showGenerateReturnTransactionDialog(){
+        try{
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(SaleSystem.class.getResource("/fxml/GenerateReturnTransactions.fxml"));
+            AnchorPane page = loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Create Return Transaction");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(primaryStage);
+            Scene scene = new Scene(page);
+            dialogStage.setScene(scene);
+
+            GenerateReturnTransactController controller = loader.getController();
             controller.setMainClass(SaleSystem.this);
             controller.setDialogStage(dialogStage);
             dialogStage.showAndWait();
