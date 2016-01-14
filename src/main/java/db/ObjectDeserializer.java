@@ -20,7 +20,7 @@ public interface ObjectDeserializer<E> {
         public Customer deserialize(ResultSet rs) throws SQLException {
             Customer customer = new Customer(rs.getString("UserName"), rs.getString("FirstName"), rs.getString("LastName"), rs.getString("Street"),
                     rs.getString("PostalCode"), rs.getString("City"), rs.getString("Phone"), rs.getString("Class"), rs.getString("Email"),
-                    rs.getInt("StoreCredit"));
+                    rs.getDouble("StoreCredit"));
             return customer;
         }
     };
@@ -70,6 +70,7 @@ public interface ObjectDeserializer<E> {
                     .date(rs.getDate("Date").toString())
                     .payment(rs.getDouble("Payment"))
                     .paymentType(rs.getString("PaymentType"))
+                    .storeCredit(rs.getDouble("storeCredit"))
                     .staffId(rs.getInt("StaffID"))
                     .type(Transaction.TransactionType.getType(type))
                     .info(info)

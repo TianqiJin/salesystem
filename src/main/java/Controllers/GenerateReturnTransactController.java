@@ -1,13 +1,9 @@
 package Controllers;
 
 import MainClass.SaleSystem;
-import com.sun.prism.impl.Disposer;
 import db.*;
-import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
-import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -36,11 +32,11 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
- * Created by tjin on 12/7/2015.
+ * Created by tjin on 1/12/2016.
  */
-public class GenerateCustomerTransactController {
+public class GenerateReturnTransactController {
 
-    private final static String INIT_TRANSACTION_PAYMENT_TYPE = "Cash";
+    private final static String INIT_TRANSACTION_PAYMENT_TYPE = "Return";
     private Stage dialogStage;
     private Customer customer;
     private List<Customer> customerList;
@@ -52,7 +48,7 @@ public class GenerateCustomerTransactController {
     private Transaction transaction;
     private StringBuffer errorMsgBuilder;
     private boolean confirmedClicked;
-    private BooleanBinding confimButtonBinding;
+    private BooleanBinding confirmButtonBinding;
 
     @FXML
     private TableView<ProductTransaction> transactionTableView;
@@ -90,10 +86,6 @@ public class GenerateCustomerTransactController {
     @FXML
     private Button addItemButton;
     @FXML
-    private Button addNewCustomer;
-    @FXML
-    private TextField paymentField;
-    @FXML
     private Button confirmButton;
     @FXML
     private Button cancelButton;
@@ -102,16 +94,12 @@ public class GenerateCustomerTransactController {
     @FXML
     private Label balanceLabel;
     @FXML
-    private ChoiceBox<String> paymentTypeChoiceBox;
-    @FXML
     private TextField storeCreditField;
-    @FXML
-    private CheckBox storeCreditCheckBox;
 
     @FXML
     private void initialize(){
-        confimButtonBinding = paymentField.textProperty().isEmpty().and(Bindings.size(transactionTableView.getItems()).lessThan(1));
-        confirmButton.disableProperty().bind(confimButtonBinding);
+        confirmButtonBinding = storeCreditField.textProperty().isEmpty().or(transactionTableView.itemsProperty().isNull());
+        confirmButton.disableProperty().bind(confirmButtonBinding);
         productIdCol.setCellValueFactory(new PropertyValueFactory<>("productId"));
         stockCol.setCellValueFactory(new PropertyValueFactory<>("totalNum"));
         unitPriceCol.setCellValueFactory(new PropertyValueFactory<>("unitPrice"));
@@ -136,7 +124,7 @@ public class GenerateCustomerTransactController {
         subTotalCol.setCellValueFactory(new PropertyValueFactory<>("subTotal"));
         deleteCol.setCellValueFactory(
                 new Callback<TableColumn.CellDataFeatures<ProductTransaction, Boolean>,
-                                        ObservableValue<Boolean>>() {
+                        ObservableValue<Boolean>>() {
                     @Override
                     public ObservableValue<Boolean> call(TableColumn.CellDataFeatures<ProductTransaction, Boolean> p) {
                         return new SimpleBooleanProperty(p.getValue() != null);
@@ -163,12 +151,6 @@ public class GenerateCustomerTransactController {
             }
         });
 
-        paymentField.textProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                showBalanceDetails();
-            }
-        });
         storeCreditField.textProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
@@ -177,14 +159,6 @@ public class GenerateCustomerTransactController {
         });
         showCustomerDetails(null);
         showPaymentDetails(null, null);
-
-        paymentTypeChoiceBox.getSelectionModel().selectFirst();
-        paymentTypeChoiceBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                transaction.setPaymentType(newValue);
-            }
-        });
 
         customerList = dbExecuteCustomer.selectFromDatabase(DBQueries.SelectQueries.Customer.SELECT_ALL_CUSTOMER);
         List<String> tmpCustomerList = new ArrayList<>();
@@ -208,15 +182,6 @@ public class GenerateCustomerTransactController {
             }
         });
         new AutoCompleteComboBoxListener<>(customerComboBox);
-        storeCreditCheckBox.selectedProperty().addListener(new ChangeListener<Boolean>() {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                storeCreditField.setDisable(newValue ? false : true);
-                if(!newValue){
-                    storeCreditField.clear();
-                }
-            }
-        });
     }
 
     @FXML
@@ -224,13 +189,13 @@ public class GenerateCustomerTransactController {
         List<Product> productResult = dbExecuteProduct.selectFromDatabase(DBQueries.SelectQueries.Product.SELECT_PRODUCTID_PROJECT,
                 productIdField.getText().trim());
         if(productResult.isEmpty()){
-             Alert alert = new Alert(Alert.AlertType.WARNING);
-             alert.initOwner(dialogStage);
-             alert.setTitle("Invalid Product ID");
-             alert.setHeaderText(null);
-             alert.setContentText("Please input valid product ID");
-             alert.showAndWait();
-         }
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.initOwner(dialogStage);
+            alert.setTitle("Invalid Product ID");
+            alert.setHeaderText(null);
+            alert.setContentText("Please input valid product ID");
+            alert.showAndWait();
+        }
         else{
             ProductTransaction newTransaction = new ProductTransaction.ProductTransactionBuilder()
                     .productId(productResult.get(0).getProductId())
@@ -240,32 +205,6 @@ public class GenerateCustomerTransactController {
             productTransactionObservableList.add(newTransaction);
         }
 
-    }
-
-    @FXML
-    public void handleAddCustomer(){
-        Customer newCustomer = new Customer();
-        boolean okClicked = saleSystem.showCustomerEditDialog(newCustomer);
-        if(okClicked){
-            newCustomer.setUserName();
-            boolean flag = true;
-            try{
-                dbExecuteProduct.insertIntoDatabase(DBQueries.InsertQueries.Customer.INSERT_INTO_CUSTOMER,
-                        newCustomer.getAllProperties());
-            }catch(SQLException e){
-                flag = false;
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Unable To Add New Customer");
-                alert.setHeaderText(null);
-                alert.setContentText("Unable To Add New Customer" + newCustomer.getFirstName() + " " + newCustomer.getLastName());
-                alert.showAndWait();
-            }finally{
-                if(flag){
-                    customer = newCustomer;
-                    showCustomerDetails(customer);
-                }
-            }
-        }
     }
 
     @FXML
@@ -285,17 +224,14 @@ public class GenerateCustomerTransactController {
             transaction.getProductTransactionList().clear();
         }
         else{
-            transaction.setPayment(Double.valueOf(paymentField.getText()));
-            if(storeCreditCheckBox.isSelected()){
-                transaction.setStoreCredit(Double.valueOf(storeCreditField.getText()));
-            }
+            transaction.setStoreCredit(Double.valueOf(storeCreditField.getText()));
             StringBuffer overviewTransactionString = new StringBuffer();
             StringBuffer overviewProductTransactionString = new StringBuffer();
             for(ProductTransaction tmp: transaction.getProductTransactionList()){
                 overviewProductTransactionString
                         .append("Product ID: " + tmp.getProductId() + " ")
                         .append("Total Num: " + tmp.getTotalNum() + " ")
-                        .append("Quantity: " + tmp.getQuantity() + " ")
+                        .append("Returned Quantity: " + tmp.getQuantity() + " ")
                         .append("Unit Price: " + tmp.getUnitPrice() + " ")
                         .append("Sub Total: " + tmp.getSubTotal() + " ")
                         .append("\n");
@@ -303,8 +239,7 @@ public class GenerateCustomerTransactController {
             overviewTransactionString
                     .append("Customer Name:" + customer.getFirstName() + " " + customer.getLastName() + "\n\n")
                     .append(overviewProductTransactionString)
-                    .append("\n" + "Payment: " + transaction.getPayment() + "\n")
-                    .append("\n" + "Store Credit: " + transaction.getStoreCredit() + "\n")
+                    .append("\n" + "Returned Store Credit: " + transaction.getStoreCredit() + "\n")
                     .append("Payment Type: " + transaction.getPaymentType() + "\n")
                     .append("Date: " + transaction.getDate() + "\n");
 
@@ -323,7 +258,7 @@ public class GenerateCustomerTransactController {
     /*
     * Constructor
     * */
-    public GenerateCustomerTransactController(){
+    public GenerateReturnTransactController(){
         dbExecuteProduct = new DBExecuteProduct();
         dbExecuteCustomer = new DBExecuteCustomer();
         dbExecuteTransaction = new DBExecuteTransaction();
@@ -379,20 +314,9 @@ public class GenerateCustomerTransactController {
 
     private void showBalanceDetails(){
         BigDecimal balance;
-        if((storeCreditCheckBox.isSelected() && !storeCreditField.getText().trim().isEmpty() && isStoreCreditValid())
-                &&(!paymentField.getText().trim().isEmpty() && isPaymentValid())){
-            balance = new BigDecimal(totalLabel.getText()).setScale(2, BigDecimal.ROUND_HALF_EVEN);
-            balance = balance.subtract(new BigDecimal(paymentField.getText())).subtract(new BigDecimal(storeCreditField.getText()));
-            balanceLabel.setText(balance.toString());
-        }
-        else if(storeCreditCheckBox.isSelected() && !storeCreditField.getText().trim().isEmpty() && isStoreCreditValid()){
-            balance = new BigDecimal(totalLabel.getText()).setScale(2, BigDecimal.ROUND_HALF_EVEN);
-            balance = balance.subtract(new BigDecimal(storeCreditField.getText()));
-            balanceLabel.setText(balance.toString());
-        }
-        else if(!paymentField.getText().trim().isEmpty() && isPaymentValid()){
-            balance = new BigDecimal(totalLabel.getText()).setScale(2, BigDecimal.ROUND_HALF_EVEN);
-            balance = balance.subtract(new BigDecimal(paymentField.getText()));
+        if(!storeCreditField.getText().trim().isEmpty() && isStoreCreditValid()){
+            balance = new BigDecimal(storeCreditField.getText()).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+            balance = balance.subtract(new BigDecimal(totalLabel.getText()));
             balanceLabel.setText(balance.toString());
         }
         else{
@@ -408,8 +332,8 @@ public class GenerateCustomerTransactController {
                 .productInfoList(new ArrayList<ProductTransaction>())
                 .staffId(saleSystem.getStaffId())
                 .date(new SimpleDateFormat("yyyy-MM-dd").format(new Date()))
-                .type(Transaction.TransactionType.OUT)
-                .storeCredit(0)
+                .type(Transaction.TransactionType.RETURN)
+                .payment(0)
                 .paymentType(INIT_TRANSACTION_PAYMENT_TYPE)
                 .build();
         productTransactionObservableList = FXCollections.observableArrayList(transaction.getProductTransactionList());
@@ -428,28 +352,13 @@ public class GenerateCustomerTransactController {
 
     private boolean isTransactionValid(){
         errorMsgBuilder = new StringBuffer();
-        if(!isPaymentValid()){
-            errorMsgBuilder.append("Payment must be numbers!\n");
-        }
         if(customer == null){
             errorMsgBuilder.append("Customer is neither selected nor created!\n");
         }
-        if(storeCreditCheckBox.isSelected() && !isStoreCreditValid()){
-            errorMsgBuilder.append("Either Store Credit exceeds customer's limit or Store Credit must be numbers!\n");
-        }
-        if(!isProductQuantityValid()){
-            errorMsgBuilder.append("Some product's quantity exceeds the stock quota!\n");
+        if(!isStoreCreditValid()){
+            errorMsgBuilder.append("Store Credit must be numbers!\n");
         }
         if(errorMsgBuilder.length() != 0){
-            return false;
-        }
-        return true;
-    }
-
-    private boolean isPaymentValid(){
-        try{
-            Double.parseDouble(paymentField.getText());
-        }catch(NumberFormatException e){
             return false;
         }
         return true;
@@ -461,42 +370,29 @@ public class GenerateCustomerTransactController {
         }catch(NumberFormatException e){
             return false;
         }
-        if(customer != null &&
-                (customer.getStoreCredit() < Double.valueOf(storeCreditField.getText()))){
-            return false;
-        }
-        return true;
-    }
-
-    private boolean isProductQuantityValid(){
-        for(ProductTransaction tmp : transaction.getProductTransactionList()){
-            if(tmp.getTotalNum() - tmp.getQuantity() < 0){
-                return false;
-            }
-        }
         return true;
     }
 
     private void commitTransactionToDatabase() throws SQLException, IOException {
         Connection connection = DBConnect.getConnection();
+        int flag = 1;
         try{
             connection.setAutoCommit(false);
-            System.out.println(connection.getAutoCommit());
             Object[] objects = ObjectSerializer.TRANSACTION_OBJECT_SERIALIZER.serialize(transaction);
-            dbExecuteTransaction.insertIntoDatabase(DBQueries.InsertQueries.Transaction.INSERT_INTO_TRANSACTION,
+            flag *= dbExecuteTransaction.insertIntoDatabase(DBQueries.InsertQueries.Transaction.INSERT_INTO_TRANSACTION,
                     objects);
             for(ProductTransaction tmp : transaction.getProductTransactionList()){
-                int remain = tmp.getTotalNum() - tmp.getQuantity();
-                dbExecuteProduct.updateDatabase(DBQueries.UpdateQueries.Product.UPDATE_PRODUCT_QUANTITY,
-                    remain, tmp.getProductId());
+                int remain = tmp.getTotalNum() + tmp.getQuantity();
+                flag *= dbExecuteProduct.updateDatabase(DBQueries.UpdateQueries.Product.UPDATE_PRODUCT_QUANTITY,
+                        remain, tmp.getProductId());
             }
-            if(storeCreditCheckBox.isSelected()){
-                double remainStoreCredit = customer.getStoreCredit() - Double.valueOf(storeCreditField.getText());
-                dbExecuteCustomer.updateDatabase(DBQueries.UpdateQueries.Customer.UPDATE_CUSTOMER_STORE_CREDIT,
+            double remainStoreCredit = customer.getStoreCredit() + Double.valueOf(storeCreditField.getText());
+            flag *= dbExecuteCustomer.updateDatabase(DBQueries.UpdateQueries.Customer.UPDATE_CUSTOMER_STORE_CREDIT,
                     remainStoreCredit, customer.getUserName());
-            }
             connection.commit();
         }catch(SQLException e){
+        }
+        if(flag == 0){
             connection.rollback(); //TODO: CRITICAL BUG!!!
             Alert alert = new Alert(Alert.AlertType.ERROR, "Unable to store transaction to database!");
             alert.showAndWait();

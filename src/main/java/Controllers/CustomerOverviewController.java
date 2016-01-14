@@ -13,6 +13,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import model.Customer;
 import MainClass.SaleSystem;
 
+import java.sql.SQLException;
 import java.util.Optional;
 
 /**
@@ -93,23 +94,29 @@ public class CustomerOverviewController implements OverviewController{
             String tempLastName = customerTable.getItems().get(selectedIndex).getLastName();
             Alert alertConfirm = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete this customer?");
             Optional<ButtonType> result =  alertConfirm.showAndWait();
+            boolean flag = true;
             if(result.isPresent() && result.get() == ButtonType.OK){
-                if(dbExecute.deleteDatabase(DBQueries.DeleteQueries.Customer.DELETE_FROM_CUSTOMER,
-                        customerTable.getItems().get(selectedIndex).getUserName()) == 0){
+                try {
+                    dbExecute.deleteDatabase(DBQueries.DeleteQueries.Customer.DELETE_FROM_CUSTOMER,
+                            customerTable.getItems().get(selectedIndex).getUserName());
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    flag = false;
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Delete Customer Error");
                     alert.setHeaderText(null);
                     alert.setContentText("Error when deleting customer "+tempFirstName+" "+tempLastName);
                     alert.showAndWait();
+                }finally {
+                    if(flag){
+                        customerTable.getItems().remove(selectedIndex);
+                        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                        alert.setTitle("Delete Customer Successfully");
+                        alert.setHeaderText(null);
+                        alert.setContentText("Successfully deleted customer "+tempFirstName+" "+tempLastName);
+                        alert.showAndWait();
+                    }
                 }
-                else{
-                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                    alert.setTitle("Delete Customer Successfully");
-                    alert.setHeaderText(null);
-                    alert.setContentText("Successfully deteled customer "+tempFirstName+" "+tempLastName);
-                    alert.showAndWait();
-                }
-                customerTable.getItems().remove(selectedIndex);
             }
         }
         else{
@@ -128,16 +135,18 @@ public class CustomerOverviewController implements OverviewController{
         boolean okClicked = saleSystem.showCustomerEditDialog(newCustomer);
         if(okClicked){
             newCustomer.setUserName();
-            if(dbExecute.insertIntoDatabase(DBQueries.InsertQueries.Customer.INSERT_INTO_CUSTOMER,
-                    newCustomer.getAllProperties()) == 0){
+            try{
+                dbExecute.insertIntoDatabase(DBQueries.InsertQueries.Customer.INSERT_INTO_CUSTOMER,
+                        newCustomer.getAllProperties());
+            }catch(SQLException e){
+                e.printStackTrace();
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Unable To Add New Customer");
                 alert.setHeaderText(null);
                 alert.setContentText("Unable To Add New Customer" + newCustomer.getFirstName() + " " + newCustomer.getLastName());
                 alert.showAndWait();
-            }
-            else{
-                customerList.add(newCustomer);
+            }finally {
+                loadDataFromDB();
             }
         }
     }
@@ -147,17 +156,22 @@ public class CustomerOverviewController implements OverviewController{
         Customer selectedCustomer = customerTable.getSelectionModel().getSelectedItem();
         if(selectedCustomer != null){
             boolean onClicked = saleSystem.showCustomerEditDialog(selectedCustomer);
-            if(dbExecute.updateDatabase(DBQueries.UpdateQueries.Customer.UPDATE_CUSTOMER,
-                    selectedCustomer.getAllPropertiesForUpdate()) == 0){
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Unable To Edit New Customer");
-                alert.setHeaderText(null);
-                alert.setContentText("Unable To Edit Customer" + selectedCustomer.getFirstName() + " " + selectedCustomer.getLastName());
-                alert.showAndWait();
-            }
             if(onClicked){
-                showCustomerDetail(selectedCustomer);
+                try{
+                    dbExecute.updateDatabase(DBQueries.UpdateQueries.Customer.UPDATE_CUSTOMER,
+                            selectedCustomer.getAllPropertiesForUpdate());
+                }catch(SQLException e){
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Unable To Edit New Customer");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Unable To Edit Customer" + selectedCustomer.getFirstName() + " " + selectedCustomer.getLastName());
+                    alert.showAndWait();
+                }finally{
+                    showCustomerDetail(selectedCustomer);
+
+                }
             }
+
         }
         else{
             Alert alert = new Alert(Alert.AlertType.WARNING);

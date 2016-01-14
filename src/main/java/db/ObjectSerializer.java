@@ -53,6 +53,7 @@ public interface ObjectSerializer<E> {
                     transaction.getDate(),
                     transaction.getPayment(),
                     transaction.getPaymentType(),
+                    transaction.getStoreCredit(),
                     transaction.getStaffId(),
                     typeJson
             };

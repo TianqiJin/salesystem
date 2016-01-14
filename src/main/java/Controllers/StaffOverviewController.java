@@ -14,6 +14,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import model.Staff;
 
+import java.sql.SQLException;
 import java.util.Optional;
 
 public class StaffOverviewController implements OverviewController{
@@ -85,23 +86,29 @@ public class StaffOverviewController implements OverviewController{
             String tempPosition = staffTable.getItems().get(selectedIndex).getPosition().name();
             Alert alertConfirm = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete this Staff?");
             Optional<ButtonType> result =  alertConfirm.showAndWait();
+            boolean flag = true;
             if(result.isPresent() && result.get() == ButtonType.OK){
-                if(dbExecute.deleteDatabase(DBQueries.DeleteQueries.Staff.DELETE_FROM_STAFF,
-                        staffTable.getItems().get(selectedIndex).getUserName()) == 0){
+                try{
+                    dbExecute.deleteDatabase(DBQueries.DeleteQueries.Staff.DELETE_FROM_STAFF,
+                            staffTable.getItems().get(selectedIndex).getUserName());
+                }catch(SQLException e){
+                    e.printStackTrace();
+                    flag = false;
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Delete Staff Error");
                     alert.setHeaderText(null);
                     alert.setContentText("Error when deleting staff "+tempName+" "+tempPosition);
                     alert.showAndWait();
+                }finally{
+                    if(flag){
+                        staffTable.getItems().remove(selectedIndex);
+                        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                        alert.setTitle("Delete Staff Successfully");
+                        alert.setHeaderText(null);
+                        alert.setContentText("Successfully deleted staff "+tempName+" "+tempPosition);
+                        alert.showAndWait();
+                    }
                 }
-                else{
-                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                    alert.setTitle("Delete Staff Successfully");
-                    alert.setHeaderText(null);
-                    alert.setContentText("Successfully deleted staff "+tempName+" "+tempPosition);
-                    alert.showAndWait();
-                }
-                staffTable.getItems().remove(selectedIndex);
             }
         }
         else{
@@ -120,16 +127,17 @@ public class StaffOverviewController implements OverviewController{
         newStaff.setStaffId(dbExecute.getMaxNum(DBQueries.SelectQueries.Staff.SELECT_STAFF_MAX_NUM));
         boolean okClicked = saleSystem.showStaffEditDialog(newStaff);
         if(okClicked){
-            if(dbExecute.insertIntoDatabase(DBQueries.InsertQueries.Staff.INSERT_INTO_STAFF,
-                    newStaff.getAllProperties()) == 0){
+            try{
+                dbExecute.insertIntoDatabase(DBQueries.InsertQueries.Staff.INSERT_INTO_STAFF,
+                        newStaff.getAllProperties());
+            }catch(SQLException e){
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Unable To Add New Staff");
                 alert.setHeaderText(null);
                 alert.setContentText("Unable To Add New Staff" + newStaff.getUserName());
                 alert.showAndWait();
-            }
-            else{
-                staffList.add(newStaff);
+            }finally{
+                loadDataFromDB();
             }
         }
     }
@@ -139,16 +147,19 @@ public class StaffOverviewController implements OverviewController{
         Staff selectedStaff = staffTable.getSelectionModel().getSelectedItem();
         if(selectedStaff != null){
             boolean onClicked = saleSystem.showStaffEditDialog(selectedStaff);
-            if(dbExecute.updateDatabase(DBQueries.UpdateQueries.Staff.UPDATE_STAFF,
-                    selectedStaff.getAllPropertiesForUpdate()) == 0){
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Unable To Edit Staff");
-                alert.setHeaderText(null);
-                alert.setContentText("Unable To Edit Staff" + selectedStaff.getFullName());
-                alert.showAndWait();
-            }
             if(onClicked){
-                showStaffDetail(selectedStaff);
+                try{
+                    dbExecute.updateDatabase(DBQueries.UpdateQueries.Staff.UPDATE_STAFF,
+                            selectedStaff.getAllPropertiesForUpdate());
+                }catch(SQLException e){
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Unable To Edit Staff");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Unable To Edit Staff" + selectedStaff.getFullName());
+                    alert.showAndWait();
+                }finally{
+                    showStaffDetail(selectedStaff);
+                }
             }
         }
         else{

@@ -1,9 +1,6 @@
 package model;
 
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.*;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -22,7 +19,7 @@ public class Customer {
     private final StringProperty phone;
     private final StringProperty userClass;
     private final StringProperty email;
-    private final IntegerProperty storeCredit;
+    private final DoubleProperty storeCredit;
     private String customerInfo;
 
     public Customer(Object... params){
@@ -36,7 +33,7 @@ public class Customer {
             this.phone = new SimpleStringProperty((String)params[6]);
             this.userClass = new SimpleStringProperty((String)params[7]);
             this.email = new SimpleStringProperty((String)params[8]);
-            this.storeCredit = new SimpleIntegerProperty((Integer)params[9]);
+            this.storeCredit = new SimpleDoubleProperty((Double) params[9]);
         }
         else{
             this.userName = new SimpleStringProperty(null);
@@ -48,7 +45,7 @@ public class Customer {
             this.phone = new SimpleStringProperty(null);
             this.userClass = new SimpleStringProperty("C");
             this.email = new SimpleStringProperty(null);
-            this.storeCredit = new SimpleIntegerProperty(0) {
+            this.storeCredit = new SimpleDoubleProperty(0.0) {
             };
         }
     }
@@ -157,15 +154,15 @@ public class Customer {
         this.email.set(email);
     }
 
-    public int getStoreCredit() {
+    public double getStoreCredit() {
         return storeCredit.get();
     }
 
-    public IntegerProperty storeCreditProperty() {
+    public DoubleProperty storeCreditProperty() {
         return storeCredit;
     }
 
-    public void setStoreCredit(int storeCredit) {
+    public void setStoreCredit(double storeCredit) {
         this.storeCredit.set(storeCredit);
     }
 
