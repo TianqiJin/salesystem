@@ -71,7 +71,7 @@
                   </HBox.margin>
                 </Button>
                 <Button mnemonicParsing="false" onAction="#handleEditProduct" text="Edit" />
-                <Button mnemonicParsing="false" onAction="#handleDeleteProduct" text="Delete" />
+                <!--<Button mnemonicParsing="false" onAction="#handleDeleteProduct" text="Delete" />-->
               </children>
             </HBox>
           </children>

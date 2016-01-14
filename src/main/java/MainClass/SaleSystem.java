@@ -308,6 +308,33 @@ public class SaleSystem extends Application{
         return null;
     }
 
+    public Transaction showGenerateProductTransactionDialog(){
+        try{
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(SaleSystem.class.getResource("/fxml/GenerateProductTransaction.fxml"));
+            AnchorPane page = loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Create Stock Transaction");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(primaryStage);
+            Scene scene = new Scene(page);
+            dialogStage.setScene(scene);
+
+            GenerateProductTransactController controller = loader.getController();
+            controller.setMainClass(SaleSystem.this);
+            controller.setDialogStage(dialogStage);
+            controller.loadDataFromDB();
+            dialogStage.showAndWait();
+            if(controller.isConfirmedClicked()){
+                return controller.returnNewTrasaction();
+            }
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public Transaction showGenerateReturnTransactionDialog(){
         try{
             FXMLLoader loader = new FXMLLoader();
