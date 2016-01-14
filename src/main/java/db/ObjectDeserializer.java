@@ -39,6 +39,19 @@ public interface ObjectDeserializer<E> {
         }
     };
 
+    public static final ObjectDeserializer<ProductTransaction> PRODUCT_TRANSACTION_OBJECT_DESERIALIZER =  new ObjectDeserializer<ProductTransaction>() {
+        @Override
+        public ProductTransaction deserialize(ResultSet rs) throws SQLException {
+            ProductTransaction productTransaction = new ProductTransaction.ProductTransactionBuilder()
+                    .productId(rs.getInt("ProductId"))
+                    .totalNum(rs.getInt("TotalNum"))
+                    .unitPrice(rs.getBigDecimal("UnitPrice").setScale(2, BigDecimal.ROUND_HALF_EVEN).floatValue())
+                    .quantity(0)
+                    .build();
+            return productTransaction;
+        }
+    };
+
     public static final ObjectDeserializer<Transaction> TRANSACTION_OBJECT_DESERIALIZER =  new ObjectDeserializer<Transaction>() {
         @Override
         public Transaction deserialize(ResultSet rs) throws SQLException {

@@ -17,7 +17,7 @@
         <TextField fx:id="productIdField" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="0" />
         <TextField fx:id="textureField" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
         <TextField fx:id="sizeField" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-        <TextField fx:id="totalNumField" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+        <TextField fx:id="totalNumField" editable="false" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
         <TextField fx:id="unitPriceField" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
 
       </children>
