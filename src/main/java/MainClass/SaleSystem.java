@@ -1,6 +1,9 @@
 package MainClass;
 
 import Controllers.*;
+import db.DBExecuteProduct;
+import db.DBExecuteProperty;
+import db.DBQueries;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -16,14 +19,12 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import model.Customer;
-import model.Product;
-import model.Staff;
-import model.Transaction;
+import model.*;
 import org.apache.log4j.Logger;
 import util.PropertiesSys;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,6 +38,8 @@ public class SaleSystem extends Application{
     private BorderPane rootLayout;
     private static int state=0;
     private static int staffId;
+    private static Property property;
+    private DBExecuteProperty dbExecuteProperty;
     @FXML
     public TabPane tabPane;
     @FXML
@@ -53,8 +56,14 @@ public class SaleSystem extends Application{
     public void start(Stage primaryStage) throws Exception {
         showLoginDialog();
         if (state!=0){
+            loadPropertyFromDB();
+            System.out.println(getProductWarnLimit());
             showMainLayOut(primaryStage);
         }
+    }
+
+    public SaleSystem(){
+        dbExecuteProperty = new DBExecuteProperty();
     }
 
     public void showMainLayOut(Stage primaryStage){
@@ -83,6 +92,12 @@ public class SaleSystem extends Application{
             @Override
             public void handle(ActionEvent event) {
                 showPDFGenerateDialog();
+            }
+        });
+        settingsMenuItem.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                showPropertySettingDialog();
             }
         });
     }
@@ -282,6 +297,29 @@ public class SaleSystem extends Application{
         }
     }
 
+    public void showPropertySettingDialog(){
+        try{
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(SaleSystem.class.getResource("/fxml/PropertySettingDialog.fxml"));
+            AnchorPane page = loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Property Setting");
+            Scene scene = new Scene(page);
+            dialogStage.setScene(scene);
+            dialogStage.initOwner(primaryStage);
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+
+            PropertySettingDialogController controller = loader.getController();
+            controller.setMainClass(SaleSystem.this);
+            controller.setDialogStage(dialogStage);
+            dialogStage.showAndWait();
+
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
     public Transaction showGenerateCustomerTransactionDialog(){
         try{
             FXMLLoader loader = new FXMLLoader();
@@ -364,15 +402,33 @@ public class SaleSystem extends Application{
     public int getStaffId(){
         return this.staffId;
     }
-
-    public static String getProductLimit() {
-        return productLimit;
+    private void loadPropertyFromDB(){
+        this.property = dbExecuteProperty.selectFirstFromDatabase(DBQueries.SelectQueries.Property.SELECT_ALL_PROPERTY);
+    }
+    public int getProductWarnLimit(){
+        return this.property.getProductWarnLimit();
     }
 
-    public static void setProductLimit(String productLimit) {
-        SaleSystem.productLimit = productLimit;
-        PropertiesSys.properties.setProperty("product_limit", SaleSystem.productLimit);
-        //TODO: write property into file
+    public int getTaxRate(){
+        return this.property.getTaxRate();
+    }
+    public void setProductLimit(Integer productLimit){
+        try{
+            dbExecuteProperty.updateDatabase(DBQueries.UpdateQueries.Property.UPDATE_PRODUCT_WARN_LIMIT, productLimit);
+        }catch(SQLException e){
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Unable to update Product Limit into database!");
+            alert.showAndWait();
+        }
+        loadPropertyFromDB();
+    }
+    public void setTaxRate(Integer taxRate){
+        try{
+            dbExecuteProperty.updateDatabase(DBQueries.UpdateQueries.Property.UPDATE_TAX_RATE, taxRate);
+        }catch(SQLException e){
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Unable to update Tax Rate into database!");
+            alert.showAndWait();
+        }
+        loadPropertyFromDB();
     }
     //TODO: set DialogStage for each tab?
 

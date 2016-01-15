@@ -99,7 +99,7 @@
                           <Label fx:id="subTotalLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                           <Label fx:id="totalLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="3" />
                                     <Label text="Tax" GridPane.rowIndex="2" />
-                                    <Label text="Label" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                    <Label fx:id="taxLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                         </children>
                         <columnConstraints>
                           <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />

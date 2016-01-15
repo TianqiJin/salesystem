@@ -79,6 +79,8 @@ public class GenerateReturnTransactController {
     @FXML
     private Label subTotalLabel;
     @FXML
+    private Label taxLabel;
+    @FXML
     private Label totalLabel;
 
     @FXML
@@ -298,15 +300,18 @@ public class GenerateReturnTransactController {
                         new BigDecimal(iterator.next().getSubTotal()).setScale(2, BigDecimal.ROUND_HALF_EVEN)
                 );
             }
+            BigDecimal tax = new BigDecimal(saleSystem.getTaxRate()).multiply(subTotalAll).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
             BigDecimal total = subTotalAll.multiply(new BigDecimal(1.05)).setScale(2,BigDecimal.ROUND_HALF_EVEN);
             itemsCountLabel.setText(String.valueOf(transactions.size()));
             subTotalLabel.setText(subTotalAll.toString());
+            taxLabel.setText(tax.toString());
             totalLabel.setText(total.toString());
             showBalanceDetails();
         }
         else{
             itemsCountLabel.setText("");
             subTotalLabel.setText("");
+            taxLabel.setText("");
             totalLabel.setText("");
             balanceLabel.setText("");
         }
@@ -375,24 +380,19 @@ public class GenerateReturnTransactController {
 
     private void commitTransactionToDatabase() throws SQLException, IOException {
         Connection connection = DBConnect.getConnection();
-        int flag = 1;
         try{
             connection.setAutoCommit(false);
             Object[] objects = ObjectSerializer.TRANSACTION_OBJECT_SERIALIZER.serialize(transaction);
-            flag *= dbExecuteTransaction.insertIntoDatabase(DBQueries.InsertQueries.Transaction.INSERT_INTO_TRANSACTION,
-                    objects);
+            dbExecuteTransaction.insertIntoDatabase(DBQueries.InsertQueries.Transaction.INSERT_INTO_TRANSACTION,
+                objects);
             for(ProductTransaction tmp : transaction.getProductTransactionList()){
                 int remain = tmp.getTotalNum() + tmp.getQuantity();
-                flag *= dbExecuteProduct.updateDatabase(DBQueries.UpdateQueries.Product.UPDATE_PRODUCT_QUANTITY,
-                        remain, tmp.getProductId());
+                dbExecuteProduct.updateDatabase(DBQueries.UpdateQueries.Product.UPDATE_PRODUCT_QUANTITY, remain, tmp.getProductId());
             }
             double remainStoreCredit = customer.getStoreCredit() + Double.valueOf(storeCreditField.getText());
-            flag *= dbExecuteCustomer.updateDatabase(DBQueries.UpdateQueries.Customer.UPDATE_CUSTOMER_STORE_CREDIT,
-                    remainStoreCredit, customer.getUserName());
+            dbExecuteCustomer.updateDatabase(DBQueries.UpdateQueries.Customer.UPDATE_CUSTOMER_STORE_CREDIT, remainStoreCredit, customer.getUserName());
             connection.commit();
         }catch(SQLException e){
-        }
-        if(flag == 0){
             connection.rollback(); //TODO: CRITICAL BUG!!!
             Alert alert = new Alert(Alert.AlertType.ERROR, "Unable to store transaction to database!");
             alert.showAndWait();
