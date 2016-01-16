@@ -22,15 +22,15 @@
         </rowConstraints>
          <children>
             <Label text="Select Customer" />
-            <ComboBox fx:id="customerComboBox" editable="true" GridPane.columnIndex="1" />
+            <ComboBox fx:id="customerComboBox" editable="true" prefWidth="200.0" GridPane.columnIndex="1" />
             <Label text="Select Product" GridPane.rowIndex="1" />
-            <ComboBox fx:id="productComboBox" editable="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <ComboBox fx:id="productComboBox" editable="true" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
             <Label text="Select Staff" GridPane.rowIndex="2" />
-            <ComboBox fx:id="staffComboBox" editable="true" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            <ComboBox fx:id="staffComboBox" editable="true" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
             <Label text="Select Start Date" GridPane.rowIndex="3" />
-            <DatePicker fx:id="startDatePicker" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+            <DatePicker fx:id="startDatePicker" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
             <Label text="Select End Date" GridPane.rowIndex="4" />
-            <DatePicker fx:id="endDatePicker" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+            <DatePicker fx:id="endDatePicker" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
             <Label fx:id="destinationLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="5" />
             <Button fx:id="destinationButton" mnemonicParsing="false" onAction="#handleDestinationButton" text="Choose a destination" GridPane.rowIndex="5" />
          </children>
