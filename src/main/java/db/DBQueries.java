@@ -22,6 +22,9 @@ public class DBQueries {
             public final static String SELECT_USERNAME_STAFF = "SELECT * FROM staff WHERE UserName = ?";
             public final static String SELECT_STAFF_MAX_NUM = "SELECT * from staff order by StaffID desc limit 1";
         }
+        public static class Property{
+            public final static String SELECT_ALL_PROPERTY = "SELECT * FROM Property";
+        }
     }
     public static class DeleteQueries{
         public static class Customer{
@@ -77,6 +80,13 @@ public class DBQueries {
             public final static String UPDATE_STAFF = "UPDATE staff "
                     +"SET UserName = ?, Password = ?, FullName = ?, Position = ?, Location = ?"
                     +"WHERE StaffID = ? ";
+        }
+        public static class Property{
+            public final static String UPDATE_PRODUCT_WARN_LIMIT = "UPDATE Property "
+                    +"SET ProductWarnLimit = ?";
+
+            public final static String UPDATE_TAX_RATE = "UPDATE Property "
+                    +"SET TaxRate = ?";
         }
     }
 

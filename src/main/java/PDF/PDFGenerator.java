@@ -43,9 +43,9 @@ public class PDFGenerator {
         document.setMargins(50, 45, 90, 40);
         document.open();
         header.setHeader("Customer Report");
-        PdfPTable table = new PdfPTable(4);
+        PdfPTable table = new PdfPTable(5);
         table.setWidthPercentage(100);
-        table.setWidths(new int[]{20,10,20,50});
+        table.setWidths(new int[]{15,10,15,15,50});
         table.getDefaultCell().setBorder(Rectangle.BOTTOM);
         table.addCell("Date");
         table.getDefaultCell().setBorder(Rectangle.BOTTOM);
@@ -53,11 +53,14 @@ public class PDFGenerator {
         table.getDefaultCell().setBorder(Rectangle.BOTTOM);
         table.addCell("Customer");
         table.getDefaultCell().setBorder(Rectangle.BOTTOM);
+        table.addCell("Type");
+        table.getDefaultCell().setBorder(Rectangle.BOTTOM);
         table.addCell("Transaction Details");
         for(Transaction transaction : transactionList){
             table.addCell(DateUtil.format(transaction.getDate()));
             table.addCell(String.valueOf(transaction.getStaffId()));
             table.addCell(String.valueOf(transaction.getInfo()));
+            table.addCell(transaction.getType().toString());
             generateInnerTable(table, transaction);
         }
         document.add(table);
@@ -124,12 +127,13 @@ public class PDFGenerator {
             transactionList.removeIf(transaction -> transaction.getStaffId() != staffId.intValue());
         }
         if(customer != null){
-            transactionList.removeIf(transaction -> transaction.getInfo() != customer.getUserName());
+            transactionList.removeIf(transaction -> !transaction.getInfo().equals(customer.getUserName()));
         }
         if(productId != null){
             for(Transaction transaction: transactionList){
                 transaction.getProductTransactionList().removeIf(productTransaction -> productTransaction.getProductId() != productId.intValue());
             }
+            transactionList.removeIf(transaction -> transaction.getProductTransactionList().size() == 0);
         }
         return transactionList;
     }

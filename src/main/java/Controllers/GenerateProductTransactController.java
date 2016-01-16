@@ -81,8 +81,11 @@ public class GenerateProductTransactController {
     private Button cancelButton;
 
     @FXML
+    private TextField supplierNameField;
+
+    @FXML
     private void initialize(){
-        confimButtonBinding = transactionTableView.itemsProperty().isNull();
+        confimButtonBinding = supplierNameField.textProperty().isEmpty().or(transactionTableView.itemsProperty().isNull());
         confirmButton.disableProperty().bind(confimButtonBinding);
         productIdCol.setCellValueFactory(new PropertyValueFactory<>("productId"));
         stockCol.setCellValueFactory(new PropertyValueFactory<>("totalNum"));
@@ -188,20 +191,19 @@ public class GenerateProductTransactController {
 
     @FXML
     public Transaction handleConfirmButton() throws IOException, SQLException {
-        transaction.getProductTransactionList().addAll(productTransactionObservableList);
         if(!isTransactionValid()){
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Transaction Is Invalid");
             alert.setHeaderText("Please fix the following errors before proceed");
             alert.setContentText(errorMsgBuilder.toString());
             alert.showAndWait();
-            transaction.getProductTransactionList().clear();
         }
         else{
-            transaction.setStoreCredit(Double.valueOf(0));
-
+            transaction.setInfo(supplierNameField.getText().trim());
+            transaction.getProductTransactionList().addAll(productTransactionObservableList);
+            StringBuffer overviewTransactionString = new StringBuffer();
             StringBuffer overviewProductTransactionString = new StringBuffer();
-            double total = 0;
+            BigDecimal total = new BigDecimal(0.00).setScale(2, BigDecimal.ROUND_HALF_EVEN);
             for(ProductTransaction tmp: transaction.getProductTransactionList()){
                 overviewProductTransactionString
                         .append("Product ID: " + tmp.getProductId() + " ")
@@ -210,19 +212,29 @@ public class GenerateProductTransactController {
                         .append("Unit Price: " + tmp.getUnitPrice() + " ")
                         .append("Sub Total: " + tmp.getSubTotal() + " ")
                         .append("\n");
-                total+=tmp.getSubTotal();
+                total = total.add(new BigDecimal(tmp.getSubTotal()).setScale(2, BigDecimal.ROUND_HALF_EVEN));
             }
-            transaction.setPayment(-total);
+            transaction.setPayment(total.floatValue());
+            overviewTransactionString
+                    .append("Customer Name: " + transaction.getInfo() + "\n\n")
+                    .append(overviewProductTransactionString)
+                    .append("\n" + "Total: " + transaction.getPayment() + "\n")
+                    .append("Payment Type: " + transaction.getPaymentType() + "\n")
+                    .append("Date: " + transaction.getDate() + "\n");
 
-
-            Alert alert = new Alert(Alert.AlertType.INFORMATION, "Something added here? please confirm", ButtonType.OK, ButtonType.CANCEL);
+            Alert alert = new Alert(Alert.AlertType.INFORMATION, overviewTransactionString.toString(), ButtonType.OK, ButtonType.CANCEL);
             alert.setTitle("Transaction Overview");
             alert.setHeaderText("Please confirm the following transaction");
+            alert.setResizable(true);
+            alert.getDialogPane().setPrefWidth(500);
+
             Optional<ButtonType> result = alert.showAndWait();
             if(result.isPresent() && result.get() == ButtonType.OK){
                 commitTransactionToDatabase();
                 confirmedClicked = true;
                 dialogStage.close();
+            }else{
+                transaction.getProductTransactionList().clear();
             }
         }
         return transaction;
@@ -275,13 +287,13 @@ public class GenerateProductTransactController {
     }
 
     private boolean isTransactionValid(){
-//        errorMsgBuilder = new StringBuffer();
-//        if(!isProductQuantityValid()){
-//            errorMsgBuilder.append("Some product's quantity exceeds the stock quota!\n");
-//        }
-//        if(errorMsgBuilder.length() != 0){
-//            return false;
-//        }
+        errorMsgBuilder = new StringBuffer();
+        if(supplierNameField.getText().trim().isEmpty()){
+            errorMsgBuilder.append("Supplier Name Cannot Empty!\n");
+        }
+        if(errorMsgBuilder.length() != 0){
+            return false;
+        }
         return true;
     }
 
@@ -299,7 +311,6 @@ public class GenerateProductTransactController {
         Connection connection = DBConnect.getConnection();
         try{
             connection.setAutoCommit(false);
-            //System.out.println(connection.getAutoCommit());
             Object[] objects = ObjectSerializer.TRANSACTION_OBJECT_SERIALIZER.serialize(transaction);
             dbExecuteTransaction.insertIntoDatabase(DBQueries.InsertQueries.Transaction.INSERT_INTO_TRANSACTION,
                     objects);

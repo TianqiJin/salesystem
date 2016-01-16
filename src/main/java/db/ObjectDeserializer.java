@@ -107,6 +107,14 @@ public interface ObjectDeserializer<E> {
         }
     };
 
+    public static final ObjectDeserializer<Property> PROPERTY_OBJECT_DESERIALIZER =  new ObjectDeserializer<Property>() {
+        @Override
+        public Property deserialize(ResultSet rs) throws SQLException {
+            Property property = new Property(rs.getInt("ProductWarnLimit"), rs.getInt("TaxRate"));
+            return property;
+        }
+    };
+
     public static final ObjectDeserializer<Map<String, Object>> DEFAULT_DESERIALIZER = new ObjectDeserializer<Map<String, Object>>() {
         @Override
         public Map<String, Object> deserialize(ResultSet rs) throws SQLException {

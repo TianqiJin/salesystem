@@ -45,7 +45,7 @@
                   <children>
                     <GridPane AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0">
                       <children>
-                        <Label text="Select Customer " GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                        <Label text="Please Select Customer" GridPane.columnIndex="0" GridPane.rowIndex="0" />
                         <Button fx:id="addNewCustomer" mnemonicParsing="false" onAction="#handleAddCustomer" text="New Customer" GridPane.columnIndex="0" GridPane.rowIndex="2" />
                                     <ComboBox fx:id="customerComboBox" editable="true" prefWidth="150.0" GridPane.rowIndex="1" />
                       </children>
@@ -99,7 +99,7 @@
                           <Label fx:id="subTotalLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                           <Label fx:id="totalLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="3" />
                                     <Label text="Tax" GridPane.rowIndex="2" />
-                                    <Label text="Label" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                    <Label fx:id="taxLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                         </children>
                         <columnConstraints>
                           <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
