@@ -32,6 +32,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by tjin on 12/7/2015.
@@ -40,6 +41,7 @@ public class GenerateProductTransactController {
 
     private Stage dialogStage;
     private ObservableList<ProductTransaction> productTransactionObservableList;
+    private FilteredList<ProductTransaction> filteredData;
     private DBExecuteProduct dbExecuteProduct;
     private DBExecuteTransaction dbExecuteTransaction;
     private SaleSystem saleSystem;
@@ -91,7 +93,7 @@ public class GenerateProductTransactController {
 
         loadDataFromDB();
 
-        FilteredList<ProductTransaction> filteredData = new FilteredList<ProductTransaction>(productTransactionObservableList,p->true);
+        //filteredData = new FilteredList<ProductTransaction>(productTransactionObservableList,p->true);
         productIdField.textProperty().addListener((observable,oldVal,newVal)->{
             filteredData.setPredicate(productTransaction -> {
                 if (newVal == null || newVal.isEmpty()){
@@ -122,8 +124,9 @@ public class GenerateProductTransactController {
             public void handle(TableColumn.CellEditEvent<ProductTransaction, Integer> event) {
                 (event.getTableView().getItems().get(event.getTablePosition().getRow()))
                         .setQuantity(event.getNewValue());
+                transactionTableView.setItems(productTransactionObservableList);
+                //transactionTableView.setItems(event.getTableView().getItems());
 
-                transactionTableView.setItems(event.getTableView().getItems());
             }
         });
         subTotalCol.setCellValueFactory(new PropertyValueFactory<>("subTotal"));
@@ -188,7 +191,9 @@ public class GenerateProductTransactController {
 
     @FXML
     public Transaction handleConfirmButton() throws IOException, SQLException {
-        transaction.getProductTransactionList().addAll(productTransactionObservableList);
+        List<ProductTransaction> effectiveList = productTransactionObservableList.stream().filter(p->p.getQuantity()!=0).collect(Collectors.toList());
+        transaction.getProductTransactionList().addAll(effectiveList);
+        System.out.println(transaction.getProductTransactionList());
         if(!isTransactionValid()){
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Transaction Is Invalid");
@@ -275,13 +280,17 @@ public class GenerateProductTransactController {
     }
 
     private boolean isTransactionValid(){
-//        errorMsgBuilder = new StringBuffer();
+
+        errorMsgBuilder = new StringBuffer();
+        if (transaction.getProductTransactionList().size()==0){
+            errorMsgBuilder.append("No product quantity added!!");
+        }
 //        if(!isProductQuantityValid()){
 //            errorMsgBuilder.append("Some product's quantity exceeds the stock quota!\n");
 //        }
-//        if(errorMsgBuilder.length() != 0){
-//            return false;
-//        }
+        if(errorMsgBuilder.length() != 0){
+            return false;
+        }
         return true;
     }
 
@@ -329,6 +338,7 @@ public class GenerateProductTransactController {
         productTransactionObservableList = FXCollections.observableArrayList(
                 dbExecute.selectFromDatabase(DBQueries.SelectQueries.Product.SELECT_ALL_PRODUCT)
         );
+        filteredData = new FilteredList<ProductTransaction>(productTransactionObservableList,p->true);
         transactionTableView.setItems(productTransactionObservableList);
     }
 }
