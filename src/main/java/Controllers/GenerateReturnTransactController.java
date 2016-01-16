@@ -14,6 +14,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.layout.Region;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
@@ -78,6 +79,8 @@ public class GenerateReturnTransactController {
     private Label itemsCountLabel;
     @FXML
     private Label subTotalLabel;
+    @FXML
+    private Label taxLabel;
     @FXML
     private Label totalLabel;
 
@@ -214,7 +217,6 @@ public class GenerateReturnTransactController {
 
     @FXML
     public Transaction handleConfirmButton() throws IOException, SQLException {
-        transaction.getProductTransactionList().addAll(productTransactionObservableList);
         if(!isTransactionValid()){
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Transaction Is Invalid");
@@ -224,9 +226,11 @@ public class GenerateReturnTransactController {
             transaction.getProductTransactionList().clear();
         }
         else{
+            transaction.getProductTransactionList().addAll(productTransactionObservableList);
             transaction.setStoreCredit(Double.valueOf(storeCreditField.getText()));
             StringBuffer overviewTransactionString = new StringBuffer();
             StringBuffer overviewProductTransactionString = new StringBuffer();
+
             for(ProductTransaction tmp: transaction.getProductTransactionList()){
                 overviewProductTransactionString
                         .append("Product ID: " + tmp.getProductId() + " ")
@@ -237,20 +241,25 @@ public class GenerateReturnTransactController {
                         .append("\n");
             }
             overviewTransactionString
-                    .append("Customer Name:" + customer.getFirstName() + " " + customer.getLastName() + "\n\n")
+                    .append("Customer Name: " + customer.getFirstName() + " " + customer.getLastName() + "\n\n")
                     .append(overviewProductTransactionString)
-                    .append("\n" + "Returned Store Credit: " + transaction.getStoreCredit() + "\n")
+                    .append("\n" + "Total: " + totalLabel.getText() + "\n")
+                    .append("Returned Store Credit: " + transaction.getStoreCredit() + "\n")
                     .append("Payment Type: " + transaction.getPaymentType() + "\n")
                     .append("Date: " + transaction.getDate() + "\n");
 
             Alert alert = new Alert(Alert.AlertType.INFORMATION, overviewTransactionString.toString(), ButtonType.OK, ButtonType.CANCEL);
             alert.setTitle("Transaction Overview");
             alert.setHeaderText("Please confirm the following transaction");
+            alert.setResizable(true);
+            alert.getDialogPane().setPrefWidth(500);
             Optional<ButtonType> result = alert.showAndWait();
             if(result.isPresent() && result.get() == ButtonType.OK){
                 commitTransactionToDatabase();
                 confirmedClicked = true;
                 dialogStage.close();
+            }else{
+                transaction.getProductTransactionList().clear();
             }
         }
         return transaction;
@@ -298,15 +307,18 @@ public class GenerateReturnTransactController {
                         new BigDecimal(iterator.next().getSubTotal()).setScale(2, BigDecimal.ROUND_HALF_EVEN)
                 );
             }
+            BigDecimal tax = new BigDecimal(saleSystem.getTaxRate()).multiply(subTotalAll).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
             BigDecimal total = subTotalAll.multiply(new BigDecimal(1.05)).setScale(2,BigDecimal.ROUND_HALF_EVEN);
             itemsCountLabel.setText(String.valueOf(transactions.size()));
             subTotalLabel.setText(subTotalAll.toString());
+            taxLabel.setText(tax.toString());
             totalLabel.setText(total.toString());
             showBalanceDetails();
         }
         else{
             itemsCountLabel.setText("");
             subTotalLabel.setText("");
+            taxLabel.setText("");
             totalLabel.setText("");
             balanceLabel.setText("");
         }
@@ -375,24 +387,19 @@ public class GenerateReturnTransactController {
 
     private void commitTransactionToDatabase() throws SQLException, IOException {
         Connection connection = DBConnect.getConnection();
-        int flag = 1;
         try{
             connection.setAutoCommit(false);
             Object[] objects = ObjectSerializer.TRANSACTION_OBJECT_SERIALIZER.serialize(transaction);
-            flag *= dbExecuteTransaction.insertIntoDatabase(DBQueries.InsertQueries.Transaction.INSERT_INTO_TRANSACTION,
-                    objects);
+            dbExecuteTransaction.insertIntoDatabase(DBQueries.InsertQueries.Transaction.INSERT_INTO_TRANSACTION,
+                objects);
             for(ProductTransaction tmp : transaction.getProductTransactionList()){
                 int remain = tmp.getTotalNum() + tmp.getQuantity();
-                flag *= dbExecuteProduct.updateDatabase(DBQueries.UpdateQueries.Product.UPDATE_PRODUCT_QUANTITY,
-                        remain, tmp.getProductId());
+                dbExecuteProduct.updateDatabase(DBQueries.UpdateQueries.Product.UPDATE_PRODUCT_QUANTITY, remain, tmp.getProductId());
             }
             double remainStoreCredit = customer.getStoreCredit() + Double.valueOf(storeCreditField.getText());
-            flag *= dbExecuteCustomer.updateDatabase(DBQueries.UpdateQueries.Customer.UPDATE_CUSTOMER_STORE_CREDIT,
-                    remainStoreCredit, customer.getUserName());
+            dbExecuteCustomer.updateDatabase(DBQueries.UpdateQueries.Customer.UPDATE_CUSTOMER_STORE_CREDIT, remainStoreCredit, customer.getUserName());
             connection.commit();
         }catch(SQLException e){
-        }
-        if(flag == 0){
             connection.rollback(); //TODO: CRITICAL BUG!!!
             Alert alert = new Alert(Alert.AlertType.ERROR, "Unable to store transaction to database!");
             alert.showAndWait();

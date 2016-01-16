@@ -12,6 +12,7 @@ import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.paint.Color;
 import javafx.util.Callback;
 import model.Product;
 
@@ -47,8 +48,30 @@ public class ProductOverviewController implements OverviewController{
     @FXML
     private void initialize(){
         productIdCol.setCellValueFactory(new PropertyValueFactory<Product, Integer>("ProductId"));
-
         totalNumCol.setCellValueFactory(new PropertyValueFactory<Product, Integer>("totalNum"));
+        totalNumCol.setCellFactory(new Callback<TableColumn<Product, Integer>, TableCell<Product, Integer>>() {
+            @Override
+            public TableCell<Product, Integer> call(TableColumn<Product, Integer> param) {
+                return new TableCell<Product, Integer>(){
+                    @Override
+                    public void updateItem(Integer item, boolean empty){
+                        super.updateItem(item, empty);
+                        if(item == null || empty){
+                            setText(null);
+                            setStyle("");
+                        }else{
+                            setText(String.valueOf(item));
+                            if(item < saleSystem.getProductWarnLimit()){
+                                setStyle("-fx-background-color: chocolate");
+                            }
+                            else{
+                                setStyle("");
+                            }
+                        }
+                    }
+                };
+            }
+        });
         loadDataFromDB();
         showProductDetail(null);
         FilteredList<Product> filteredData = new FilteredList<Product>(productList,p->true);

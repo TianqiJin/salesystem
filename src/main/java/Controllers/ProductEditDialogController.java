@@ -18,8 +18,6 @@ public class ProductEditDialogController {
     @FXML
     private TextField sizeField;
     @FXML
-    private TextField totalNumField;
-    @FXML
     private TextField unitPriceField;
 
 
@@ -43,7 +41,6 @@ public class ProductEditDialogController {
         productIdField.setText(String.valueOf(product.getProductId()));
         textureField.setText(product.getTexture());
         sizeField.setText(product.getSize());
-        totalNumField.setText(String.valueOf(product.getTotalNum()));
         unitPriceField.setText(String.valueOf(product.getUnitPrice()));
 
     }
@@ -52,7 +49,6 @@ public class ProductEditDialogController {
             product.setProductId(Integer.valueOf(productIdField.getText()));
             product.setTexture(textureField.getText());
             product.setSize(sizeField.getText());
-            product.setTotalNum(Integer.valueOf(totalNumField.getText()));
             product.setUnitPrice(Float.valueOf(unitPriceField.getText()));
 
             okClicked = true;
@@ -79,13 +75,6 @@ public class ProductEditDialogController {
         if(productIdField.getText() == null || productIdField.getText().length() == 0){
             errorMsg += "ProductID should not be empty! \n";
         }
-        try{
-            Integer.parseInt(totalNumField.getText());
-        }catch (NumberFormatException e){
-            errorMsg += "Store Credit must be integer! \n";
-        }
-        //TODO: inpsect the validation for emailField
-
         if(errorMsg.length() == 0){
             return true;
         }

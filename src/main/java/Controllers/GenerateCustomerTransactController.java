@@ -83,6 +83,8 @@ public class GenerateCustomerTransactController {
     @FXML
     private Label subTotalLabel;
     @FXML
+    private Label taxLabel;
+    @FXML
     private Label totalLabel;
 
     @FXML
@@ -110,7 +112,7 @@ public class GenerateCustomerTransactController {
 
     @FXML
     private void initialize(){
-        confimButtonBinding = paymentField.textProperty().isEmpty().and(Bindings.size(transactionTableView.getItems()).lessThan(1));
+        confimButtonBinding = paymentField.textProperty().isEmpty().or(Bindings.size(transactionTableView.getItems()).greaterThan(1));
         confirmButton.disableProperty().bind(confimButtonBinding);
         productIdCol.setCellValueFactory(new PropertyValueFactory<>("productId"));
         stockCol.setCellValueFactory(new PropertyValueFactory<>("totalNum"));
@@ -275,7 +277,6 @@ public class GenerateCustomerTransactController {
 
     @FXML
     public Transaction handleConfirmButton() throws IOException, SQLException {
-        transaction.getProductTransactionList().addAll(productTransactionObservableList);
         if(!isTransactionValid()){
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Transaction Is Invalid");
@@ -285,6 +286,7 @@ public class GenerateCustomerTransactController {
             transaction.getProductTransactionList().clear();
         }
         else{
+            transaction.getProductTransactionList().addAll(productTransactionObservableList);
             transaction.setPayment(Double.valueOf(paymentField.getText()));
             if(storeCreditCheckBox.isSelected()){
                 transaction.setStoreCredit(Double.valueOf(storeCreditField.getText()));
@@ -301,21 +303,26 @@ public class GenerateCustomerTransactController {
                         .append("\n");
             }
             overviewTransactionString
-                    .append("Customer Name:" + customer.getFirstName() + " " + customer.getLastName() + "\n\n")
+                    .append("Customer Name: " + customer.getFirstName() + " " + customer.getLastName() + "\n\n")
                     .append(overviewProductTransactionString)
-                    .append("\n" + "Payment: " + transaction.getPayment() + "\n")
-                    .append("\n" + "Store Credit: " + transaction.getStoreCredit() + "\n")
+                    .append("\n" + "Total: " + totalLabel.getText() + "\n")
+                    .append("Payment: " + transaction.getPayment() + "\n")
+                    .append("Store Credit: " + transaction.getStoreCredit() + "\n")
                     .append("Payment Type: " + transaction.getPaymentType() + "\n")
                     .append("Date: " + transaction.getDate() + "\n");
 
             Alert alert = new Alert(Alert.AlertType.INFORMATION, overviewTransactionString.toString(), ButtonType.OK, ButtonType.CANCEL);
             alert.setTitle("Transaction Overview");
             alert.setHeaderText("Please confirm the following transaction");
+            alert.setResizable(true);
+            alert.getDialogPane().setPrefWidth(500);
             Optional<ButtonType> result = alert.showAndWait();
             if(result.isPresent() && result.get() == ButtonType.OK){
                 commitTransactionToDatabase();
                 confirmedClicked = true;
                 dialogStage.close();
+            }else{
+                transaction.getProductTransactionList().clear();
             }
         }
         return transaction;
@@ -363,15 +370,18 @@ public class GenerateCustomerTransactController {
                         new BigDecimal(iterator.next().getSubTotal()).setScale(2, BigDecimal.ROUND_HALF_EVEN)
                 );
             }
-            BigDecimal total = subTotalAll.multiply(new BigDecimal(1.05)).setScale(2,BigDecimal.ROUND_HALF_EVEN);
+            BigDecimal tax = new BigDecimal(saleSystem.getTaxRate()).multiply(subTotalAll).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+            BigDecimal total = subTotalAll.add(tax).setScale(2, BigDecimal.ROUND_HALF_EVEN);
             itemsCountLabel.setText(String.valueOf(transactions.size()));
             subTotalLabel.setText(subTotalAll.toString());
+            taxLabel.setText(tax.toString());
             totalLabel.setText(total.toString());
             showBalanceDetails();
         }
         else{
             itemsCountLabel.setText("");
             subTotalLabel.setText("");
+            taxLabel.setText("");
             totalLabel.setText("");
             balanceLabel.setText("");
         }

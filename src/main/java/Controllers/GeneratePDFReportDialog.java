@@ -11,6 +11,7 @@ import javafx.scene.control.*;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.StringConverter;
 import model.Customer;
 import model.Product;
 import model.Staff;
@@ -43,11 +44,11 @@ public class GeneratePDFReportDialog {
     private File selectedDirectory;
 
     @FXML
-    private ComboBox customerComboBox;
+    private ComboBox<String> customerComboBox;
     @FXML
-    private ComboBox productComboBox;
+    private ComboBox<Integer> productComboBox;
     @FXML
-    private ComboBox staffComboBox;
+    private ComboBox<String> staffComboBox;
     @FXML
     private DatePicker startDatePicker;
     @FXML
@@ -104,10 +105,21 @@ public class GeneratePDFReportDialog {
             }
         });
 
-        productComboBox.valueProperty().addListener(new ChangeListener() {
+        productComboBox.setConverter(new StringConverter<Integer>() {
             @Override
-            public void changed(ObservableValue observable, Object oldValue, Object newValue) {
-                productId = (Integer)newValue;
+            public String toString(Integer object) {
+                return String.valueOf(object);
+            }
+
+            @Override
+            public Integer fromString(String string) {
+                return Integer.valueOf(string);
+            }
+        });
+        productComboBox.valueProperty().addListener(new ChangeListener<Integer>() {
+            @Override
+            public void changed(ObservableValue observable, Integer oldValue, Integer newValue) {
+                productId = newValue;
             }
         });
 
