@@ -32,6 +32,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by tjin on 12/7/2015.
@@ -40,6 +41,7 @@ public class GenerateProductTransactController {
 
     private Stage dialogStage;
     private ObservableList<ProductTransaction> productTransactionObservableList;
+    private FilteredList<ProductTransaction> filteredData;
     private DBExecuteProduct dbExecuteProduct;
     private DBExecuteTransaction dbExecuteTransaction;
     private SaleSystem saleSystem;
@@ -94,7 +96,7 @@ public class GenerateProductTransactController {
 
         loadDataFromDB();
 
-        FilteredList<ProductTransaction> filteredData = new FilteredList<ProductTransaction>(productTransactionObservableList,p->true);
+        //filteredData = new FilteredList<ProductTransaction>(productTransactionObservableList,p->true);
         productIdField.textProperty().addListener((observable,oldVal,newVal)->{
             filteredData.setPredicate(productTransaction -> {
                 if (newVal == null || newVal.isEmpty()){
@@ -125,8 +127,9 @@ public class GenerateProductTransactController {
             public void handle(TableColumn.CellEditEvent<ProductTransaction, Integer> event) {
                 (event.getTableView().getItems().get(event.getTablePosition().getRow()))
                         .setQuantity(event.getNewValue());
+                transactionTableView.setItems(productTransactionObservableList);
+                //transactionTableView.setItems(event.getTableView().getItems());
 
-                transactionTableView.setItems(event.getTableView().getItems());
             }
         });
         subTotalCol.setCellValueFactory(new PropertyValueFactory<>("subTotal"));
@@ -191,7 +194,8 @@ public class GenerateProductTransactController {
 
     @FXML
     public Transaction handleConfirmButton() throws IOException, SQLException {
-        if(!isTransactionValid()){
+        List<ProductTransaction> effectiveList = productTransactionObservableList.stream().filter(p->p.getQuantity()!=0).collect(Collectors.toList());
+        if(!isTransactionValid(effectiveList)){
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Transaction Is Invalid");
             alert.setHeaderText("Please fix the following errors before proceed");
@@ -200,7 +204,9 @@ public class GenerateProductTransactController {
         }
         else{
             transaction.setInfo(supplierNameField.getText().trim());
-            transaction.getProductTransactionList().addAll(productTransactionObservableList);
+
+            transaction.getProductTransactionList().addAll(effectiveList);
+
             StringBuffer overviewTransactionString = new StringBuffer();
             StringBuffer overviewProductTransactionString = new StringBuffer();
             BigDecimal total = new BigDecimal(0.00).setScale(2, BigDecimal.ROUND_HALF_EVEN);
@@ -286,8 +292,16 @@ public class GenerateProductTransactController {
         });
     }
 
-    private boolean isTransactionValid(){
+    private boolean isTransactionValid(List<ProductTransaction> list){
+
         errorMsgBuilder = new StringBuffer();
+        if (list.size()==0){
+            errorMsgBuilder.append("No product quantity added!!");
+        }
+//        if(!isProductQuantityValid()){
+//            errorMsgBuilder.append("Some product's quantity exceeds the stock quota!\n");
+//        }
+
         if(supplierNameField.getText().trim().isEmpty()){
             errorMsgBuilder.append("Supplier Name Cannot Empty!\n");
         }
@@ -340,6 +354,7 @@ public class GenerateProductTransactController {
         productTransactionObservableList = FXCollections.observableArrayList(
                 dbExecute.selectFromDatabase(DBQueries.SelectQueries.Product.SELECT_ALL_PRODUCT)
         );
+        filteredData = new FilteredList<ProductTransaction>(productTransactionObservableList,p->true);
         transactionTableView.setItems(productTransactionObservableList);
     }
 }
