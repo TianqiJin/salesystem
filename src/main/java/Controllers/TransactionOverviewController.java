@@ -63,7 +63,9 @@ public class TransactionOverviewController implements OverviewController{
     @FXML
     private TableColumn<ProductTransaction, Integer> qtyCol;
     @FXML
-    private TableColumn<ProductTransaction, BigDecimal> subTotalCol;
+    private TableColumn<ProductTransaction, Float> subTotalCol;
+    @FXML
+    private TableColumn<ProductTransaction, Float> unitPriceCol;
 
     @FXML
     private void initialize(){
@@ -148,6 +150,8 @@ public class TransactionOverviewController implements OverviewController{
                 dbExecuteTransaction.selectFromDatabase(DBQueries.SelectQueries.Transaction.SELECT_ALL_TRANSACTION)
         );
         transactionTable.setItems(transactionList);
+        transactionTable.getSelectionModel().selectFirst();
+        showTransactionDetail(transactionTable.getSelectionModel().getSelectedItem());
     }
 
     @Override
@@ -169,6 +173,7 @@ public class TransactionOverviewController implements OverviewController{
             transactionDetaiTableView.setItems(FXCollections.observableArrayList(transaction.getProductTransactionList()));
             productIdCol.setCellValueFactory(new PropertyValueFactory<>("productId"));
             qtyCol.setCellValueFactory(new PropertyValueFactory<>("quantity"));
+            unitPriceCol.setCellValueFactory(new PropertyValueFactory<>("unitPrice"));
             subTotalCol.setCellValueFactory(new PropertyValueFactory<>("subTotal"));
         }
         else{

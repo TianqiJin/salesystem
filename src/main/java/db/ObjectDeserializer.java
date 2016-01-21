@@ -18,9 +18,20 @@ public interface ObjectDeserializer<E> {
     public static final ObjectDeserializer<Customer> CUSTOMER_OBJECT_DESERIALIZER =  new ObjectDeserializer<Customer>() {
         @Override
         public Customer deserialize(ResultSet rs) throws SQLException {
-            Customer customer = new Customer(rs.getString("UserName"), rs.getString("FirstName"), rs.getString("LastName"), rs.getString("Street"),
-                    rs.getString("PostalCode"), rs.getString("City"), rs.getString("Phone"), rs.getString("Class"), rs.getString("Email"),
-                    rs.getDouble("StoreCredit"));
+            Customer customer = new Customer.CustomerBuilder()
+                    .userName(rs.getString("UserName"))
+                    .firstName(rs.getString("FirstName"))
+                    .lastName(rs.getString("LastName"))
+                    .street(rs.getString("Street"))
+                    .postalCode(rs.getString("PostalCode"))
+                    .city(rs.getString("City"))
+                    .phone(rs.getString("Phone"))
+                    .userClass(rs.getString("Class"))
+                    .email(rs.getString("Email"))
+                    .storeCredit(rs.getDouble("StoreCredit"))
+                    .company(rs.getString("Company"))
+                    .build();
+
             return customer;
         }
     };

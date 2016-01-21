@@ -214,6 +214,8 @@ public class ProductOverviewController implements OverviewController{
                 dbExecute.selectFromDatabase(DBQueries.SelectQueries.Product.SELECT_ALL_PRODUCT)
         );
         productTable.setItems(productList);
+        productTable.getSelectionModel().selectFirst();
+        showProductDetail(productTable.getSelectionModel().getSelectedItem());
     }
 
     @Override

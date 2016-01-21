@@ -57,6 +57,8 @@
                 <Label fx:id="emailLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="7" />
                 <Label text="Store Credit" GridPane.columnIndex="0" GridPane.rowIndex="8" />
                 <Label fx:id="storeCreditLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+                        <Label text="Company" GridPane.rowIndex="9" />
+                        <Label fx:id="companyLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="9" />
               </children>
               <columnConstraints>
                 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -72,6 +74,7 @@
                 <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                 <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                 <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
               </rowConstraints>
             </GridPane>
             <Separator prefWidth="200.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0" />

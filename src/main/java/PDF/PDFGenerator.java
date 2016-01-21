@@ -63,6 +63,13 @@ public class PDFGenerator {
             table.addCell(transaction.getType().toString());
             generateInnerTable(table, transaction);
         }
+        boolean flag = true;
+        for(PdfPRow row: table.getRows().subList(1, table.getRows().size()-1)) {
+            for(PdfPCell cell: row.getCells()) {
+                cell.setBackgroundColor(flag ? BaseColor.LIGHT_GRAY : BaseColor.BLUE);
+            }
+            flag = !flag;
+        }
         document.add(table);
         document.close();
     }

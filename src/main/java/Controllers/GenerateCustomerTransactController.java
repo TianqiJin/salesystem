@@ -248,7 +248,7 @@ public class GenerateCustomerTransactController {
 
     @FXML
     public void handleAddCustomer(){
-        Customer newCustomer = new Customer();
+        Customer newCustomer = new Customer(new Customer.CustomerBuilder());
         boolean okClicked = saleSystem.showCustomerEditDialog(newCustomer);
         if(okClicked){
             newCustomer.setUserName();

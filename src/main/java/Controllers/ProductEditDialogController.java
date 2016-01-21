@@ -63,11 +63,11 @@ public class ProductEditDialogController {
     }
     public void handleOk(){
         if(isInputValid()){
-            product.setProductId(productIdField.getText().trim());
-            product.setTexture(textureField.getText().trim());
-            product.setUnitPrice(Float.valueOf(unitPriceField.getText().trim()));
-            product.setSize(lengthField.getText().trim() + "*" + widthField.getText().trim());
-            product.setPiecePerBox(Integer.parseInt(piecesPerBoxField.getText().trim()));
+            product.setProductId(productIdField.getText());
+            product.setTexture(textureField.getText());
+            product.setUnitPrice(Float.valueOf(unitPriceField.getText()));
+            product.setSize(lengthField.getText() + "*" + widthField.getText());
+            product.setPiecePerBox(Integer.parseInt(piecesPerBoxField.getText()));
             okClicked = true;
             dialogStage.close();
         }

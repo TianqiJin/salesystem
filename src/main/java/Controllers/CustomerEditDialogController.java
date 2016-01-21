@@ -28,6 +28,8 @@ public class CustomerEditDialogController {
     private TextField emailField;
     @FXML
     private TextField storeCreditField;
+    @FXML
+    private TextField companyField;
 
     private Stage dialogStage;
     private Customer customer;
@@ -55,6 +57,7 @@ public class CustomerEditDialogController {
         classField.setText(customer.getUserClass());
         emailField.setText(customer.getEmail());
         storeCreditField.setText(String.valueOf(customer.getStoreCredit()));
+        companyField.setText(customer.getCompany());
     }
     public void handleOk(){
         if(isInputValid()){
@@ -67,6 +70,7 @@ public class CustomerEditDialogController {
             customer.setUserClass(classField.getText());
             customer.setEmail(emailField.getText());
             customer.setStoreCredit(Double.valueOf(storeCreditField.getText()));
+            customer.setCompany(companyField.getText());
 
             okClicked = true;
             dialogStage.close();

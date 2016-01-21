@@ -51,13 +51,14 @@ public class CustomerOverviewController implements OverviewController{
     private Label emailLabel;
     @FXML
     private Label storeCreditLabel;
+    @FXML
+    private Label companyLabel;
 
     @FXML
     private void initialize(){
         firstNameCol.setCellValueFactory(new PropertyValueFactory<Customer, String>("firstName"));
         lastNameCol.setCellValueFactory(new PropertyValueFactory<Customer, String>("lastName"));
         loadDataFromDB();
-        showCustomerDetail(null);
         FilteredList<Customer> filteredData = new FilteredList<Customer>(customerList,p->true);
         filterField.textProperty().addListener((observable,oldVal,newVal)->{
             filteredData.setPredicate(customer -> {
@@ -75,15 +76,13 @@ public class CustomerOverviewController implements OverviewController{
             customerTable.setItems(filteredData);
         });
         customerTable.getSelectionModel().selectedItemProperty().addListener(
-                new ChangeListener<Customer>() {
-                    @Override
-                    public void changed(ObservableValue<? extends Customer> observable, Customer oldValue, Customer newValue) {
-                        showCustomerDetail(newValue);
-                    }
+            new ChangeListener<Customer>() {
+                @Override
+                public void changed(ObservableValue<? extends Customer> observable, Customer oldValue, Customer newValue) {
+                    showCustomerDetail(newValue);
                 }
+            }
         );
-
-
     }
 
     @FXML
@@ -131,7 +130,7 @@ public class CustomerOverviewController implements OverviewController{
 
     @FXML
      private void handleAddCustomer(){
-        Customer newCustomer = new Customer();
+        Customer newCustomer = new Customer(new Customer.CustomerBuilder());
         boolean okClicked = saleSystem.showCustomerEditDialog(newCustomer);
         if(okClicked){
             newCustomer.setUserName();
@@ -191,6 +190,8 @@ public class CustomerOverviewController implements OverviewController{
                 dbExecute.selectFromDatabase(DBQueries.SelectQueries.Customer.SELECT_ALL_CUSTOMER)
         );
         customerTable.setItems(customerList);
+        customerTable.getSelectionModel().selectFirst();
+        showCustomerDetail(customerTable.getSelectionModel().getSelectedItem());
     }
 
     @Override
@@ -209,6 +210,7 @@ public class CustomerOverviewController implements OverviewController{
             classLabel.setText(customer.getUserClass());
             emailLabel.setText(customer.getEmail());
             storeCreditLabel.setText(String.valueOf(customer.getStoreCredit()));
+            companyLabel.setText(customer.getCompany());
         }
         else{
             firstNameLabel.setText("");
@@ -220,6 +222,7 @@ public class CustomerOverviewController implements OverviewController{
             classLabel.setText("");
             emailLabel.setText("");
             storeCreditLabel.setText("");
+            companyLabel.setText("");
         }
     }
 }
