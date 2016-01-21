@@ -29,11 +29,13 @@ public interface ObjectDeserializer<E> {
         @Override
         public Product deserialize(ResultSet rs) throws SQLException {
             Product product = new Product.ProductBuilder()
-                    .productId(rs.getInt("ProductId"))
+                    .productId(rs.getString("ProductId"))
                     .totalNum(rs.getInt("TotalNum"))
                     .unitPrice(rs.getBigDecimal("UnitPrice").setScale(2, BigDecimal.ROUND_HALF_EVEN).floatValue())
-                    .size(rs.getString("Size"))
                     .texture(rs.getString("Texture"))
+                    .piecesPerBox(rs.getInt("PiecesPerBox"))
+                    .size(rs.getString("Size"))
+                    .sizeNumeric(rs.getInt("SizeNumeric"))
                     .build();
             return product;
         }
@@ -43,10 +45,12 @@ public interface ObjectDeserializer<E> {
         @Override
         public ProductTransaction deserialize(ResultSet rs) throws SQLException {
             ProductTransaction productTransaction = new ProductTransaction.ProductTransactionBuilder()
-                    .productId(rs.getInt("ProductId"))
+                    .productId(rs.getString("ProductId"))
                     .totalNum(rs.getInt("TotalNum"))
                     .unitPrice(rs.getBigDecimal("UnitPrice").setScale(2, BigDecimal.ROUND_HALF_EVEN).floatValue())
-                    .quantity(0)
+                    .piecesPerBox(rs.getInt("PiecesPerBox"))
+                    .size(rs.getString("Size"))
+                    .sizeNumeric(rs.getInt("SizeNumeric"))
                     .build();
             return productTransaction;
         }
@@ -65,11 +69,14 @@ public interface ObjectDeserializer<E> {
                 root = mapper.readValue(rs.getString("ProductInfo"), JsonNode.class);
                 for(JsonNode tmpNode: root){
                     list.add(new ProductTransaction.ProductTransactionBuilder()
-                            .productId(tmpNode.path("productId").asInt())
-                            .totalNum(tmpNode.path("totalNum").asInt())
-                            .unitPrice(Float.valueOf(String.valueOf(tmpNode.path("unitPrice").asDouble())))
+                            .productId(tmpNode.path("ProductId").asText())
+                            .totalNum(tmpNode.path("TotalNum").asInt())
+                            .unitPrice(new BigDecimal(String.valueOf(tmpNode.path("UnitPrice").asDouble())).setScale(2, BigDecimal.ROUND_HALF_EVEN).floatValue())
+                            .piecesPerBox(tmpNode.path("PiecesPerBox").asInt())
+                            .size(tmpNode.path("TotalNum").asText())
+                            .sizeNumeric(tmpNode.path("SizeNumeric").asInt())
                             .quantity(tmpNode.path("quantity").asInt())
-                            .subTotal(new BigDecimal(String.valueOf(tmpNode.path("subTotal").asDouble())).setScale(2, BigDecimal.ROUND_HALF_EVEN).floatValue())
+                            .subTotal(new BigDecimal(String.valueOf(tmpNode.path("SubTotal").asDouble())).setScale(2, BigDecimal.ROUND_HALF_EVEN).floatValue())
                             .build()
                     );
                 }

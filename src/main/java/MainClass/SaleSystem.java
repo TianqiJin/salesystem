@@ -265,6 +265,7 @@ public class SaleSystem extends Application{
 
             LoginDialogController controller = loader.getController();
             controller.setDialogStage(dialogStage);
+            dialogStage.setResizable(false);
             dialogStage.showAndWait();
             this.state = controller.returnState();
             this.staffId = controller.returnStaffId();

@@ -31,9 +31,11 @@ public class ProductOverviewController implements OverviewController{
     @FXML
     private TextField filterField;
     @FXML
-    private TableColumn<Product, Integer> productIdCol;
+    private TableColumn<Product, String> productIdCol;
     @FXML
     private TableColumn<Product, Integer> totalNumCol;
+    @FXML
+    private TableColumn<Product, String> sizeCol;
     @FXML
     private Label productIdLabel;
     @FXML
@@ -44,11 +46,16 @@ public class ProductOverviewController implements OverviewController{
     private Label totalNumLabel;
     @FXML
     private Label unitPriceLabel;
+    @FXML
+    private Label totalFeetLabel;
+    @FXML
+    private Label piecesPerBoxLabel;
 
     @FXML
     private void initialize(){
-        productIdCol.setCellValueFactory(new PropertyValueFactory<Product, Integer>("ProductId"));
+        productIdCol.setCellValueFactory(new PropertyValueFactory<Product, String>("ProductId"));
         totalNumCol.setCellValueFactory(new PropertyValueFactory<Product, Integer>("totalNum"));
+        sizeCol.setCellValueFactory(new PropertyValueFactory<Product, String>("size"));
         totalNumCol.setCellFactory(new Callback<TableColumn<Product, Integer>, TableCell<Product, Integer>>() {
             @Override
             public TableCell<Product, Integer> call(TableColumn<Product, Integer> param) {
@@ -85,6 +92,8 @@ public class ProductOverviewController implements OverviewController{
                     return true;
                 }else if (String.valueOf(product.getProductId()).contains(lowerCase)){
                     return true;
+                }else if(product.getSize().contains(lowerCase)){
+                    return true;
                 }
                 return false;
             });
@@ -105,7 +114,7 @@ public class ProductOverviewController implements OverviewController{
     private void handleDeleteProduct(){
         int selectedIndex = productTable.getSelectionModel().getSelectedIndex();
         if(selectedIndex >= 0){
-            int tempID = productTable.getItems().get(selectedIndex).getProductId();
+            String tempID = productTable.getItems().get(selectedIndex).getProductId();
             int temptotalNum = productTable.getItems().get(selectedIndex).getTotalNum();
             Alert alertConfirm = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete this product?");
             Optional<ButtonType> result =  alertConfirm.showAndWait();
@@ -128,7 +137,7 @@ public class ProductOverviewController implements OverviewController{
                         Alert alert = new Alert(Alert.AlertType.INFORMATION);
                         alert.setTitle("Delete Product Successfully");
                         alert.setHeaderText(null);
-                        alert.setContentText("Successfully deteled product: "+tempID+" "+temptotalNum+"pieces");
+                        alert.setContentText("Successfully deleted product: "+tempID+" "+temptotalNum+"pieces");
                         alert.showAndWait();
                     }
                 }
@@ -147,7 +156,7 @@ public class ProductOverviewController implements OverviewController{
 
     @FXML
     private void handleAddProduct(){
-        Product newProduct = new Product();
+        Product newProduct = new Product(new Product.ProductBuilder());
         boolean okClicked = saleSystem.showProductEditDialog(newProduct);
         if(okClicked){
             try{
@@ -157,7 +166,7 @@ public class ProductOverviewController implements OverviewController{
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Unable To Add New Product");
                 alert.setHeaderText(null);
-                alert.setContentText("Unable To Add New Product");
+                alert.setContentText(e.getMessage());
                 alert.showAndWait();
             }finally{
                 loadDataFromDB();
@@ -219,6 +228,8 @@ public class ProductOverviewController implements OverviewController{
             sizeLabel.setText(product.getSize());
             totalNumLabel.setText(String.valueOf(product.getTotalNum()));
             unitPriceLabel.setText(String.valueOf(product.getUnitPrice()));
+            totalFeetLabel.setText(String.valueOf(product.getTotalFeet()));
+            piecesPerBoxLabel.setText(String.valueOf(product.getPiecePerBox()));
         }
         else{
             productIdLabel.setText("");
@@ -226,6 +237,8 @@ public class ProductOverviewController implements OverviewController{
             sizeLabel.setText("");
             totalNumLabel.setText("");
             unitPriceLabel.setText("");
+            totalFeetLabel.setText("");
+            piecesPerBoxLabel.setText("");
         }
     }
 

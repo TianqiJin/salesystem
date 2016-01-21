@@ -8,6 +8,9 @@ import javafx.beans.property.*;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.util.Arrays;
@@ -19,21 +22,24 @@ public class ProductTransaction extends ProductBase{
     private IntegerProperty quantity;
     private FloatProperty subTotal;
 
-    public ProductTransaction(Object... params){
-        super(Arrays.copyOfRange(params, 0, 3));
-        this.quantity = new SimpleIntegerProperty((Integer)params[3]);
-        this.subTotal = new SimpleFloatProperty((Float)params[4]);
+    public ProductTransaction(ProductTransactionBuilder builder){
+        super(builder.productId, builder.totalNum, builder.unitPrice, builder.piecesPerBox, builder.size, builder.sizeNumeric);
+        this.quantity = new SimpleIntegerProperty(builder.quantity);
+        this.subTotal = new SimpleFloatProperty(builder.subTotal);
         this.subTotal.bind(quantity.multiply(unitPriceProperty()));
     }
 
     public static class ProductTransactionBuilder{
-        private int productId;
-        private int totalNum;
-        private float unitPrice;
+        private String productId;
+        private int totalNum = 0;
+        private float unitPrice = 0;
+        private int piecesPerBox = 0;
+        private String size = null;
+        private int sizeNumeric = 0;
         private int quantity = 0;
         private float subTotal = 0;
 
-        public ProductTransactionBuilder productId(int productId){
+        public ProductTransactionBuilder productId(String productId){
             this.productId = productId;
             return this;
         }
@@ -45,6 +51,18 @@ public class ProductTransaction extends ProductBase{
             this.unitPrice = unitPrice;
             return this;
         }
+        public ProductTransactionBuilder size(String size){
+            this.size = size;
+            return this;
+        }
+        public ProductTransactionBuilder sizeNumeric(int sizeNumeric){
+            this.sizeNumeric = sizeNumeric;
+            return this;
+        }
+        public ProductTransactionBuilder piecesPerBox(int piecesPerBox){
+            this.piecesPerBox = piecesPerBox;
+            return this;
+        }
         public ProductTransactionBuilder quantity(int quantity){
             this.quantity = quantity;
             return this;
@@ -54,7 +72,7 @@ public class ProductTransaction extends ProductBase{
             return this;
         }
         public ProductTransaction build(){
-            return new ProductTransaction(productId, totalNum, unitPrice, quantity, subTotal);
+            return new ProductTransaction(this);
         }
     }
 

@@ -131,7 +131,7 @@ public class PDFGenerator {
         }
         if(productId != null){
             for(Transaction transaction: transactionList){
-                transaction.getProductTransactionList().removeIf(productTransaction -> productTransaction.getProductId() != productId.intValue());
+                transaction.getProductTransactionList().removeIf(productTransaction -> productTransaction.getProductId().equals(String.valueOf(productId)));
             }
             transactionList.removeIf(transaction -> transaction.getProductTransactionList().size() == 0);
         }

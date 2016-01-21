@@ -45,8 +45,8 @@ public class DBQueries {
         }
         public static class Product{
             public final static String INSERT_INTO_PRODUCT = "INSERT INTO product "
-                    +"(ProductId, Texture, Size, TotalNum, UnitPrice)"
-                    +"VALUES (?, ?, ?, ?, ?)";
+                    +"(ProductId, Texture, TotalNum, UnitPrice, PiecesPerBox, Size, SizeNumeric)"
+                    +"VALUES (?, ?, ?, ?, ?, ?, ?)";
         }
         public static class Transaction{
             public final static String INSERT_INTO_TRANSACTION = "INSERT INTO transaction "
@@ -70,7 +70,7 @@ public class DBQueries {
         }
         public static class Product{
             public final static String UPDATE_PRODUCT = "UPDATE product "
-                    +"SET Texture = ?, Size = ?, TotalNum = ?, UnitPrice = ? "
+                    +"SET Texture = ?, TotalNum = ?, UnitPrice = ?, PiecesPerBox = ?, Size = ?, SizeNumeric = ?"
                     +"WHERE ProductID = ? ";
             public final static String UPDATE_PRODUCT_QUANTITY = "UPDATE product "
                     +"SET TotalNum = ? "

@@ -83,6 +83,8 @@ public class GenerateCustomerTransactController {
     @FXML
     private Label subTotalLabel;
     @FXML
+    private Label paymentDiscountLabel;
+    @FXML
     private Label taxLabel;
     @FXML
     private Label totalLabel;
@@ -370,10 +372,13 @@ public class GenerateCustomerTransactController {
                         new BigDecimal(iterator.next().getSubTotal()).setScale(2, BigDecimal.ROUND_HALF_EVEN)
                 );
             }
+            BigDecimal discount = new BigDecimal(returnDiscount()).multiply(subTotalAll).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
             BigDecimal tax = new BigDecimal(saleSystem.getTaxRate()).multiply(subTotalAll).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
-            BigDecimal total = subTotalAll.add(tax).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+            BigDecimal total = subTotalAll.add(tax).subtract(discount).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+
             itemsCountLabel.setText(String.valueOf(transactions.size()));
             subTotalLabel.setText(subTotalAll.toString());
+            paymentDiscountLabel.setText(discount.toString());
             taxLabel.setText(tax.toString());
             totalLabel.setText(total.toString());
             showBalanceDetails();
@@ -381,6 +386,7 @@ public class GenerateCustomerTransactController {
         else{
             itemsCountLabel.setText("");
             subTotalLabel.setText("");
+            paymentDiscountLabel.setText("");
             taxLabel.setText("");
             totalLabel.setText("");
             balanceLabel.setText("");
@@ -487,6 +493,12 @@ public class GenerateCustomerTransactController {
         return true;
     }
 
+    private int returnDiscount(){
+        if(this.customer != null){
+            return Customer.getDiscountMap().get(customer.getUserClass());
+        }
+        return 0;
+    }
     private void commitTransactionToDatabase() throws SQLException, IOException {
         Connection connection = DBConnect.getConnection();
         try{

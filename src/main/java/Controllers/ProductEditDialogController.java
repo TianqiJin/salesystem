@@ -16,9 +16,13 @@ public class ProductEditDialogController {
     @FXML
     private TextField textureField;
     @FXML
-    private TextField sizeField;
-    @FXML
     private TextField unitPriceField;
+    @FXML
+    private TextField lengthField;
+    @FXML
+    private TextField widthField;
+    @FXML
+    private TextField piecesPerBoxField;
 
 
     private Stage dialogStage;
@@ -38,19 +42,32 @@ public class ProductEditDialogController {
     }
     public void setTextField(Product product){
         this.product = product;
-        productIdField.setText(String.valueOf(product.getProductId()));
-        textureField.setText(product.getTexture());
-        sizeField.setText(product.getSize());
-        unitPriceField.setText(String.valueOf(product.getUnitPrice()));
+        if(product.getProductId() != null){
+            productIdField.setText(String.valueOf(product.getProductId()));
+            textureField.setText(product.getTexture());
+            unitPriceField.setText(String.valueOf(product.getUnitPrice()));
+            piecesPerBoxField.setText(String.valueOf(product.getPiecePerBox()));
+            String[] sizeArray = product.getSize().split("\\*");
+            lengthField.setText(sizeArray[0]);
+            widthField.setText(sizeArray[1]);
+        }
+        else{
+            productIdField.setText("");
+            textureField.setText("");
+            unitPriceField.setText("");
+            piecesPerBoxField.setText("");
+            lengthField.setText("");
+            widthField.setText("");
+        }
 
     }
     public void handleOk(){
         if(isInputValid()){
-            product.setProductId(Integer.valueOf(productIdField.getText()));
-            product.setTexture(textureField.getText());
-            product.setSize(sizeField.getText());
-            product.setUnitPrice(Float.valueOf(unitPriceField.getText()));
-
+            product.setProductId(productIdField.getText().trim());
+            product.setTexture(textureField.getText().trim());
+            product.setUnitPrice(Float.valueOf(unitPriceField.getText().trim()));
+            product.setSize(lengthField.getText().trim() + "*" + widthField.getText().trim());
+            product.setPiecePerBox(Integer.parseInt(piecesPerBoxField.getText().trim()));
             okClicked = true;
             dialogStage.close();
         }
@@ -74,6 +91,16 @@ public class ProductEditDialogController {
     private boolean isInputValid(){
         if(productIdField.getText() == null || productIdField.getText().length() == 0){
             errorMsg += "ProductID should not be empty! \n";
+        }
+        try{
+            Integer.parseInt(lengthField.getText());
+        }catch (NumberFormatException e){
+            errorMsg += "Product Length must be integer!";
+        }
+        try{
+            Integer.parseInt(widthField.getText());
+        }catch (NumberFormatException e){
+            errorMsg += "Product Width must be integer!";
         }
         if(errorMsg.length() == 0){
             return true;

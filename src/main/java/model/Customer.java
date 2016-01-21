@@ -3,7 +3,7 @@ package model;
 import javafx.beans.property.*;
 
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
+import java.util.*;
 
 /**
  * Created by tjin on 11/29/2015.
@@ -21,6 +21,15 @@ public class Customer {
     private final StringProperty email;
     private final DoubleProperty storeCredit;
     private String customerInfo;
+    private static final Map<String, Integer> discountMap;
+
+    static{
+        Map<String, Integer> tmpDiscountMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        tmpDiscountMap.put("A", 20);
+        tmpDiscountMap.put("B", 10);
+        tmpDiscountMap.put("C", 0);
+        discountMap = Collections.unmodifiableMap(tmpDiscountMap);
+    }
 
     public Customer(Object... params){
         if(params.length == 10){
@@ -197,5 +206,9 @@ public class Customer {
 
     public String getCustomerInfo(){
         return this.customerInfo;
+    }
+
+    public static Map<String, Integer> getDiscountMap() {
+        return discountMap;
     }
 }
