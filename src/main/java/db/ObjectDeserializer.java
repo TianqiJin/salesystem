@@ -80,14 +80,14 @@ public interface ObjectDeserializer<E> {
                 root = mapper.readValue(rs.getString("ProductInfo"), JsonNode.class);
                 for(JsonNode tmpNode: root){
                     list.add(new ProductTransaction.ProductTransactionBuilder()
-                            .productId(tmpNode.path("ProductId").asText())
-                            .totalNum(tmpNode.path("TotalNum").asInt())
-                            .unitPrice(new BigDecimal(String.valueOf(tmpNode.path("UnitPrice").asDouble())).setScale(2, BigDecimal.ROUND_HALF_EVEN).floatValue())
-                            .piecesPerBox(tmpNode.path("PiecesPerBox").asInt())
-                            .size(tmpNode.path("TotalNum").asText())
-                            .sizeNumeric(tmpNode.path("SizeNumeric").asInt())
+                            .productId(tmpNode.path("productId").asText())
+                            .totalNum(tmpNode.path("totalNum").asInt())
+                            .unitPrice(new BigDecimal(String.valueOf(tmpNode.path("unitPrice").asDouble())).setScale(2, BigDecimal.ROUND_HALF_EVEN).floatValue())
+                            .piecesPerBox(tmpNode.path("piecesPerBox").asInt())
+                            .size(tmpNode.path("totalNum").asText())
+                            .sizeNumeric(tmpNode.path("sizeNumeric").asInt())
                             .quantity(tmpNode.path("quantity").asInt())
-                            .subTotal(new BigDecimal(String.valueOf(tmpNode.path("SubTotal").asDouble())).setScale(2, BigDecimal.ROUND_HALF_EVEN).floatValue())
+                            .subTotal(new BigDecimal(String.valueOf(tmpNode.path("subTotal").asDouble())).setScale(2, BigDecimal.ROUND_HALF_EVEN).floatValue())
                             .build()
                     );
                 }
