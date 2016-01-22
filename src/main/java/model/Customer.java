@@ -22,13 +22,13 @@ public class Customer {
     private final DoubleProperty storeCredit;
     private final StringProperty company;
     private String customerInfo;
-    private static final Map<String, Integer> discountMap;
+    private static final Map<String, ArrayList<Integer>> discountMap;
 
     static{
-        Map<String, Integer> tmpDiscountMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        tmpDiscountMap.put("A", 20);
-        tmpDiscountMap.put("B", 10);
-        tmpDiscountMap.put("C", 0);
+        Map<String, ArrayList<Integer>> tmpDiscountMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        tmpDiscountMap.put("A", new ArrayList<Integer>(Arrays.asList(new Integer[]{100,95,90,85,80,75,70,65,60})));
+        tmpDiscountMap.put("B", new ArrayList<Integer>(Arrays.asList(new Integer[]{100,95,90,85,80,75,70})));
+        tmpDiscountMap.put("C", new ArrayList<Integer>(Arrays.asList(new Integer[]{100,95,90,85,80})));
         discountMap = Collections.unmodifiableMap(tmpDiscountMap);
     }
 
@@ -269,7 +269,7 @@ public class Customer {
         return this.customerInfo;
     }
 
-    public static Map<String, Integer> getDiscountMap() {
+    public static Map<String, ArrayList<Integer>> getDiscountMap() {
         return discountMap;
     }
 }

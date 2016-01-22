@@ -53,6 +53,7 @@ public class GenerateCustomerTransactController {
     private StringBuffer errorMsgBuilder;
     private boolean confirmedClicked;
     private BooleanBinding confimButtonBinding;
+    private Integer discount;
 
     @FXML
     private TableView<ProductTransaction> transactionTableView;
@@ -74,9 +75,9 @@ public class GenerateCustomerTransactController {
     @FXML
     private Label lastNameLabel;
     @FXML
-    private Label discountLabel;
-    @FXML
     private Label storeCreditLabel;
+    @FXML
+    private Label discountLabel;
 
     @FXML
     private Label itemsCountLabel;
@@ -107,6 +108,8 @@ public class GenerateCustomerTransactController {
     private Label balanceLabel;
     @FXML
     private ChoiceBox<String> paymentTypeChoiceBox;
+    @FXML
+    private ChoiceBox<Integer> discountChoiceBox;
     @FXML
     private TextField storeCreditField;
     @FXML
@@ -187,6 +190,12 @@ public class GenerateCustomerTransactController {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
                 transaction.setPaymentType(newValue);
+            }
+        });
+        discountChoiceBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Integer>() {
+            @Override
+            public void changed(ObservableValue<? extends Integer> observable, Integer oldValue, Integer newValue) {
+                discount = newValue;
             }
         });
 
@@ -350,14 +359,17 @@ public class GenerateCustomerTransactController {
             transaction.setInfo(customer.getUserName());
             firstNameLabel.setText(customer.getFirstName());
             lastNameLabel.setText(customer.getLastName());
-            discountLabel.setText(customer.getUserClass());
+            discountChoiceBox.setDisable(false);
+            discountChoiceBox.getItems().setAll(Customer.getDiscountMap().get(customer.getUserClass()));
             storeCreditLabel.setText(String.valueOf(customer.getStoreCredit()));
+            discountLabel.setText(customer.getUserClass());
         }
         else{
             firstNameLabel.setText("");
             lastNameLabel.setText("");
-            discountLabel.setText("");
+            discountChoiceBox.setDisable(true);
             storeCreditLabel.setText("");
+            discountLabel.setText("");
         }
     }
     /**
@@ -372,7 +384,7 @@ public class GenerateCustomerTransactController {
                         new BigDecimal(iterator.next().getSubTotal()).setScale(2, BigDecimal.ROUND_HALF_EVEN)
                 );
             }
-            BigDecimal discount = new BigDecimal(returnDiscount()).multiply(subTotalAll).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+            BigDecimal discount = new BigDecimal(this.discount).multiply(subTotalAll).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
             BigDecimal tax = new BigDecimal(saleSystem.getTaxRate()).multiply(subTotalAll).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
             BigDecimal total = subTotalAll.add(tax).subtract(discount).setScale(2, BigDecimal.ROUND_HALF_EVEN);
 
@@ -493,11 +505,11 @@ public class GenerateCustomerTransactController {
         return true;
     }
 
-    private int returnDiscount(){
+    private ArrayList<Integer> returnDiscount(){
         if(this.customer != null){
             return Customer.getDiscountMap().get(customer.getUserClass());
         }
-        return 0;
+        return null;
     }
     private void commitTransactionToDatabase() throws SQLException, IOException {
         Connection connection = DBConnect.getConnection();
