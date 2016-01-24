@@ -58,8 +58,10 @@ public interface ObjectDeserializer<E> {
             ProductTransaction productTransaction = new ProductTransaction.ProductTransactionBuilder()
                     .productId(rs.getString("ProductId"))
                     .totalNum(rs.getInt("TotalNum"))
-                    .unitPrice(rs.getBigDecimal("UnitPrice").setScale(2, BigDecimal.ROUND_HALF_EVEN).floatValue())
+                    .unitPrice(Float.valueOf(0))
+                    //.unitPrice(rs.getBigDecimal("UnitPrice").setScale(2, BigDecimal.ROUND_HALF_EVEN).floatValue())
                     .piecesPerBox(rs.getInt("PiecesPerBox"))
+                    .quantity(0)
                     .size(rs.getString("Size"))
                     .sizeNumeric(rs.getInt("SizeNumeric"))
                     .build();

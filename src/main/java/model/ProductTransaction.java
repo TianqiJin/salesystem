@@ -27,6 +27,7 @@ public class ProductTransaction extends ProductBase{
         this.quantity = new SimpleIntegerProperty(builder.quantity);
         this.subTotal = new SimpleFloatProperty(builder.subTotal);
         this.subTotal.bind(quantity.multiply(unitPriceProperty()));
+
     }
 
     public static class ProductTransactionBuilder{

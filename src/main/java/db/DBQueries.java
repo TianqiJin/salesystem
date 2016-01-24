@@ -50,8 +50,8 @@ public class DBQueries {
         }
         public static class Transaction{
             public final static String INSERT_INTO_TRANSACTION = "INSERT INTO transaction "
-                    +"(ProductInfo, Date, Payment, PaymentType, StoreCredit, StaffID, Type)"
-                    +"VALUES (?, ?, ?, ?, ?, ?, ?)";
+                    +"(ProductInfo, Date, Payment, PaymentType, StoreCredit, StaffID, Type, paid, payinfo)"
+                    +"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         }
         public static class Staff{
             public final static String INSERT_INTO_STAFF = "INSERT INTO staff "
