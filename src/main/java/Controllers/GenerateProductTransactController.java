@@ -220,7 +220,7 @@ public class GenerateProductTransactController {
                         .append("\n");
                 total = total.add(new BigDecimal(tmp.getSubTotal()).setScale(2, BigDecimal.ROUND_HALF_EVEN));
             }
-            transaction.setPayment(total.floatValue());
+            transaction.setPayment(Double.valueOf(total.toString()));
             overviewTransactionString
                     .append("Customer Name: " + transaction.getInfo() + "\n\n")
                     .append(overviewProductTransactionString)

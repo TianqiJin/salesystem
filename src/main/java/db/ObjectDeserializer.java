@@ -18,9 +18,20 @@ public interface ObjectDeserializer<E> {
     public static final ObjectDeserializer<Customer> CUSTOMER_OBJECT_DESERIALIZER =  new ObjectDeserializer<Customer>() {
         @Override
         public Customer deserialize(ResultSet rs) throws SQLException {
-            Customer customer = new Customer(rs.getString("UserName"), rs.getString("FirstName"), rs.getString("LastName"), rs.getString("Street"),
-                    rs.getString("PostalCode"), rs.getString("City"), rs.getString("Phone"), rs.getString("Class"), rs.getString("Email"),
-                    rs.getDouble("StoreCredit"));
+            Customer customer = new Customer.CustomerBuilder()
+                    .userName(rs.getString("UserName"))
+                    .firstName(rs.getString("FirstName"))
+                    .lastName(rs.getString("LastName"))
+                    .street(rs.getString("Street"))
+                    .postalCode(rs.getString("PostalCode"))
+                    .city(rs.getString("City"))
+                    .phone(rs.getString("Phone"))
+                    .userClass(rs.getString("Class"))
+                    .email(rs.getString("Email"))
+                    .storeCredit(rs.getDouble("StoreCredit"))
+                    .company(rs.getString("Company"))
+                    .build();
+
             return customer;
         }
     };
@@ -29,11 +40,13 @@ public interface ObjectDeserializer<E> {
         @Override
         public Product deserialize(ResultSet rs) throws SQLException {
             Product product = new Product.ProductBuilder()
-                    .productId(rs.getInt("ProductId"))
+                    .productId(rs.getString("ProductId"))
                     .totalNum(rs.getInt("TotalNum"))
                     .unitPrice(rs.getBigDecimal("UnitPrice").setScale(2, BigDecimal.ROUND_HALF_EVEN).floatValue())
-                    .size(rs.getString("Size"))
                     .texture(rs.getString("Texture"))
+                    .piecesPerBox(rs.getInt("PiecesPerBox"))
+                    .size(rs.getString("Size"))
+                    .sizeNumeric(rs.getInt("SizeNumeric"))
                     .build();
             return product;
         }
@@ -43,10 +56,12 @@ public interface ObjectDeserializer<E> {
         @Override
         public ProductTransaction deserialize(ResultSet rs) throws SQLException {
             ProductTransaction productTransaction = new ProductTransaction.ProductTransactionBuilder()
-                    .productId(rs.getInt("ProductId"))
+                    .productId(rs.getString("ProductId"))
                     .totalNum(rs.getInt("TotalNum"))
                     .unitPrice(rs.getBigDecimal("UnitPrice").setScale(2, BigDecimal.ROUND_HALF_EVEN).floatValue())
-                    .quantity(0)
+                    .piecesPerBox(rs.getInt("PiecesPerBox"))
+                    .size(rs.getString("Size"))
+                    .sizeNumeric(rs.getInt("SizeNumeric"))
                     .build();
             return productTransaction;
         }
@@ -65,9 +80,12 @@ public interface ObjectDeserializer<E> {
                 root = mapper.readValue(rs.getString("ProductInfo"), JsonNode.class);
                 for(JsonNode tmpNode: root){
                     list.add(new ProductTransaction.ProductTransactionBuilder()
-                            .productId(tmpNode.path("productId").asInt())
+                            .productId(tmpNode.path("productId").asText())
                             .totalNum(tmpNode.path("totalNum").asInt())
-                            .unitPrice(Float.valueOf(String.valueOf(tmpNode.path("unitPrice").asDouble())))
+                            .unitPrice(new BigDecimal(String.valueOf(tmpNode.path("unitPrice").asDouble())).setScale(2, BigDecimal.ROUND_HALF_EVEN).floatValue())
+                            .piecesPerBox(tmpNode.path("piecesPerBox").asInt())
+                            .size(tmpNode.path("totalNum").asText())
+                            .sizeNumeric(tmpNode.path("sizeNumeric").asInt())
                             .quantity(tmpNode.path("quantity").asInt())
                             .subTotal(new BigDecimal(String.valueOf(tmpNode.path("subTotal").asDouble())).setScale(2, BigDecimal.ROUND_HALF_EVEN).floatValue())
                             .build()

@@ -31,7 +31,7 @@
                   <HBox alignment="BOTTOM_RIGHT" layoutX="420.0" layoutY="558.0" spacing="5.0" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="420.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="560.0">
                      <children>
                         <Button fx:id="confirmButton" disable="true" mnemonicParsing="false" onAction="#handleConfirmButton" text="Confirm" />
-                        <Button fx:id="cancelButton" mnemonicParsing="false" onAction="#handleCancelButton" text="Cancle" />
+                        <Button fx:id="cancelButton" mnemonicParsing="false" onAction="#handleCancelButton" text="Cancel" />
                      </children>
                   </HBox>
           </children>
@@ -39,7 +39,7 @@
         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
           <children>
             <Accordion layoutX="-29.0" layoutY="36.0" />
-            <SplitPane dividerPositions="0.2, 0.5, 0.75" focusTraversable="true" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <SplitPane dividerPositions="0.17, 0.49, 0.79" focusTraversable="true" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
               <items>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                   <children>
@@ -66,12 +66,14 @@
                       <children>
                         <Label text="First Name" GridPane.columnIndex="0" GridPane.rowIndex="0" />
                         <Label text="Last Name" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                        <Label text="Discount" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                        <Label text="User Class" GridPane.columnIndex="0" GridPane.rowIndex="2" />
                         <Label text="Store Credit" GridPane.columnIndex="0" GridPane.rowIndex="3" />
                         <Label fx:id="firstNameLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="0" />
                         <Label fx:id="lastNameLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                         <Label fx:id="discountLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                         <Label fx:id="storeCreditLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                        <Label text="Select Discount" GridPane.rowIndex="4" />
+                                    <ChoiceBox fx:id="discountChoiceBox" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
                       </children>
                       <columnConstraints>
                         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -82,6 +84,7 @@
                         <RowConstraints vgrow="SOMETIMES" />
                         <RowConstraints vgrow="SOMETIMES" />
                                     <RowConstraints vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                       </rowConstraints>
                     </GridPane>
                     <Label layoutX="6.0" layoutY="4.0" text="Customer Information:" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0" />
@@ -95,11 +98,13 @@
                           <Label text="Items In Cart" GridPane.columnIndex="0" GridPane.rowIndex="0" />
                           <Label fx:id="itemsCountLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="0" />
                           <Label text="Sub Total" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                          <Label text="Total" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                          <Label text="Total" GridPane.columnIndex="0" GridPane.rowIndex="4" />
                           <Label fx:id="subTotalLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                          <Label fx:id="totalLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                                    <Label text="Tax" GridPane.rowIndex="2" />
-                                    <Label fx:id="taxLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                          <Label fx:id="totalLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                                    <Label text="Tax" GridPane.rowIndex="3" />
+                                    <Label fx:id="taxLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                    <Label text="Discount" GridPane.rowIndex="2" />
+                                    <Label fx:id="paymentDiscountLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                         </children>
                         <columnConstraints>
                           <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -111,6 +116,7 @@
                         <rowConstraints>
                           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                         </rowConstraints>

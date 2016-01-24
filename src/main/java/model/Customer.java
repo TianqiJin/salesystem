@@ -3,7 +3,7 @@ package model;
 import javafx.beans.property.*;
 
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
+import java.util.*;
 
 /**
  * Created by tjin on 11/29/2015.
@@ -20,33 +20,91 @@ public class Customer {
     private final StringProperty userClass;
     private final StringProperty email;
     private final DoubleProperty storeCredit;
+    private final StringProperty company;
     private String customerInfo;
+    private static final Map<String, ArrayList<Integer>> discountMap;
 
-    public Customer(Object... params){
-        if(params.length == 10){
-            this.userName = new SimpleStringProperty((String)params[0]);
-            this.firstName = new SimpleStringProperty((String)params[1]);
-            this.lastName = new SimpleStringProperty((String)params[2]);
-            this.street = new SimpleStringProperty((String)params[3]);
-            this.postalCode = new SimpleStringProperty((String)params[4]);
-            this.city = new SimpleStringProperty((String)params[5]);
-            this.phone = new SimpleStringProperty((String)params[6]);
-            this.userClass = new SimpleStringProperty((String)params[7]);
-            this.email = new SimpleStringProperty((String)params[8]);
-            this.storeCredit = new SimpleDoubleProperty((Double) params[9]);
+    static{
+        Map<String, ArrayList<Integer>> tmpDiscountMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        tmpDiscountMap.put("A", new ArrayList<Integer>(Arrays.asList(new Integer[]{100,95,90,85,80,75,70,65,60})));
+        tmpDiscountMap.put("B", new ArrayList<Integer>(Arrays.asList(new Integer[]{100,95,90,85,80,75,70})));
+        tmpDiscountMap.put("C", new ArrayList<Integer>(Arrays.asList(new Integer[]{100,95,90,85,80})));
+        discountMap = Collections.unmodifiableMap(tmpDiscountMap);
+    }
+
+    public Customer(CustomerBuilder builder){
+        this.userName = new SimpleStringProperty(builder.userName);
+        this.firstName = new SimpleStringProperty(builder.firstName);
+        this.lastName = new SimpleStringProperty(builder.lastName);
+        this.street = new SimpleStringProperty(builder.street);
+        this.postalCode = new SimpleStringProperty(builder.postalCode);
+        this.city = new SimpleStringProperty(builder.city);
+        this.phone = new SimpleStringProperty(builder.phone);
+        this.userClass = new SimpleStringProperty(builder.userClass);
+        this.email = new SimpleStringProperty(builder.email);
+        this.storeCredit = new SimpleDoubleProperty(builder.storeCredit);
+        this.company = new SimpleStringProperty(builder.company);
+    }
+
+    public static class CustomerBuilder{
+        private String userName;
+        private String firstName;
+        private String lastName;
+        private String street;
+        private String postalCode;
+        private String city;
+        private String phone;
+        private String userClass = "C";
+        private String email;
+        private double storeCredit = 0.0;
+        private String company;
+
+        public CustomerBuilder userName(String userName){
+            this.userName = userName;
+            return this;
         }
-        else{
-            this.userName = new SimpleStringProperty(null);
-            this.firstName = new SimpleStringProperty(null);
-            this.lastName = new SimpleStringProperty(null);
-            this.street = new SimpleStringProperty(null);
-            this.postalCode = new SimpleStringProperty(null);
-            this.city = new SimpleStringProperty(null);
-            this.phone = new SimpleStringProperty(null);
-            this.userClass = new SimpleStringProperty("C");
-            this.email = new SimpleStringProperty(null);
-            this.storeCredit = new SimpleDoubleProperty(0.0) {
-            };
+        public CustomerBuilder firstName(String firstName){
+            this.firstName = firstName;
+            return this;
+        }
+        public CustomerBuilder lastName(String lastName){
+            this.lastName = lastName;
+            return this;
+        }
+        public CustomerBuilder street(String street){
+            this.street = street;
+            return this;
+        }
+        public CustomerBuilder postalCode(String postalCode){
+            this.postalCode = postalCode;
+            return this;
+        }
+        public CustomerBuilder city(String city){
+            this.city = city;
+            return this;
+        }
+        public CustomerBuilder phone(String phone){
+            this.phone = phone;
+            return this;
+        }
+        public CustomerBuilder userClass(String userClass){
+            this.userClass = userClass;
+            return this;
+        }
+        public CustomerBuilder email(String email){
+            this.email = email;
+            return this;
+        }
+        public CustomerBuilder storeCredit(double storeCredit){
+            this.storeCredit = storeCredit;
+            return this;
+        }
+        public CustomerBuilder company(String company){
+            this.company = company;
+            return this;
+        }
+        public Customer build(){
+            return new Customer(this);
         }
     }
 
@@ -166,6 +224,18 @@ public class Customer {
         this.storeCredit.set(storeCredit);
     }
 
+    public String getCompany() {
+        return company.get();
+    }
+
+    public StringProperty companyProperty() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company.set(company);
+    }
+
     private String generateUserName(){
         SimpleDateFormat sdf = new SimpleDateFormat("HHmmss");
         String tmpUserName = getFirstName().substring(0,1) + getLastName() +
@@ -175,12 +245,12 @@ public class Customer {
 
     public Object[] getAllProperties(){
         return (new Object[]{getUserName(), getFirstName(), getLastName(), getStreet(), getPostalCode(), getCity(),
-            getPhone(), getUserClass(), getEmail(), getStoreCredit()});
+            getPhone(), getUserClass(), getEmail(), getStoreCredit(), getCompany()});
     }
 
     public Object[] getAllPropertiesForUpdate(){
         return (new Object[]{getFirstName(), getLastName(), getStreet(), getPostalCode(), getCity(),
-                getPhone(), getUserClass(), getEmail(), getStoreCredit(), getUserName()});
+                getPhone(), getUserClass(), getEmail(), getStoreCredit(), getCompany(), getUserName()});
     }
 
     public void constructCustomerInfo(){
@@ -197,5 +267,9 @@ public class Customer {
 
     public String getCustomerInfo(){
         return this.customerInfo;
+    }
+
+    public static Map<String, ArrayList<Integer>> getDiscountMap() {
+        return discountMap;
     }
 }

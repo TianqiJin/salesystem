@@ -40,13 +40,13 @@ public class DBQueries {
     public static class InsertQueries{
         public static class Customer{
             public final static String INSERT_INTO_CUSTOMER = "INSERT INTO Customer "
-                    +"(UserName, FirstName, LastName, Street, PostalCode, City, Phone, Class, Email, StoreCredit)"
-                    +"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    +"(UserName, FirstName, LastName, Street, PostalCode, City, Phone, Class, Email, StoreCredit, Company)"
+                    +"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         }
         public static class Product{
             public final static String INSERT_INTO_PRODUCT = "INSERT INTO product "
-                    +"(ProductId, Texture, Size, TotalNum, UnitPrice)"
-                    +"VALUES (?, ?, ?, ?, ?)";
+                    +"(ProductId, Texture, TotalNum, UnitPrice, PiecesPerBox, Size, SizeNumeric)"
+                    +"VALUES (?, ?, ?, ?, ?, ?, ?)";
         }
         public static class Transaction{
             public final static String INSERT_INTO_TRANSACTION = "INSERT INTO transaction "
@@ -62,7 +62,7 @@ public class DBQueries {
     public static class UpdateQueries{
         public static class Customer{
             public final static String UPDATE_CUSTOMER = "UPDATE Customer "
-                    +"SET FirstName = ?, LastName = ?, Street = ?, PostalCode = ?, City = ?, Phone = ?, Class = ?, Email = ?, StoreCredit = ? "
+                    +"SET FirstName = ?, LastName = ?, Street = ?, PostalCode = ?, City = ?, Phone = ?, Class = ?, Email = ?, StoreCredit = ?, Company = ?"
                     +"WHERE UserName = ? ";
             public final static String UPDATE_CUSTOMER_STORE_CREDIT = "UPDATE Customer "
                     +"SET StoreCredit = ? "
@@ -70,7 +70,7 @@ public class DBQueries {
         }
         public static class Product{
             public final static String UPDATE_PRODUCT = "UPDATE product "
-                    +"SET Texture = ?, Size = ?, TotalNum = ?, UnitPrice = ? "
+                    +"SET Texture = ?, TotalNum = ?, UnitPrice = ?, PiecesPerBox = ?, Size = ?, SizeNumeric = ?"
                     +"WHERE ProductID = ? ";
             public final static String UPDATE_PRODUCT_QUANTITY = "UPDATE product "
                     +"SET TotalNum = ? "

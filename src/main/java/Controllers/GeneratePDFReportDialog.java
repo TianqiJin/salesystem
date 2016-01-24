@@ -46,7 +46,7 @@ public class GeneratePDFReportDialog {
     @FXML
     private ComboBox<String> customerComboBox;
     @FXML
-    private ComboBox<Integer> productComboBox;
+    private ComboBox<String> productComboBox;
     @FXML
     private ComboBox<String> staffComboBox;
     @FXML
@@ -71,7 +71,7 @@ public class GeneratePDFReportDialog {
         staffList = dbExecuteStaff.selectFromDatabase(DBQueries.SelectQueries.Staff.SELECT_ALL_STAFF);
 
         List<String> tmpCustomerList = new ArrayList<>();
-        List<Integer> tmpProductList = new ArrayList<>();
+        List<String> tmpProductList = new ArrayList<>();
         List<String> tmpStaffList = new ArrayList<>();
 
         for(Customer customer: customerList){
@@ -105,23 +105,23 @@ public class GeneratePDFReportDialog {
             }
         });
 
-        productComboBox.setConverter(new StringConverter<Integer>() {
-            @Override
-            public String toString(Integer object) {
-                return String.valueOf(object);
-            }
-
-            @Override
-            public Integer fromString(String string) {
-                return Integer.valueOf(string);
-            }
-        });
-        productComboBox.valueProperty().addListener(new ChangeListener<Integer>() {
-            @Override
-            public void changed(ObservableValue observable, Integer oldValue, Integer newValue) {
-                productId = newValue;
-            }
-        });
+//        productComboBox.setConverter(new StringConverter<Integer>() {
+//            @Override
+//            public String toString(Integer object) {
+//                return String.valueOf(object);
+//            }
+//
+//            @Override
+//            public Integer fromString(String string) {
+//                return Integer.valueOf(string);
+//            }
+//        });
+//        productComboBox.valueProperty().addListener(new ChangeListener<Integer>() {
+//            @Override
+//            public void changed(ObservableValue observable, Integer oldValue, Integer newValue) {
+//                productId = newValue;
+//            }
+//        });
 
         staffComboBox.valueProperty().addListener(new ChangeListener() {
             @Override

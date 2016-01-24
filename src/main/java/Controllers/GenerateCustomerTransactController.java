@@ -53,6 +53,7 @@ public class GenerateCustomerTransactController {
     private StringBuffer errorMsgBuilder;
     private boolean confirmedClicked;
     private BooleanBinding confimButtonBinding;
+    private Integer discount;
 
     @FXML
     private TableView<ProductTransaction> transactionTableView;
@@ -74,14 +75,16 @@ public class GenerateCustomerTransactController {
     @FXML
     private Label lastNameLabel;
     @FXML
-    private Label discountLabel;
-    @FXML
     private Label storeCreditLabel;
+    @FXML
+    private Label discountLabel;
 
     @FXML
     private Label itemsCountLabel;
     @FXML
     private Label subTotalLabel;
+    @FXML
+    private Label paymentDiscountLabel;
     @FXML
     private Label taxLabel;
     @FXML
@@ -105,6 +108,8 @@ public class GenerateCustomerTransactController {
     private Label balanceLabel;
     @FXML
     private ChoiceBox<String> paymentTypeChoiceBox;
+    @FXML
+    private ChoiceBox<Integer> discountChoiceBox;
     @FXML
     private TextField storeCreditField;
     @FXML
@@ -187,6 +192,12 @@ public class GenerateCustomerTransactController {
                 transaction.setPaymentType(newValue);
             }
         });
+        discountChoiceBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Integer>() {
+            @Override
+            public void changed(ObservableValue<? extends Integer> observable, Integer oldValue, Integer newValue) {
+                discount = newValue;
+            }
+        });
 
         customerList = dbExecuteCustomer.selectFromDatabase(DBQueries.SelectQueries.Customer.SELECT_ALL_CUSTOMER);
         List<String> tmpCustomerList = new ArrayList<>();
@@ -246,7 +257,7 @@ public class GenerateCustomerTransactController {
 
     @FXML
     public void handleAddCustomer(){
-        Customer newCustomer = new Customer();
+        Customer newCustomer = new Customer(new Customer.CustomerBuilder());
         boolean okClicked = saleSystem.showCustomerEditDialog(newCustomer);
         if(okClicked){
             newCustomer.setUserName();
@@ -348,14 +359,17 @@ public class GenerateCustomerTransactController {
             transaction.setInfo(customer.getUserName());
             firstNameLabel.setText(customer.getFirstName());
             lastNameLabel.setText(customer.getLastName());
-            discountLabel.setText(customer.getUserClass());
+            discountChoiceBox.setDisable(false);
+            discountChoiceBox.getItems().setAll(Customer.getDiscountMap().get(customer.getUserClass()));
             storeCreditLabel.setText(String.valueOf(customer.getStoreCredit()));
+            discountLabel.setText(customer.getUserClass());
         }
         else{
             firstNameLabel.setText("");
             lastNameLabel.setText("");
-            discountLabel.setText("");
+            discountChoiceBox.setDisable(true);
             storeCreditLabel.setText("");
+            discountLabel.setText("");
         }
     }
     /**
@@ -370,10 +384,13 @@ public class GenerateCustomerTransactController {
                         new BigDecimal(iterator.next().getSubTotal()).setScale(2, BigDecimal.ROUND_HALF_EVEN)
                 );
             }
+            BigDecimal discount = new BigDecimal(this.discount).multiply(subTotalAll).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
             BigDecimal tax = new BigDecimal(saleSystem.getTaxRate()).multiply(subTotalAll).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
-            BigDecimal total = subTotalAll.add(tax).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+            BigDecimal total = subTotalAll.add(tax).subtract(discount).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+
             itemsCountLabel.setText(String.valueOf(transactions.size()));
             subTotalLabel.setText(subTotalAll.toString());
+            paymentDiscountLabel.setText(discount.toString());
             taxLabel.setText(tax.toString());
             totalLabel.setText(total.toString());
             showBalanceDetails();
@@ -381,6 +398,7 @@ public class GenerateCustomerTransactController {
         else{
             itemsCountLabel.setText("");
             subTotalLabel.setText("");
+            paymentDiscountLabel.setText("");
             taxLabel.setText("");
             totalLabel.setText("");
             balanceLabel.setText("");
@@ -487,6 +505,12 @@ public class GenerateCustomerTransactController {
         return true;
     }
 
+    private ArrayList<Integer> returnDiscount(){
+        if(this.customer != null){
+            return Customer.getDiscountMap().get(customer.getUserClass());
+        }
+        return null;
+    }
     private void commitTransactionToDatabase() throws SQLException, IOException {
         Connection connection = DBConnect.getConnection();
         try{

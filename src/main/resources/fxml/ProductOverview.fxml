@@ -25,13 +25,14 @@
               <columns>
                 <TableColumn fx:id="productIdCol" editable="true" prefWidth="128.0" text="ProductId" />
                 <TableColumn fx:id="totalNumCol" prefWidth="128.0" text="Total Number" />
+                        <TableColumn fx:id="sizeCol" prefWidth="75.0" text="Size" />
               </columns>
             </TableView>
           </children>
         </AnchorPane>
         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
           <children>
-            <Label prefWidth="-1.0" text="Customer Details:" AnchorPane.leftAnchor="3.0" AnchorPane.topAnchor="5.0">
+            <Label prefWidth="-1.0" text="Product Details:" AnchorPane.leftAnchor="3.0" AnchorPane.topAnchor="5.0">
               <font>
                 <Font size="15.0" />
               </font>
@@ -41,13 +42,17 @@
                 <Label text="ProductId" GridPane.columnIndex="0" GridPane.rowIndex="0" />
                 <Label text="Texture" GridPane.columnIndex="0" GridPane.rowIndex="1" />
                 <Label text="Size" textAlignment="CENTER" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-                <Label text="Total Num" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                <Label text="Total Pieces" GridPane.columnIndex="0" GridPane.rowIndex="4" />
                 <Label fx:id="productIdLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="0" />
                 <Label fx:id="textualLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                 <Label fx:id="sizeLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                <Label fx:id="totalNumLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                        <Label text="Unit Price" GridPane.rowIndex="4" />
-                        <Label fx:id="unitPriceLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                <Label fx:id="totalNumLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                        <Label text="Unit Price" GridPane.rowIndex="3" />
+                        <Label fx:id="unitPriceLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                        <Label text="Total Feet:" GridPane.rowIndex="5" />
+                        <Label fx:id="totalFeetLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                        <Label text="Pieces Per Box: " GridPane.rowIndex="6" />
+                        <Label fx:id="piecesPerBoxLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="6" />
               </children>
               <columnConstraints>
                 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -60,6 +65,7 @@
                 <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                 <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                 <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
               </rowConstraints>
             </GridPane>
             <Separator prefWidth="200.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0" />
