@@ -299,9 +299,13 @@ public class GenerateCustomerTransactController {
         else{
             transaction.getProductTransactionList().addAll(productTransactionObservableList);
             transaction.setPayment(Double.valueOf(paymentField.getText()));
+            double credit = 0;
             if(storeCreditCheckBox.isSelected()){
-                transaction.setStoreCredit(Double.valueOf(storeCreditField.getText()));
+                credit = Double.valueOf(storeCreditField.getText());
+                transaction.setStoreCredit(credit);
             }
+            transaction.setPaid(Double.valueOf(paymentField.getText())+credit);
+
             StringBuffer overviewTransactionString = new StringBuffer();
             StringBuffer overviewProductTransactionString = new StringBuffer();
             for(ProductTransaction tmp: transaction.getProductTransactionList()){
@@ -516,11 +520,11 @@ public class GenerateCustomerTransactController {
         try{
             connection.setAutoCommit(false);
             System.out.println(connection.getAutoCommit());
-            Object[] objects = ObjectSerializer.TRANSACTION_OBJECT_SERIALIZER.serialize(transaction);
+            Object[] objects = ObjectSerializer.TRANSACTION_OBJECT_SERIALIZER_2.serialize(transaction);
             dbExecuteTransaction.insertIntoDatabase(DBQueries.InsertQueries.Transaction.INSERT_INTO_TRANSACTION,
                     objects);
             for(ProductTransaction tmp : transaction.getProductTransactionList()){
-                int remain = tmp.getTotalNum() - tmp.getQuantity();
+                int remain = tmp.getTotalNum() - tmp.getQuantity()/tmp.getPiecePerBox()/tmp.getSizeNumeric();
                 dbExecuteProduct.updateDatabase(DBQueries.UpdateQueries.Product.UPDATE_PRODUCT_QUANTITY,
                     remain, tmp.getProductId());
             }

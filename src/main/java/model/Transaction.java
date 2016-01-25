@@ -24,6 +24,8 @@ public class Transaction {
     private TransactionType type;
     private StringProperty info;
     private List<ProductTransaction> productTransactionList;
+    private DoubleProperty paid;
+    private List<PaymentRecord> payinfo;
 
 
     public Transaction(Object... params) {
@@ -36,6 +38,8 @@ public class Transaction {
         this.staffId = new SimpleIntegerProperty((Integer) params[6]);
         this.type = (TransactionType) params[7];
         this.info = new SimpleStringProperty((String) params[8]);
+        this.paid = new SimpleDoubleProperty((Double) params[9]);
+        this.payinfo = (List<PaymentRecord>) params[10];
     }
 
     public static class TransactionBuilder {
@@ -48,6 +52,8 @@ public class Transaction {
         private double storeCredit = 0.0;
         private TransactionType type = null;
         private String info = null;
+        private double paid;
+        private List<PaymentRecord> payinfo;
 
         public TransactionBuilder transactionId(int transactionId) {
             this.transactionId = transactionId;
@@ -95,8 +101,18 @@ public class Transaction {
             return this;
         }
 
+        public TransactionBuilder paid (double paid){
+            this.paid = paid;
+            return this;
+        }
+
+        public TransactionBuilder payinfo (List<PaymentRecord> payinfo) {
+            this.payinfo=payinfo;
+            return this;
+        }
+
         public Transaction build() {
-            return new Transaction(transactionId, productTransactionList, date, payment, paymentType, storeCredit, staffId, type, info);
+            return new Transaction(transactionId, productTransactionList, date, payment, paymentType, storeCredit, staffId, type, info,paid,payinfo);
         }
     }
 
@@ -193,6 +209,26 @@ public class Transaction {
 
     public void setType(TransactionType type) {
         this.type = type;
+    }
+
+    public double getPaid() {
+        return paid.get();
+    }
+
+    public DoubleProperty paidProperty() {
+        return paid;
+    }
+
+    public void setPaid(double paid) {
+        this.paid.set(paid);
+    }
+
+    public List<PaymentRecord> getPayinfo() {
+        return payinfo;
+    }
+
+    public void setPayinfo(List<PaymentRecord> payinfo) {
+        this.payinfo = payinfo;
     }
 
     public List<String> getProductTransactionListRevised(){

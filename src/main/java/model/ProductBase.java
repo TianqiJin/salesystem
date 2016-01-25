@@ -106,7 +106,7 @@ public abstract class ProductBase {
         }
     }
 
-    public float getSizeNumeric() {
+    public int getSizeNumeric() {
         return sizeNumeric.get();
     }
 
