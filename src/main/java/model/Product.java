@@ -26,7 +26,7 @@ public class Product extends ProductBase{
         super(builder.productId, builder.totalNum, builder.unitPrice, builder.piecesPerBox, builder.size, builder.sizeNumeric);
         this.texture = new SimpleStringProperty(builder.texture);
         this.totalFeet = new SimpleIntegerProperty(builder.totalFeet);
-        this.totalFeet.bind(totalNumProperty().multiply(piecePerBoxProperty()).multiply(sizeNumericProperty()));
+        this.totalFeet.bind(totalNumProperty().multiply(sizeNumericProperty()));
     }
 
     public static class ProductBuilder{

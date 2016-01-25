@@ -21,9 +21,9 @@
               </columnResizePolicy>
               <columns>
                 <TableColumn fx:id="productIdCol" prefWidth="65.0" text="Product ID" />
-                <TableColumn fx:id="stockCol" maxWidth="5000.0" minWidth="10.0" prefWidth="65.0" text="Stock" />
+                <TableColumn fx:id="stockCol" maxWidth="5000.0" minWidth="10.0" prefWidth="65.0" text="Stock (ft)" />
                 <TableColumn fx:id="unitPriceCol" prefWidth="65.0" text="Price" />
-                <TableColumn fx:id="qtyCol" editable="true" prefWidth="65.0" text="Feet" />
+                <TableColumn fx:id="qtyCol" editable="true" prefWidth="65.0" text="Purchased (ft)" />
                 <TableColumn fx:id="subTotalCol" maxWidth="5000.0" minWidth="10.0" prefWidth="65.0" text="Total" />
                 <TableColumn fx:id="deleteCol" maxWidth="5000.0" minWidth="10.0" prefWidth="45.0" sortable="false" />
               </columns>

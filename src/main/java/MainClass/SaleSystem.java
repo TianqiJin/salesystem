@@ -37,7 +37,7 @@ public class SaleSystem extends Application{
     private Stage primaryStage;
     private BorderPane rootLayout;
     private static int state=0;
-    private static int staffId;
+    private static Staff staff;
     private static Property property;
     private DBExecuteProperty dbExecuteProperty;
     @FXML
@@ -268,7 +268,7 @@ public class SaleSystem extends Application{
             dialogStage.setResizable(false);
             dialogStage.showAndWait();
             this.state = controller.returnState();
-            this.staffId = controller.returnStaffId();
+            this.staff = controller.returnStaff();
 
         }catch(IOException e){
             e.printStackTrace();
@@ -400,8 +400,8 @@ public class SaleSystem extends Application{
         return null;
     }
 
-    public int getStaffId(){
-        return this.staffId;
+    public Staff getStaff(){
+        return this.staff;
     }
     private void loadPropertyFromDB(){
         this.property = dbExecuteProperty.selectFirstFromDatabase(DBQueries.SelectQueries.Property.SELECT_ALL_PROPERTY);

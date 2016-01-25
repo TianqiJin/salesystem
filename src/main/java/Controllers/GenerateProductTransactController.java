@@ -274,7 +274,7 @@ public class GenerateProductTransactController {
         this.saleSystem = saleSystem;
         transaction = new Transaction.TransactionBuilder()
                 .productInfoList(new ArrayList<ProductTransaction>())
-                .staffId(saleSystem.getStaffId())
+                .staffId(saleSystem.getStaff().getStaffId())
                 .date(new SimpleDateFormat("yyyy-MM-dd").format(new Date()))
                 .type(Transaction.TransactionType.IN)
                 .storeCredit(0)

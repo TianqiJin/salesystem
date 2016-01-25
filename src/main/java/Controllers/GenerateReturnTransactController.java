@@ -4,6 +4,7 @@ import MainClass.SaleSystem;
 import db.*;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -56,7 +57,7 @@ public class GenerateReturnTransactController {
     @FXML
     private TableColumn<ProductTransaction, Integer> productIdCol;
     @FXML
-    private TableColumn<ProductTransaction, Integer> stockCol;
+    private TableColumn<ProductTransaction, Number> stockCol;
     @FXML
     private TableColumn<ProductTransaction, BigDecimal> unitPriceCol;
     @FXML
@@ -98,13 +99,20 @@ public class GenerateReturnTransactController {
     private Label balanceLabel;
     @FXML
     private TextField storeCreditField;
+    @FXML
+    private TextField cashField;
 
     @FXML
     private void initialize(){
         confirmButtonBinding = storeCreditField.textProperty().isEmpty().or(transactionTableView.itemsProperty().isNull());
         confirmButton.disableProperty().bind(confirmButtonBinding);
         productIdCol.setCellValueFactory(new PropertyValueFactory<>("productId"));
-        stockCol.setCellValueFactory(new PropertyValueFactory<>("totalNum"));
+        stockCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ProductTransaction, Number>, ObservableValue<Number>>() {
+            @Override
+            public ObservableValue<Number> call(TableColumn.CellDataFeatures<ProductTransaction, Number> param) {
+                return new SimpleIntegerProperty(param.getValue().getTotalNum() * param.getValue().getSizeNumeric());
+            }
+        });
         unitPriceCol.setCellValueFactory(new PropertyValueFactory<>("unitPrice"));
         qtyCol.setCellValueFactory(new PropertyValueFactory<>("quantity"));
         qtyCol.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<Integer>(){
@@ -160,6 +168,13 @@ public class GenerateReturnTransactController {
                 showBalanceDetails();
             }
         });
+
+        cashField.textProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                showBalanceDetails();
+            }
+        });
         showCustomerDetails(null);
         showPaymentDetails(null, null);
 
@@ -204,6 +219,9 @@ public class GenerateReturnTransactController {
                     .productId(productResult.get(0).getProductId())
                     .totalNum(productResult.get(0).getTotalNum())
                     .unitPrice(productResult.get(0).getUnitPrice())
+                    .piecesPerBox(productResult.get(0).getPiecePerBox())
+                    .size(productResult.get(0).getSize())
+                    .sizeNumeric(productResult.get(0).getSizeNumeric())
                     .build();
             productTransactionObservableList.add(newTransaction);
         }
@@ -227,7 +245,13 @@ public class GenerateReturnTransactController {
         }
         else{
             transaction.getProductTransactionList().addAll(productTransactionObservableList);
-            transaction.setStoreCredit(Double.valueOf(storeCreditField.getText()));
+            if(!storeCreditField.getText().trim().isEmpty()){
+                transaction.setStoreCredit(Double.valueOf(storeCreditField.getText()));
+            }
+            if(!cashField.getText().trim().isEmpty()){
+                transaction.setPayment(Double.valueOf(cashField.getText()));
+            }
+            transaction.setPaid(transaction.getPayment() + transaction.getStoreCredit());
             StringBuffer overviewTransactionString = new StringBuffer();
             StringBuffer overviewProductTransactionString = new StringBuffer();
 
@@ -326,8 +350,16 @@ public class GenerateReturnTransactController {
 
     private void showBalanceDetails(){
         BigDecimal balance;
-        if(!storeCreditField.getText().trim().isEmpty() && isStoreCreditValid()){
+        if(!storeCreditField.getText().trim().isEmpty() && isStoreCreditValid() && !cashField.getText().trim().isEmpty() && isCashValid()){
+            balance = new BigDecimal(storeCreditField.getText()).add(new BigDecimal(cashField.getText())).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+            balance = balance.subtract(new BigDecimal(totalLabel.getText()));
+            balanceLabel.setText(balance.toString());
+        }else if(!storeCreditField.getText().trim().isEmpty() && isStoreCreditValid()){
             balance = new BigDecimal(storeCreditField.getText()).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+            balance = balance.subtract(new BigDecimal(totalLabel.getText()));
+            balanceLabel.setText(balance.toString());
+        }else if(!cashField.getText().trim().isEmpty() && isCashValid()){
+            balance = new BigDecimal(cashField.getText()).setScale(2, BigDecimal.ROUND_HALF_EVEN);
             balance = balance.subtract(new BigDecimal(totalLabel.getText()));
             balanceLabel.setText(balance.toString());
         }
@@ -342,11 +374,12 @@ public class GenerateReturnTransactController {
         this.saleSystem = saleSystem;
         transaction = new Transaction.TransactionBuilder()
                 .productInfoList(new ArrayList<ProductTransaction>())
-                .staffId(saleSystem.getStaffId())
+                .staffId(saleSystem.getStaff().getStaffId())
                 .date(new SimpleDateFormat("yyyy-MM-dd").format(new Date()))
                 .type(Transaction.TransactionType.RETURN)
-                .payment(0)
                 .paymentType(INIT_TRANSACTION_PAYMENT_TYPE)
+                .storeCredit(0)
+                .payment(0)
                 .build();
         productTransactionObservableList = FXCollections.observableArrayList(transaction.getProductTransactionList());
         transactionTableView.setItems(productTransactionObservableList);
@@ -370,6 +403,9 @@ public class GenerateReturnTransactController {
         if(!isStoreCreditValid()){
             errorMsgBuilder.append("Store Credit must be numbers!\n");
         }
+        if(!isCashValid()){
+            errorMsgBuilder.append("Cash must be numbers!\n");
+        }
         if(errorMsgBuilder.length() != 0){
             return false;
         }
@@ -385,15 +421,24 @@ public class GenerateReturnTransactController {
         return true;
     }
 
+    private boolean isCashValid(){
+        try{
+            Double.parseDouble(cashField.getText());
+        }catch(NumberFormatException e){
+            return false;
+        }
+        return true;
+    }
+
     private void commitTransactionToDatabase() throws SQLException, IOException {
         Connection connection = DBConnect.getConnection();
         try{
             connection.setAutoCommit(false);
-            Object[] objects = ObjectSerializer.TRANSACTION_OBJECT_SERIALIZER.serialize(transaction);
+            Object[] objects = ObjectSerializer.TRANSACTION_OBJECT_SERIALIZER_2.serialize(transaction);
             dbExecuteTransaction.insertIntoDatabase(DBQueries.InsertQueries.Transaction.INSERT_INTO_TRANSACTION,
                 objects);
             for(ProductTransaction tmp : transaction.getProductTransactionList()){
-                int remain = tmp.getTotalNum() + tmp.getQuantity();
+                int remain = tmp.getTotalNum() + tmp.getQuantity()/tmp.getSizeNumeric();
                 dbExecuteProduct.updateDatabase(DBQueries.UpdateQueries.Product.UPDATE_PRODUCT_QUANTITY, remain, tmp.getProductId());
             }
             double remainStoreCredit = customer.getStoreCredit() + Double.valueOf(storeCreditField.getText());
@@ -401,7 +446,7 @@ public class GenerateReturnTransactController {
             connection.commit();
         }catch(SQLException e){
             connection.rollback(); //TODO: CRITICAL BUG!!!
-            Alert alert = new Alert(Alert.AlertType.ERROR, "Unable to store transaction to database!");
+            Alert alert = new Alert(Alert.AlertType.ERROR, e.getMessage());
             alert.showAndWait();
         }
         connection.setAutoCommit(true);

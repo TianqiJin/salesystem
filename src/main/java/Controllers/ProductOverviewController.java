@@ -3,7 +3,11 @@ package Controllers;
 
 import MainClass.SaleSystem;
 import db.DBExecuteProduct;
+import db.DBExecuteTransaction;
 import db.DBQueries;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ReadOnlyIntegerWrapper;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -12,19 +16,25 @@ import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.paint.Color;
 import javafx.util.Callback;
 import model.Product;
+import model.ProductTransaction;
+import model.Staff;
+import model.Transaction;
 
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 public class ProductOverviewController implements OverviewController{
 
     private SaleSystem saleSystem;
     private ObservableList<Product> productList;
-
+    private List<Transaction> transactionList;
 
     @FXML
     private TableView<Product> productTable;
@@ -50,6 +60,20 @@ public class ProductOverviewController implements OverviewController{
     private Label totalFeetLabel;
     @FXML
     private Label piecesPerBoxLabel;
+    @FXML
+    private TableView<Transaction> productTransactionTableView;
+    @FXML
+    private TableColumn<Transaction, LocalDate> productTransactionDateCol;
+    @FXML
+    private TableColumn<Transaction, Integer> productTransactionStaffIdCol;
+    @FXML
+    private TableColumn<Transaction, String> productTransactionInfoCol;
+    @FXML
+    private TableColumn<Transaction, Number> productTransactionQuantityCol;
+    @FXML
+    private TableColumn<Transaction, Number> productTransactionUnitPriceCol;
+    @FXML
+    private TableColumn<Transaction, Number> productTransactionSubtotalCol;
 
     @FXML
     private void initialize(){
@@ -79,6 +103,19 @@ public class ProductOverviewController implements OverviewController{
                 };
             }
         });
+        productTransactionDateCol.setCellValueFactory(new PropertyValueFactory<>("date"));
+        productTransactionStaffIdCol.setCellValueFactory(new PropertyValueFactory<>("staffId"));
+        productTransactionInfoCol.setCellValueFactory(new PropertyValueFactory<>("info"));
+        productTransactionQuantityCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Transaction, Number>, ObservableValue<Number>>() {
+            @Override
+            public ObservableValue<Number> call(TableColumn.CellDataFeatures<Transaction, Number> param) {
+                return new SimpleIntegerProperty(
+                        param.getValue().getProductTransactionList().get(0).getQuantity()/
+                        param.getValue().getProductTransactionList().get(0).getSizeNumeric()/
+                        param.getValue().getProductTransactionList().get(0).getPiecePerBox());
+            }
+        });
+
         loadDataFromDB();
         showProductDetail(null);
         FilteredList<Product> filteredData = new FilteredList<Product>(productList,p->true);
@@ -206,24 +243,45 @@ public class ProductOverviewController implements OverviewController{
     }
 
     private DBExecuteProduct dbExecute;
+    private DBExecuteTransaction dbExecuteTransaction;
+
     public ProductOverviewController(){
         dbExecute = new DBExecuteProduct();
+        dbExecuteTransaction = new DBExecuteTransaction();
     }
     public void loadDataFromDB(){
         productList = FXCollections.observableArrayList(
                 dbExecute.selectFromDatabase(DBQueries.SelectQueries.Product.SELECT_ALL_PRODUCT)
         );
+        transactionList = FXCollections.observableArrayList(dbExecuteTransaction.selectFromDatabase(DBQueries.SelectQueries.Transaction.SELECT_ALL_TRANSACTION));
         productTable.setItems(productList);
         productTable.getSelectionModel().selectFirst();
-        showProductDetail(productTable.getSelectionModel().getSelectedItem());
     }
 
     @Override
     public void setMainClass(SaleSystem saleSystem) {
         this.saleSystem = saleSystem;
+        if(this.saleSystem.getStaff().getPosition().equals(Staff.Position.MANAGER)){
+            productTransactionSubtotalCol = new TableColumn<>("SubTotal");
+            productTransactionUnitPriceCol = new TableColumn<>("UnitPrice");
+            productTransactionUnitPriceCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Transaction, Number>, ObservableValue<Number>>() {
+                @Override
+                public ObservableValue<Number> call(TableColumn.CellDataFeatures<Transaction, Number> param) {
+                    return param.getValue().getProductTransactionList().get(0).unitPriceProperty();
+                }
+            });
+            productTransactionSubtotalCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Transaction, Number>, ObservableValue<Number>>() {
+                @Override
+                public ObservableValue<Number> call(TableColumn.CellDataFeatures<Transaction, Number> param) {
+                    return param.getValue().getProductTransactionList().get(0).subTotalProperty();
+                }
+            });
+            productTransactionTableView.getColumns().add(productTransactionUnitPriceCol);
+            productTransactionTableView.getColumns().add(productTransactionSubtotalCol);
+        }
     }
 
-    public void showProductDetail(Product product){
+    private void showProductDetail(Product product){
         if(product != null){
             productIdLabel.setText(String.valueOf(product.getProductId()));
             textualLabel.setText(product.getTexture());
@@ -232,6 +290,7 @@ public class ProductOverviewController implements OverviewController{
             unitPriceLabel.setText(String.valueOf(product.getUnitPrice()));
             totalFeetLabel.setText(String.valueOf(product.getTotalFeet()));
             piecesPerBoxLabel.setText(String.valueOf(product.getPiecePerBox()));
+            showProductTransactionDetail(product);
         }
         else{
             productIdLabel.setText("");
@@ -242,6 +301,13 @@ public class ProductOverviewController implements OverviewController{
             totalFeetLabel.setText("");
             piecesPerBoxLabel.setText("");
         }
+    }
+    private void showProductTransactionDetail(Product product){
+        List<Transaction> tmpTransactionList = transactionList.stream()
+                .filter(t->t.getProductTransactionList().stream()
+                        .anyMatch(p -> p.getProductId().equals(product.getProductId())) && t.getType().equals(Transaction.TransactionType.IN))
+                .collect(Collectors.toList());
+        productTransactionTableView.setItems(FXCollections.observableArrayList(tmpTransactionList));
     }
 
 }
