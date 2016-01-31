@@ -8,6 +8,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -15,6 +16,7 @@ import javafx.util.converter.BigDecimalStringConverter;
 import model.Customer;
 import model.ProductTransaction;
 import model.Transaction;
+import sun.java2d.loops.GraphicsPrimitive;
 import util.DateUtil;
 
 import java.io.IOException;
@@ -22,6 +24,9 @@ import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public class TransactionOverviewController implements OverviewController{
 
@@ -29,6 +34,8 @@ public class TransactionOverviewController implements OverviewController{
     private ObservableList<Transaction> transactionList;
     private DBExecuteTransaction dbExecuteTransaction;
     private DBExecuteCustomer dbExecuteCustomer;
+    private Executor executor;
+
     @FXML
     private TableView<Transaction> transactionTable;
     @FXML
@@ -81,28 +88,7 @@ public class TransactionOverviewController implements OverviewController{
         unitPriceCol.setCellValueFactory(new PropertyValueFactory<>("unitPrice"));
         subTotalCol.setCellValueFactory(new PropertyValueFactory<>("subTotal"));
 
-        loadDataFromDB();
         showTransactionDetail(null);
-        FilteredList<Transaction> filteredData = new FilteredList<Transaction>(transactionList,p->true);
-        filterField.textProperty().addListener((observable,oldVal,newVal)->{
-            filteredData.setPredicate(transaction -> {
-                if (newVal == null || newVal.isEmpty()){
-                    return true;
-                }
-                String lowerCase = newVal.toLowerCase();
-                if (String.valueOf(transaction.getTransactionId()).equals(lowerCase)){
-                    return true;
-                }else if (transaction.getType().name().toLowerCase().contains(lowerCase)){
-                    return true;
-                }else if (transaction.getDate().toString().toLowerCase().contains(lowerCase)){
-                    return true;
-                }else if (transaction.getInfo().toLowerCase().contains(lowerCase)){
-                    return true;
-                }
-                return false;
-            });
-            transactionTable.setItems(filteredData);
-        });
         transactionTable.getSelectionModel().selectedItemProperty().addListener(
                 new ChangeListener<Transaction>() {
                     @Override
@@ -111,6 +97,11 @@ public class TransactionOverviewController implements OverviewController{
                     }
                 }
         );
+        executor = Executors.newCachedThreadPool(r -> {
+            Thread t = new Thread(r);
+            t.setDaemon(true);
+            return t;
+        });
     }
 
     @FXML
@@ -172,22 +163,49 @@ public class TransactionOverviewController implements OverviewController{
 
     @Override
     public void loadDataFromDB() {
-        try{
-            transactionList = FXCollections.observableArrayList(
-                    dbExecuteTransaction.selectFromDatabase(DBQueries.SelectQueries.Transaction.SELECT_ALL_TRANSACTION)
-            );
-        }catch(SQLException e){
-            Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to grab data from database!\n" + e.getMessage());
+        Task<List<Transaction>> transactionListTask = new Task<List<Transaction>>() {
+            @Override
+            protected List<Transaction> call() throws Exception {
+                return  dbExecuteTransaction.selectFromDatabase(DBQueries.SelectQueries.Transaction.SELECT_ALL_TRANSACTION);
+            }
+        };
+        transactionListTask.setOnSucceeded(event -> {
+            transactionList = FXCollections.observableArrayList(transactionListTask.getValue());
+            transactionTable.setItems(transactionList);
+            transactionTable.getSelectionModel().selectFirst();
+            FilteredList<Transaction> filteredData = new FilteredList<Transaction>(transactionList,p->true);
+            filterField.textProperty().addListener((observable,oldVal,newVal)->{
+                filteredData.setPredicate(transaction -> {
+                    if (newVal == null || newVal.isEmpty()){
+                        return true;
+                    }
+                    String lowerCase = newVal.toLowerCase();
+                    if (String.valueOf(transaction.getTransactionId()).equals(lowerCase)){
+                        return true;
+                    }else if (transaction.getType().name().toLowerCase().contains(lowerCase)){
+                        return true;
+                    }else if (transaction.getDate().toString().toLowerCase().contains(lowerCase)){
+                        return true;
+                    }else if (transaction.getInfo().toLowerCase().contains(lowerCase)){
+                        return true;
+                    }
+                    return false;
+                });
+                transactionTable.setItems(filteredData);
+            });
+        });
+        transactionListTask.setOnFailed(event -> {
+            Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to grab data from database!\n" + event.toString());
             alert.setTitle("Database Error");
             alert.showAndWait();
-        }
-        transactionTable.setItems(transactionList);
-        transactionTable.getSelectionModel().selectFirst();
+        });
+        executor.execute(transactionListTask);
     }
 
     @Override
     public void setMainClass(SaleSystem saleSystem) {
         this.saleSystem = saleSystem;
+        loadDataFromDB();
     }
 
 

@@ -48,7 +48,6 @@ public class TransactionEditDialogController {
     private StringBuffer errorMsgBuilder;
     private boolean confirmedClicked;
     private BooleanBinding confimButtonBinding;
-    private int discount;
 
     @FXML
     private TableView<ProductTransaction> transactionTableView;
@@ -88,8 +87,6 @@ public class TransactionEditDialogController {
     @FXML
     private ChoiceBox<String> paymentTypeChoiceBox;
     @FXML
-    private ChoiceBox<Integer> discountChoiceBox;
-    @FXML
     private TextField storeCreditField;
     @FXML
     private CheckBox storeCreditCheckBox;
@@ -124,13 +121,6 @@ public class TransactionEditDialogController {
                 transaction.setPaymentType(newValue);
             }
         });
-//        discountChoiceBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Integer>() {
-//            @Override
-//            public void changed(ObservableValue<? extends Integer> observable, Integer oldValue, Integer newValue) {
-//                discount = newValue;
-//                showPaymentDetails(productTransactionObservableList, customer);
-//            }
-//        });
         storeCreditCheckBox.selectedProperty().addListener(new ChangeListener<Boolean>() {
             @Override
             public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
@@ -214,7 +204,6 @@ public class TransactionEditDialogController {
                 confirmedClicked = true;
                 dialogStage.close();
             }else{
-                transaction.getProductTransactionList().clear();
                 transaction.getPayinfo().clear();
                 transaction.getPayinfo().addAll(originalPayInfo);
                 transaction.setDate(originalDate);
@@ -232,7 +221,6 @@ public class TransactionEditDialogController {
         dbExecuteCustomer = new DBExecuteCustomer();
         dbExecuteTransaction = new DBExecuteTransaction();
         confirmedClicked = false;
-        discount = 100;
     }
 
     public void setDialogStage(Stage dialogStage){
@@ -246,15 +234,12 @@ public class TransactionEditDialogController {
             transaction.setInfo(customer.getUserName());
             firstNameLabel.setText(customer.getFirstName());
             lastNameLabel.setText(customer.getLastName());
-//            discountChoiceBox.setDisable(false);
-//            discountChoiceBox.getItems().setAll(Customer.getDiscountMap().get(customer.getUserClass()));
             storeCreditLabel.setText(String.valueOf(customer.getStoreCredit()));
             discountLabel.setText(customer.getUserClass());
         }
         else{
             firstNameLabel.setText("");
             lastNameLabel.setText("");
-//            discountChoiceBox.setDisable(true);
             storeCreditLabel.setText("");
             discountLabel.setText("");
         }
@@ -268,7 +253,9 @@ public class TransactionEditDialogController {
             for(PaymentRecord paymentRecord: transaction.getPayinfo()){
                 residual = residual.add(new BigDecimal(paymentRecord.getPaid()));
             }
-            residual = new BigDecimal(transaction.getTotal()).subtract(residual).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+            residual = new BigDecimal(transaction.getTotal())
+                    .subtract(residual)
+                    .setScale(2, BigDecimal.ROUND_HALF_EVEN);
             itemsCountLabel.setText(String.valueOf(transaction.getProductTransactionList().size()));
             totalLabel.setText(String.valueOf(transaction.getTotal()));
             residualLabel.setText(residual.toString());
@@ -316,7 +303,7 @@ public class TransactionEditDialogController {
             alert.setTitle("Database Error");
             alert.showAndWait();
         }
-        showCustomerDetails(customer);
+        showCustomerDetails(this.customer);
         showPaymentDetails(this.transaction);
 
     }

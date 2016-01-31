@@ -111,24 +111,6 @@ public class GeneratePDFReportDialog {
             }
         });
 
-//        productComboBox.setConverter(new StringConverter<Integer>() {
-//            @Override
-//            public String toString(Integer object) {
-//                return String.valueOf(object);
-//            }
-//
-//            @Override
-//            public Integer fromString(String string) {
-//                return Integer.valueOf(string);
-//            }
-//        });
-//        productComboBox.valueProperty().addListener(new ChangeListener<Integer>() {
-//            @Override
-//            public void changed(ObservableValue observable, Integer oldValue, Integer newValue) {
-//                productId = newValue;
-//            }
-//        });
-
         staffComboBox.valueProperty().addListener(new ChangeListener() {
             @Override
             public void changed(ObservableValue observable, Object oldValue, Object newValue) {
@@ -198,6 +180,7 @@ public class GeneratePDFReportDialog {
                     .destination(selectedDirectory.getPath())
                     .build()
                     .generate();
+            dialogStage.close();
         }
     }
 
@@ -211,6 +194,4 @@ public class GeneratePDFReportDialog {
         dbExecuteStaff = new DBExecuteStaff();
         dbExecuteTransaction = new DBExecuteTransaction();
     }
-
-
 }

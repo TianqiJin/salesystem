@@ -44,8 +44,8 @@ public class SaleSystem extends Application{
     @FXML
     public MenuBar menuBar;
 
-    private String[] tabList = {"Customer", "Product","Transaction"};
-    private String[] tabList_High = {"Customer", "Product","Transaction","Staff"};
+    private String[] tabList = {"Transaction", "Product", "Customer"};
+    private String[] tabList_High = {"Transaction", "Product", "Customer", "Staff"};
     private Map<String, OverviewController> tabControllerMap = new HashMap<>();
 
     public static void main(String []args){
