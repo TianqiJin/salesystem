@@ -1,11 +1,17 @@
 package Controllers;
 
+import MainClass.SaleSystem;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
+import javafx.scene.control.TableColumn;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 import model.Customer;
 import model.Product;
+import model.Staff;
+import model.Transaction;
 
 /**
  * Created by tjin on 12/2/2015.
@@ -29,6 +35,7 @@ public class ProductEditDialogController {
     private Product product;
     private String errorMsg;
     private boolean okClicked;
+    private SaleSystem saleSystem;
 
     @FXML
     private void initialize(){}
@@ -46,7 +53,7 @@ public class ProductEditDialogController {
             productIdField.setText(String.valueOf(product.getProductId()));
             textureField.setText(product.getTexture());
             unitPriceField.setText(String.valueOf(product.getUnitPrice()));
-            piecesPerBoxField.setText(String.valueOf(product.getPiecePerBox()));
+            piecesPerBoxField.setText(String.valueOf(product.getPiecesPerBox()));
             String[] sizeArray = product.getSize().split("\\*");
             lengthField.setText(sizeArray[0]);
             widthField.setText(sizeArray[1]);
@@ -67,7 +74,7 @@ public class ProductEditDialogController {
             product.setTexture(textureField.getText());
             product.setUnitPrice(Float.valueOf(unitPriceField.getText()));
             product.setSize(lengthField.getText() + "*" + widthField.getText());
-            product.setPiecePerBox(Integer.parseInt(piecesPerBoxField.getText()));
+            product.setPiecesPerBox(Integer.parseInt(piecesPerBoxField.getText()));
             okClicked = true;
             dialogStage.close();
         }
@@ -80,12 +87,19 @@ public class ProductEditDialogController {
             alert.showAndWait();
         }
     }
-    public void handleCancle(){
+    public void handleCancel(){
         dialogStage.close();
     }
 
     public boolean isOKClicked(){
         return okClicked;
+    }
+
+    public void setMainClass(SaleSystem saleSystem) {
+        this.saleSystem = saleSystem;
+        if(!this.saleSystem.getStaff().getPosition().equals(Staff.Position.MANAGER)){
+            unitPriceField.setDisable(true);
+        }
     }
 
     private boolean isInputValid(){

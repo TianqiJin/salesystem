@@ -13,15 +13,8 @@ public class DBExecuteProduct extends DBExecute<Product>{
     public static Logger logger= Logger.getLogger(DBExecuteProduct.class);
     private static List<Product> selectResult;
 
-    public List<Product> selectFromDatabase(String query, Object... params){
-        try {
-            selectResult = DBConnect.executeQuery(query, ObjectDeserializer.PRODUCT_OBJECT_DESERIALIZER, params);
-            if (selectResult != null) {
-                return selectResult;
-            }
-        } catch (SQLException e) {
-            logger.error(e.getMessage());
-        }
-        return null;
+    public List<Product> selectFromDatabase(String query, Object... params) throws SQLException{
+        selectResult = DBConnect.executeQuery(query, ObjectDeserializer.PRODUCT_OBJECT_DESERIALIZER, params);
+        return selectResult;
     }
 }

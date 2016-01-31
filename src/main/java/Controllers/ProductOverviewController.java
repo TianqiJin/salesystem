@@ -16,6 +16,7 @@ import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.paint.Color;
 import javafx.util.Callback;
 import model.Product;
 import model.ProductTransaction;
@@ -24,6 +25,7 @@ import model.Transaction;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -35,6 +37,7 @@ public class ProductOverviewController implements OverviewController{
     private SaleSystem saleSystem;
     private ObservableList<Product> productList;
     private List<Transaction> transactionList;
+    private Product productSelection;
 
     @FXML
     private TableView<Product> productTable;
@@ -56,8 +59,6 @@ public class ProductOverviewController implements OverviewController{
     private Label totalNumLabel;
     @FXML
     private Label unitPriceLabel;
-    @FXML
-    private Label totalFeetLabel;
     @FXML
     private Label piecesPerBoxLabel;
     @FXML
@@ -90,13 +91,16 @@ public class ProductOverviewController implements OverviewController{
                         if(item == null || empty){
                             setText(null);
                             setStyle("");
+                            getTableRow().setStyle("");
                         }else{
                             setText(String.valueOf(item));
                             if(item < saleSystem.getProductWarnLimit()){
                                 setStyle("-fx-background-color: chocolate");
+                                getTableRow().setStyle("-fx-background-color: chocolate");
                             }
                             else{
                                 setStyle("");
+                                getTableRow().setStyle("");
                             }
                         }
                     }
@@ -112,7 +116,7 @@ public class ProductOverviewController implements OverviewController{
                 return new SimpleIntegerProperty(
                         param.getValue().getProductTransactionList().get(0).getQuantity()/
                         param.getValue().getProductTransactionList().get(0).getSizeNumeric()/
-                        param.getValue().getProductTransactionList().get(0).getPiecePerBox());
+                        param.getValue().getProductTransactionList().get(0).getPiecesPerBox());
             }
         });
 
@@ -201,7 +205,7 @@ public class ProductOverviewController implements OverviewController{
                         newProduct.getAllProperties());
             }catch(SQLException e){
                 Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Unable To Add New Product");
+                alert.setTitle("Unable To Add New Product.\n" + e.getMessage());
                 alert.setHeaderText(null);
                 alert.setContentText(e.getMessage());
                 alert.showAndWait();
@@ -224,10 +228,11 @@ public class ProductOverviewController implements OverviewController{
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Unable To Edit Product");
                     alert.setHeaderText(null);
-                    alert.setContentText("Unable To Edit Product" + selectedProduct.getProductId());
+                    alert.setContentText("Unable To Edit Product " + selectedProduct.getProductId() + "\n" + e.getMessage());
                     alert.showAndWait();
                 }finally{
-                    showProductDetail(selectedProduct);
+                    //showProductDetail(selectedProduct);
+                    loadDataFromDB();
                 }
             }
 
@@ -250,10 +255,18 @@ public class ProductOverviewController implements OverviewController{
         dbExecuteTransaction = new DBExecuteTransaction();
     }
     public void loadDataFromDB(){
-        productList = FXCollections.observableArrayList(
-                dbExecute.selectFromDatabase(DBQueries.SelectQueries.Product.SELECT_ALL_PRODUCT)
-        );
-        transactionList = FXCollections.observableArrayList(dbExecuteTransaction.selectFromDatabase(DBQueries.SelectQueries.Transaction.SELECT_ALL_TRANSACTION));
+        try{
+            productList = FXCollections.observableArrayList(
+                    dbExecute.selectFromDatabase(DBQueries.SelectQueries.Product.SELECT_ALL_PRODUCT)
+            );
+            transactionList = FXCollections.observableArrayList(
+                    dbExecuteTransaction.selectFromDatabase(DBQueries.SelectQueries.Transaction.SELECT_ALL_TRANSACTION));
+        }catch(SQLException e){
+            Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to grab data from database!\n" + e.getMessage());
+            alert.setTitle("Database Error");
+            alert.showAndWait();
+        }
+
         productTable.setItems(productList);
         productTable.getSelectionModel().selectFirst();
     }
@@ -288,8 +301,7 @@ public class ProductOverviewController implements OverviewController{
             sizeLabel.setText(product.getSize());
             totalNumLabel.setText(String.valueOf(product.getTotalNum()));
             unitPriceLabel.setText(String.valueOf(product.getUnitPrice()));
-            totalFeetLabel.setText(String.valueOf(product.getTotalFeet()));
-            piecesPerBoxLabel.setText(String.valueOf(product.getPiecePerBox()));
+            piecesPerBoxLabel.setText(String.valueOf(product.getPiecesPerBox()));
             showProductTransactionDetail(product);
         }
         else{
@@ -298,16 +310,30 @@ public class ProductOverviewController implements OverviewController{
             sizeLabel.setText("");
             totalNumLabel.setText("");
             unitPriceLabel.setText("");
-            totalFeetLabel.setText("");
             piecesPerBoxLabel.setText("");
         }
     }
     private void showProductTransactionDetail(Product product){
         List<Transaction> tmpTransactionList = transactionList.stream()
                 .filter(t->t.getProductTransactionList().stream()
-                        .anyMatch(p -> p.getProductId().equals(product.getProductId())) && t.getType().equals(Transaction.TransactionType.IN))
+                        .anyMatch(p -> p.getProductId().equals(product.getProductId())))
+                .filter(t -> t.getType().equals(Transaction.TransactionType.IN))
                 .collect(Collectors.toList());
-        productTransactionTableView.setItems(FXCollections.observableArrayList(tmpTransactionList));
+
+        List<Transaction> realTransactionList = new ArrayList<>();
+        tmpTransactionList.forEach(transaction -> {
+            Transaction tmpTransaction = new Transaction.TransactionBuilder()
+                    .date(transaction.getDate().toString())
+                    .staffId(transaction.getStaffId())
+                    .info(transaction.getInfo())
+                    .build();
+            List<ProductTransaction> tmpProductTransactionList = transaction.getProductTransactionList().stream()
+                    .filter(p->p.getProductId().equals(product.getProductId()))
+                    .collect(Collectors.toList());
+            tmpTransaction.setProductTransactionList(tmpProductTransactionList);
+            realTransactionList.add(tmpTransaction);
+        });
+        productTransactionTableView.setItems(FXCollections.observableArrayList(realTransactionList));
     }
 
 }

@@ -75,6 +75,7 @@ public interface ObjectDeserializer<E> {
             ObjectMapper mapper = new ObjectMapper();
             String type = null, info = null;
             List<ProductTransaction> list = new ArrayList<>();
+            List<PaymentRecord> listPaymentRecord = new ArrayList<>();
             try {
                 JsonNode root = mapper.readValue(rs.getString("Type"),JsonNode.class);
                 type = root.path("type").textValue();
@@ -93,10 +94,16 @@ public interface ObjectDeserializer<E> {
                             .build()
                     );
                 }
+                root = mapper.readValue(rs.getString("payinfo"), JsonNode.class);
+                for(JsonNode tmpNode: root){
+                    listPaymentRecord.add(new PaymentRecord(
+                            tmpNode.path("date").asText(),
+                            tmpNode.path("paid").asDouble(),
+                            tmpNode.path("paymentType").asText()));
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
             Transaction transaction = new Transaction.TransactionBuilder()
                     .transactionId(rs.getInt("TransactionID"))
                     .productInfoList(list)
@@ -107,6 +114,8 @@ public interface ObjectDeserializer<E> {
                     .staffId(rs.getInt("StaffID"))
                     .type(Transaction.TransactionType.getType(type))
                     .info(info)
+                    .total(rs.getDouble("Total"))
+                    .payinfo(listPaymentRecord)
                     .build();
             return transaction;
         }

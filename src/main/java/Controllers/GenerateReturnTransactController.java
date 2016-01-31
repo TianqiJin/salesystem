@@ -19,10 +19,7 @@ import javafx.scene.layout.Region;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
-import model.Customer;
-import model.Product;
-import model.ProductTransaction;
-import model.Transaction;
+import model.*;
 import util.AutoCompleteComboBoxListener;
 import util.ButtonCell;
 
@@ -104,15 +101,8 @@ public class GenerateReturnTransactController {
 
     @FXML
     private void initialize(){
-        confirmButtonBinding = storeCreditField.textProperty().isEmpty().or(transactionTableView.itemsProperty().isNull());
-        confirmButton.disableProperty().bind(confirmButtonBinding);
         productIdCol.setCellValueFactory(new PropertyValueFactory<>("productId"));
-        stockCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ProductTransaction, Number>, ObservableValue<Number>>() {
-            @Override
-            public ObservableValue<Number> call(TableColumn.CellDataFeatures<ProductTransaction, Number> param) {
-                return new SimpleIntegerProperty(param.getValue().getTotalNum() * param.getValue().getSizeNumeric());
-            }
-        });
+        stockCol.setCellValueFactory(new PropertyValueFactory<>("totalNum"));
         unitPriceCol.setCellValueFactory(new PropertyValueFactory<>("unitPrice"));
         qtyCol.setCellValueFactory(new PropertyValueFactory<>("quantity"));
         qtyCol.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<Integer>(){
@@ -178,7 +168,14 @@ public class GenerateReturnTransactController {
         showCustomerDetails(null);
         showPaymentDetails(null, null);
 
-        customerList = dbExecuteCustomer.selectFromDatabase(DBQueries.SelectQueries.Customer.SELECT_ALL_CUSTOMER);
+        try{
+            customerList = dbExecuteCustomer.selectFromDatabase(DBQueries.SelectQueries.Customer.SELECT_ALL_CUSTOMER);
+        }catch(SQLException e){
+            Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to grab data from database!\n" + e.getMessage());
+            alert.setTitle("Database Error");
+            alert.showAndWait();
+        }
+
         List<String> tmpCustomerList = new ArrayList<>();
         for(Customer customer: customerList){
             customer.constructCustomerInfo();
@@ -204,8 +201,16 @@ public class GenerateReturnTransactController {
 
     @FXML
     public void handleAddItem(){
-        List<Product> productResult = dbExecuteProduct.selectFromDatabase(DBQueries.SelectQueries.Product.SELECT_PRODUCTID_PROJECT,
-                productIdField.getText().trim());
+        List<Product> productResult = null;
+        try{
+            productResult = dbExecuteProduct.selectFromDatabase(DBQueries.SelectQueries.Product.SELECT_PRODUCTID_PROJECT,
+                    productIdField.getText().trim());
+        }catch(SQLException e){
+            Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to grab data from database!\n" + e.getMessage());
+            alert.setTitle("Database Error");
+            alert.showAndWait();
+        }
+
         if(productResult.isEmpty()){
             Alert alert = new Alert(Alert.AlertType.WARNING);
             alert.initOwner(dialogStage);
@@ -219,7 +224,7 @@ public class GenerateReturnTransactController {
                     .productId(productResult.get(0).getProductId())
                     .totalNum(productResult.get(0).getTotalNum())
                     .unitPrice(productResult.get(0).getUnitPrice())
-                    .piecesPerBox(productResult.get(0).getPiecePerBox())
+                    .piecesPerBox(productResult.get(0).getPiecesPerBox())
                     .size(productResult.get(0).getSize())
                     .sizeNumeric(productResult.get(0).getSizeNumeric())
                     .build();
@@ -251,7 +256,11 @@ public class GenerateReturnTransactController {
             if(!cashField.getText().trim().isEmpty()){
                 transaction.setPayment(Double.valueOf(cashField.getText()));
             }
-            transaction.setPaid(transaction.getPayment() + transaction.getStoreCredit());
+            transaction.setTotal(Double.valueOf(totalLabel.getText()));
+            transaction.getPayinfo().add(new PaymentRecord(
+                    transaction.getDate().toString(),
+                    transaction.getPayment() + transaction.getStoreCredit(),
+                    transaction.getPaymentType()));
             StringBuffer overviewTransactionString = new StringBuffer();
             StringBuffer overviewProductTransactionString = new StringBuffer();
 
@@ -269,6 +278,7 @@ public class GenerateReturnTransactController {
                     .append(overviewProductTransactionString)
                     .append("\n" + "Total: " + totalLabel.getText() + "\n")
                     .append("Returned Store Credit: " + transaction.getStoreCredit() + "\n")
+                    .append("Returned Cash: " + transaction.getPayment() + "\n")
                     .append("Payment Type: " + transaction.getPaymentType() + "\n")
                     .append("Date: " + transaction.getDate() + "\n");
 
@@ -284,6 +294,9 @@ public class GenerateReturnTransactController {
                 dialogStage.close();
             }else{
                 transaction.getProductTransactionList().clear();
+                transaction.getPayinfo().clear();
+                transaction.setPayment(0);
+                transaction.setStoreCredit(0);
             }
         }
         return transaction;
@@ -380,6 +393,7 @@ public class GenerateReturnTransactController {
                 .paymentType(INIT_TRANSACTION_PAYMENT_TYPE)
                 .storeCredit(0)
                 .payment(0)
+                .payinfo(new ArrayList<>())
                 .build();
         productTransactionObservableList = FXCollections.observableArrayList(transaction.getProductTransactionList());
         transactionTableView.setItems(productTransactionObservableList);
@@ -400,11 +414,18 @@ public class GenerateReturnTransactController {
         if(customer == null){
             errorMsgBuilder.append("Customer is neither selected nor created!\n");
         }
-        if(!isStoreCreditValid()){
-            errorMsgBuilder.append("Store Credit must be numbers!\n");
+        if(cashField.getText().trim().isEmpty() && storeCreditField.getText().trim().isEmpty()){
+            errorMsgBuilder.append("You need to specify either to pay or use store credit!\n");
         }
-        if(!isCashValid()){
-            errorMsgBuilder.append("Cash must be numbers!\n");
+        if(!cashField.getText().trim().isEmpty()){
+            if(!isCashValid()) {
+                errorMsgBuilder.append("Payment must be numbers!\n");
+            }
+        }
+        if(!storeCreditField.getText().trim().isEmpty()){
+            if(!isStoreCreditValid()){
+                errorMsgBuilder.append("Either Store Credit exceeds customer's limit or Store Credit must be numbers!\n");
+            }
         }
         if(errorMsgBuilder.length() != 0){
             return false;
@@ -434,11 +455,11 @@ public class GenerateReturnTransactController {
         Connection connection = DBConnect.getConnection();
         try{
             connection.setAutoCommit(false);
-            Object[] objects = ObjectSerializer.TRANSACTION_OBJECT_SERIALIZER_2.serialize(transaction);
+            Object[] objects = ObjectSerializer.TRANSACTION_OBJECT_SERIALIZER.serialize(transaction);
             dbExecuteTransaction.insertIntoDatabase(DBQueries.InsertQueries.Transaction.INSERT_INTO_TRANSACTION,
                 objects);
             for(ProductTransaction tmp : transaction.getProductTransactionList()){
-                int remain = tmp.getTotalNum() + tmp.getQuantity()/tmp.getSizeNumeric();
+                int remain = tmp.getTotalNum() + tmp.getQuantity();
                 dbExecuteProduct.updateDatabase(DBQueries.UpdateQueries.Product.UPDATE_PRODUCT_QUANTITY, remain, tmp.getProductId());
             }
             double remainStoreCredit = customer.getStoreCredit() + Double.valueOf(storeCreditField.getText());

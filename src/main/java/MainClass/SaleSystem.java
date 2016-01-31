@@ -1,7 +1,6 @@
 package MainClass;
 
 import Controllers.*;
-import db.DBExecuteProduct;
 import db.DBExecuteProperty;
 import db.DBQueries;
 import javafx.application.Application;
@@ -188,12 +187,34 @@ public class SaleSystem extends Application{
 
             CustomerEditDialogController controller = loader.getController();
             controller.setDialogStage(dialogStage);
-
             controller.setTextField(customer);
-
             dialogStage.showAndWait();
             return controller.isOKClicked();
         }catch(IOException e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean showTransactionEditDialog(Transaction transaction){
+        try{
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(SaleSystem.class.getResource("/fxml/EditTransactionDialog.fxml"));
+            AnchorPane page = loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Edit Transaction");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(primaryStage);
+            Scene scene = new Scene(page);
+            dialogStage.setScene(scene);
+
+            TransactionEditDialogController controller = loader.getController();
+            controller.setDialogStage(dialogStage);
+            controller.setSelectedTransaction(transaction);
+            dialogStage.showAndWait();
+            return controller.isConfirmedClicked();
+        }catch (IOException e){
             e.printStackTrace();
             return false;
         }
@@ -214,7 +235,7 @@ public class SaleSystem extends Application{
 
             ProductEditDialogController controller = loader.getController();
             controller.setDialogStage(dialogStage);
-
+            controller.setMainClass(SaleSystem.this);
             controller.setTextField(product);
 
             dialogStage.showAndWait();
@@ -404,7 +425,14 @@ public class SaleSystem extends Application{
         return this.staff;
     }
     private void loadPropertyFromDB(){
-        this.property = dbExecuteProperty.selectFirstFromDatabase(DBQueries.SelectQueries.Property.SELECT_ALL_PROPERTY);
+        try{
+            this.property = dbExecuteProperty.selectFirstFromDatabase(DBQueries.SelectQueries.Property.SELECT_ALL_PROPERTY);
+        }catch(SQLException e){
+            Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to grab data from database!\n" + e.getMessage());
+            alert.setTitle("Database Error");
+            alert.showAndWait();
+        }
+
     }
     public int getProductWarnLimit(){
         return this.property.getProductWarnLimit();

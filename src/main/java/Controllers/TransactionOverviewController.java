@@ -12,6 +12,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.util.converter.BigDecimalStringConverter;
+import model.Customer;
 import model.ProductTransaction;
 import model.Transaction;
 import util.DateUtil;
@@ -27,7 +28,7 @@ public class TransactionOverviewController implements OverviewController{
     private SaleSystem saleSystem;
     private ObservableList<Transaction> transactionList;
     private DBExecuteTransaction dbExecuteTransaction;
-
+    private DBExecuteCustomer dbExecuteCustomer;
     @FXML
     private TableView<Transaction> transactionTable;
     @FXML
@@ -45,6 +46,8 @@ public class TransactionOverviewController implements OverviewController{
     @FXML
     private Label dateLabel;
     @FXML
+    private Label totalLabel;
+    @FXML
     private Label paymentLabel;
     @FXML
     private Label paymentTypeLabel;
@@ -59,7 +62,7 @@ public class TransactionOverviewController implements OverviewController{
     @FXML
     private TableView<ProductTransaction> transactionDetaiTableView;
     @FXML
-    private TableColumn<ProductTransaction, Integer> productIdCol;
+    private TableColumn<ProductTransaction, String> productIdCol;
     @FXML
     private TableColumn<ProductTransaction, Integer> qtyCol;
     @FXML
@@ -73,6 +76,11 @@ public class TransactionOverviewController implements OverviewController{
         dateCol.setCellValueFactory(new PropertyValueFactory<>("Date"));
         typeCol.setCellValueFactory(new PropertyValueFactory<>("Type"));
         infoCol.setCellValueFactory(new PropertyValueFactory<>("Info"));
+        productIdCol.setCellValueFactory(new PropertyValueFactory<>("productId"));
+        qtyCol.setCellValueFactory(new PropertyValueFactory<>("quantity"));
+        unitPriceCol.setCellValueFactory(new PropertyValueFactory<>("unitPrice"));
+        subTotalCol.setCellValueFactory(new PropertyValueFactory<>("subTotal"));
+
         loadDataFromDB();
         showTransactionDetail(null);
         FilteredList<Transaction> filteredData = new FilteredList<Transaction>(transactionList,p->true);
@@ -108,7 +116,7 @@ public class TransactionOverviewController implements OverviewController{
     @FXML
     private void handleDeleteTransaction(){
         int selectedIndex = transactionTable.getSelectionModel().getSelectedIndex();
-        transactionTable.getItems().remove(selectedIndex);
+        //transactionTable.getItems().remove(selectedIndex);
         //TODO: delete the corresponding info in the database
         //TODO: add if-else block for selectedIndex = -1 situation
     }
@@ -140,18 +148,41 @@ public class TransactionOverviewController implements OverviewController{
         }
     }
 
+    @FXML
+    private void handleEditTransaction(){
+        Transaction selectedTransaction = transactionTable.getSelectionModel().getSelectedItem();
+        if(selectedTransaction != null){
+            if(!selectedTransaction.getType().equals(Transaction.TransactionType.OUT)){
+                Alert alert = new Alert(Alert.AlertType.ERROR, "You can only edit OUT transaction!\n");
+                alert.showAndWait();
+            }else{
+                boolean okClicked = saleSystem.showTransactionEditDialog(selectedTransaction);
+                if(okClicked){
+                    showTransactionDetail(selectedTransaction);
+                }
+            }
+
+        }
+    }
+
     public TransactionOverviewController(){
         dbExecuteTransaction = new DBExecuteTransaction();
+        dbExecuteCustomer = new DBExecuteCustomer();
     }
 
     @Override
     public void loadDataFromDB() {
-        transactionList = FXCollections.observableArrayList(
-                dbExecuteTransaction.selectFromDatabase(DBQueries.SelectQueries.Transaction.SELECT_ALL_TRANSACTION)
-        );
+        try{
+            transactionList = FXCollections.observableArrayList(
+                    dbExecuteTransaction.selectFromDatabase(DBQueries.SelectQueries.Transaction.SELECT_ALL_TRANSACTION)
+            );
+        }catch(SQLException e){
+            Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to grab data from database!\n" + e.getMessage());
+            alert.setTitle("Database Error");
+            alert.showAndWait();
+        }
         transactionTable.setItems(transactionList);
         transactionTable.getSelectionModel().selectFirst();
-        showTransactionDetail(transactionTable.getSelectionModel().getSelectedItem());
     }
 
     @Override
@@ -164,21 +195,20 @@ public class TransactionOverviewController implements OverviewController{
         if(transaction != null){
             transactionIdLabel.setText(String.valueOf(transaction.getTransactionId()));
             dateLabel.setText(DateUtil.format(transaction.getDate()));
+            totalLabel.setText(String.valueOf(transaction.getTotal()));
             paymentLabel.setText(String.valueOf(transaction.getPayment()));
             paymentTypeLabel.setText(transaction.getPaymentType());
             storeCreditLabel.setText(String.valueOf(transaction.getStoreCredit()));
             staffLabel.setText(String.valueOf(transaction.getStaffId()));
             typeLabel.setText(transaction.getType().name());
             infoLabel.setText(transaction.getInfo());
-            transactionDetaiTableView.setItems(FXCollections.observableArrayList(transaction.getProductTransactionList()));
-            productIdCol.setCellValueFactory(new PropertyValueFactory<>("productId"));
-            qtyCol.setCellValueFactory(new PropertyValueFactory<>("quantity"));
-            unitPriceCol.setCellValueFactory(new PropertyValueFactory<>("unitPrice"));
-            subTotalCol.setCellValueFactory(new PropertyValueFactory<>("subTotal"));
+            transactionDetaiTableView.setItems(
+                    FXCollections.observableArrayList(transaction.getProductTransactionList()));
         }
         else{
             transactionIdLabel.setText("");
             dateLabel.setText("");
+            totalLabel.setText("");
             paymentLabel.setText("");
             paymentTypeLabel.setText("");
             storeCreditLabel.setText("");

@@ -32,44 +32,11 @@ public interface ObjectSerializer<E> {
         @Override
         public Object[] serialize(Transaction transaction) throws SQLException, IOException {
             StringWriter productInfoWriter =new StringWriter();
+            StringWriter payInfoWriter = new StringWriter();
             StringWriter typeWriter = new StringWriter();
             ObjectMapper mapper = new ObjectMapper();
             mapper.writeValue(productInfoWriter, transaction.getProductTransactionList());
-            JsonFactory jsonfactory = new JsonFactory();
-            String typeJson = null;
-            try {
-                JsonGenerator jsonGenerator = jsonfactory.createJsonGenerator(typeWriter);
-                jsonGenerator.writeStartObject();
-                jsonGenerator.writeFieldName("type");
-                jsonGenerator.writeString(transaction.getType().toString());
-                jsonGenerator.writeFieldName("info");
-                jsonGenerator.writeString(transaction.getInfo());
-                jsonGenerator.writeEndObject();
-                jsonGenerator.close();
-                typeJson = typeWriter.toString();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return new Object[]{
-                    productInfoWriter.toString(),
-                    transaction.getDate(),
-                    transaction.getPayment(),
-                    transaction.getPaymentType(),
-                    transaction.getStoreCredit(),
-                    transaction.getStaffId(),
-                    typeJson
-            };
-        }
-    };
-
-
-    public static final ObjectSerializer<Transaction> TRANSACTION_OBJECT_SERIALIZER_2 = new ObjectSerializer<Transaction>() {
-        @Override
-        public Object[] serialize(Transaction transaction) throws SQLException, IOException {
-            StringWriter productInfoWriter =new StringWriter();
-            StringWriter typeWriter = new StringWriter();
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.writeValue(productInfoWriter, transaction.getProductTransactionList());
+            mapper.writeValue(payInfoWriter, transaction.getPayinfo());
             JsonFactory jsonfactory = new JsonFactory();
             String typeJson = null;
             String payinfo = null;
@@ -83,13 +50,6 @@ public interface ObjectSerializer<E> {
                 jsonGenerator.writeEndObject();
                 jsonGenerator.close();
                 typeJson = typeWriter.toString();
-
-                ObjectNode rootNode = JsonNodeFactory.instance.objectNode();
-                rootNode.put("Date",transaction.getDate().toString());
-                rootNode.put("Payment",transaction.getPaid());
-                rootNode.put("Type",transaction.getType().name());
-                payinfo = rootNode.toString();
-
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -101,8 +61,25 @@ public interface ObjectSerializer<E> {
                     transaction.getStoreCredit(),
                     transaction.getStaffId(),
                     typeJson,
-                    transaction.getPaid(),
-                    payinfo
+                    transaction.getTotal(),
+                    payInfoWriter.toString()
+            };
+        }
+    };
+
+    public static final ObjectSerializer<Transaction> TRANSACTION_OBJECT_SERIALIZER_UPDATE = new ObjectSerializer<Transaction>() {
+        @Override
+        public Object[] serialize(Transaction transaction) throws SQLException, IOException {
+            StringWriter payInfoWriter = new StringWriter();
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.writeValue(payInfoWriter, transaction.getPayinfo());
+            return new Object[]{
+                    transaction.getDate(),
+                    transaction.getPayment(),
+                    transaction.getPaymentType(),
+                    transaction.getStoreCredit(),
+                    payInfoWriter.toString(),
+                    transaction.getTransactionId(),
             };
         }
     };

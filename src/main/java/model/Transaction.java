@@ -24,23 +24,10 @@ public class Transaction {
     private TransactionType type;
     private StringProperty info;
     private List<ProductTransaction> productTransactionList;
-    private DoubleProperty paid;
+    private DoubleProperty total;
     private List<PaymentRecord> payinfo;
 
 
-//    public Transaction(Object... params) {
-//        this.transactionId = new SimpleIntegerProperty((Integer)params[0]);
-//        this.productTransactionList = (List<ProductTransaction>) params[1];
-//        this.date = new SimpleObjectProperty<>(LocalDate.parse((String)params[2]));
-//        this.payment = new SimpleDoubleProperty((double) params[3]);
-//        this.paymentType = new SimpleStringProperty((String) params[4]);
-//        this.storeCredit = new SimpleDoubleProperty((Double) params[5]);
-//        this.staffId = new SimpleIntegerProperty((Integer) params[6]);
-//        this.type = (TransactionType) params[7];
-//        this.info = new SimpleStringProperty((String) params[8]);
-//        this.paid = new SimpleDoubleProperty((Double) params[9]);
-//        this.payinfo = (List<PaymentRecord>) params[10];
-//    }
     public Transaction(TransactionBuilder builder){
         this.transactionId = new SimpleIntegerProperty(builder.transactionId);
         this.productTransactionList = builder.productTransactionList;
@@ -51,7 +38,7 @@ public class Transaction {
         this.staffId = new SimpleIntegerProperty(builder.staffId);
         this.type = builder.type;
         this.info = new SimpleStringProperty(builder.info);
-        this.paid = new SimpleDoubleProperty(builder.paid);
+        this.total = new SimpleDoubleProperty(builder.total);
         this.payinfo = builder.payinfo;
     }
 
@@ -65,7 +52,7 @@ public class Transaction {
         private double storeCredit = 0.0;
         private TransactionType type = null;
         private String info = null;
-        private double paid;
+        private double total;
         private List<PaymentRecord> payinfo;
 
         public TransactionBuilder transactionId(int transactionId) {
@@ -114,8 +101,8 @@ public class Transaction {
             return this;
         }
 
-        public TransactionBuilder paid (double paid){
-            this.paid = paid;
+        public TransactionBuilder total (double total){
+            this.total = total;
             return this;
         }
 
@@ -224,16 +211,16 @@ public class Transaction {
         this.type = type;
     }
 
-    public double getPaid() {
-        return paid.get();
+    public double getTotal() {
+        return total.get();
     }
 
-    public DoubleProperty paidProperty() {
-        return paid;
+    public DoubleProperty totalProperty() {
+        return total;
     }
 
-    public void setPaid(double paid) {
-        this.paid.set(paid);
+    public void setTotal(double total) {
+        this.total.set(total);
     }
 
     public List<PaymentRecord> getPayinfo() {

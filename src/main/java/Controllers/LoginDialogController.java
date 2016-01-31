@@ -13,6 +13,7 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import model.Staff;
 
+import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -64,9 +65,14 @@ public class LoginDialogController {
             }else {
                 this.state = 2;
             }
-            returnedStaff = dbExecute.selectFromDatabase(DBQueries.SelectQueries.Staff.SELECT_USERNAME_STAFF,
-                    userName);
-
+            try{
+                returnedStaff = dbExecute.selectFromDatabase(DBQueries.SelectQueries.Staff.SELECT_USERNAME_STAFF,
+                        userName);
+            }catch(SQLException e){
+                Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to grab data from database!\n" + e.getMessage());
+                alert.setTitle("Database Error");
+                alert.showAndWait();
+            }
             dialogStage.close();
         }
     }

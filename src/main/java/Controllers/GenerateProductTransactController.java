@@ -20,10 +20,7 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
-import model.Customer;
-import model.Product;
-import model.ProductTransaction;
-import model.Transaction;
+import model.*;
 import util.AutoCompleteComboBoxListener;
 import util.ButtonCell;
 
@@ -98,6 +95,7 @@ public class GenerateProductTransactController {
         loadDataFromDB();
 
         //filteredData = new FilteredList<ProductTransaction>(productTransactionObservableList,p->true);
+
         productIdField.textProperty().addListener((observable,oldVal,newVal)->{
             filteredData.setPredicate(productTransaction -> {
                 if (newVal == null || newVal.isEmpty()){
@@ -144,7 +142,7 @@ public class GenerateProductTransactController {
             @Override
             public ObservableValue<Integer> call(TableColumn.CellDataFeatures<ProductTransaction, Integer> param) {
                 ProductTransaction pt = param.getValue();
-                return new SimpleIntegerProperty(Integer.valueOf(pt.getQuantity()/pt.getPiecePerBox()/pt.getSizeNumeric())).asObject();
+                return new SimpleIntegerProperty(Integer.valueOf(pt.getQuantity()/pt.getPiecesPerBox()/pt.getSizeNumeric())).asObject();
             }
         });
 
@@ -152,7 +150,7 @@ public class GenerateProductTransactController {
             @Override
             public void handle(TableColumn.CellEditEvent<ProductTransaction, Integer> event) {
                 ProductTransaction pt = (event.getTableView().getItems().get(event.getTablePosition().getRow()));
-                pt.setQuantity(event.getNewValue() * pt.getSizeNumeric() * pt.getPiecePerBox());
+                pt.setQuantity(event.getNewValue() * pt.getSizeNumeric() * pt.getPiecesPerBox());
 
                 transactionTableView.setItems(productTransactionObservableList);
                 //transactionTableView.setItems(event.getTableView().getItems());
@@ -164,28 +162,28 @@ public class GenerateProductTransactController {
 
     }
 
-    @FXML
-    public void handleAddItem(){
-        List<Product> productResult = dbExecuteProduct.selectFromDatabase(DBQueries.SelectQueries.Product.SELECT_PRODUCTID_PROJECT,
-                productIdField.getText().trim());
-        if(productResult.isEmpty()){
-             Alert alert = new Alert(Alert.AlertType.WARNING);
-             alert.initOwner(dialogStage);
-             alert.setTitle("Invalid Product ID");
-             alert.setHeaderText(null);
-             alert.setContentText("Please input valid product ID");
-             alert.showAndWait();
-         }
-        else{
-            ProductTransaction newTransaction = new ProductTransaction.ProductTransactionBuilder()
-                    .productId(productResult.get(0).getProductId())
-                    .totalNum(productResult.get(0).getTotalNum())
-                    .unitPrice(productResult.get(0).getUnitPrice())
-                    .build();
-            productTransactionObservableList.add(newTransaction);
-        }
-
-    }
+//    @FXML
+//    public void handleAddItem(){
+//        List<Product> productResult = dbExecuteProduct.selectFromDatabase(DBQueries.SelectQueries.Product.SELECT_PRODUCTID_PROJECT,
+//                productIdField.getText().trim());
+//        if(productResult.isEmpty()){
+//             Alert alert = new Alert(Alert.AlertType.WARNING);
+//             alert.initOwner(dialogStage);
+//             alert.setTitle("Invalid Product ID");
+//             alert.setHeaderText(null);
+//             alert.setContentText("Please input valid product ID");
+//             alert.showAndWait();
+//         }
+//        else{
+//            ProductTransaction newTransaction = new ProductTransaction.ProductTransactionBuilder()
+//                    .productId(productResult.get(0).getProductId())
+//                    .totalNum(productResult.get(0).getTotalNum())
+//                    .unitPrice(productResult.get(0).getUnitPrice())
+//                    .build();
+//            productTransactionObservableList.add(newTransaction);
+//        }
+//
+//    }
 
 
     @FXML
@@ -222,7 +220,12 @@ public class GenerateProductTransactController {
                 total = total.add(new BigDecimal(tmp.getSubTotal()).setScale(2, BigDecimal.ROUND_HALF_EVEN));
             }
             transaction.setPayment(Double.valueOf(total.toString()));
-            transaction.setPaid(Double.valueOf(total.toString()));
+            transaction.setTotal(Double.valueOf(total.toString()));
+            transaction.getPayinfo().add(new PaymentRecord(
+                    transaction.getDate().toString(),
+                    transaction.getPayment() + transaction.getStoreCredit(),
+                    transaction.getPaymentType()));
+
             overviewTransactionString
                     .append("Customer Name: " + transaction.getInfo() + "\n\n")
                     .append(overviewProductTransactionString)
@@ -243,6 +246,7 @@ public class GenerateProductTransactController {
                 dialogStage.close();
             }else{
                 transaction.getProductTransactionList().clear();
+                transaction.getPayinfo().clear();
             }
         }
         return transaction;
@@ -279,6 +283,7 @@ public class GenerateProductTransactController {
                 .type(Transaction.TransactionType.IN)
                 .storeCredit(0)
                 .paymentType("IN")
+                .payinfo(new ArrayList<>())
                 .build();
         productTransactionObservableList = FXCollections.observableArrayList(transaction.getProductTransactionList());
         transactionTableView.setItems(productTransactionObservableList);
@@ -300,9 +305,6 @@ public class GenerateProductTransactController {
         if (list.size()==0){
             errorMsgBuilder.append("No product quantity added!!");
         }
-//        if(!isProductQuantityValid()){
-//            errorMsgBuilder.append("Some product's quantity exceeds the stock quota!\n");
-//        }
         if (list.stream().anyMatch(p->p.getUnitPrice()==0)){
             errorMsgBuilder.append("Unit Price should not be zero!!");
         }
@@ -315,32 +317,22 @@ public class GenerateProductTransactController {
         return true;
     }
 
-
-    private boolean isProductQuantityValid(){
-        for(ProductTransaction tmp : transaction.getProductTransactionList()){
-            if(tmp.getTotalNum() - tmp.getQuantity() < 0){
-                return false;
-            }
-        }
-        return true;
-    }
-
     private void commitTransactionToDatabase() throws SQLException, IOException {
         Connection connection = DBConnect.getConnection();
         try{
             connection.setAutoCommit(false);
-            Object[] objects = ObjectSerializer.TRANSACTION_OBJECT_SERIALIZER_2.serialize(transaction);
+            Object[] objects = ObjectSerializer.TRANSACTION_OBJECT_SERIALIZER.serialize(transaction);
             dbExecuteTransaction.insertIntoDatabase(DBQueries.InsertQueries.Transaction.INSERT_INTO_TRANSACTION,
                     objects);
             for(ProductTransaction tmp : transaction.getProductTransactionList()){
-                int remain = tmp.getTotalNum() + tmp.getQuantity()/tmp.getPiecePerBox()/tmp.getSizeNumeric();
+                int remain = tmp.getTotalNum() + tmp.getQuantity();
                 dbExecuteProduct.updateDatabase(DBQueries.UpdateQueries.Product.UPDATE_PRODUCT_QUANTITY,
                     remain, tmp.getProductId());
             }
             connection.commit();
         }catch(SQLException e){
             connection.rollback(); //TODO: CRITICAL BUG!!!
-            Alert alert = new Alert(Alert.AlertType.ERROR, "Unable to store transaction to database!");
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Unable to store transaction to database!\n" + e.getMessage());
             alert.showAndWait();
         }
         connection.setAutoCommit(true);
@@ -355,9 +347,15 @@ public class GenerateProductTransactController {
     }
 
     public void loadDataFromDB(){
-        productTransactionObservableList = FXCollections.observableArrayList(
-                dbExecute.selectFromDatabase(DBQueries.SelectQueries.Product.SELECT_ALL_PRODUCT)
-        );
+        try{
+            productTransactionObservableList = FXCollections.observableArrayList(
+                    dbExecute.selectFromDatabase(DBQueries.SelectQueries.Product.SELECT_ALL_PRODUCT)
+            );
+        }catch(SQLException e){
+            Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to grab data from database!\n" + e.getMessage());
+            alert.setTitle("Database Error");
+            alert.showAndWait();
+        }
         filteredData = new FilteredList<ProductTransaction>(productTransactionObservableList,p->true);
         transactionTableView.setItems(productTransactionObservableList);
     }

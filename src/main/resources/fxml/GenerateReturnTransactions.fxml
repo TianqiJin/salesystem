@@ -30,7 +30,7 @@
             </TableView>
             <HBox alignment="BOTTOM_RIGHT" layoutX="420.0" layoutY="558.0" spacing="5.0" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="420.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="560.0">
               <children>
-                <Button fx:id="confirmButton" disable="true" mnemonicParsing="false" onAction="#handleConfirmButton" text="Confirm" />
+                <Button fx:id="confirmButton" mnemonicParsing="false" onAction="#handleConfirmButton" text="Confirm" />
                 <Button fx:id="cancelButton" mnemonicParsing="false" onAction="#handleCancelButton" text="Cancle" />
               </children>
             </HBox>

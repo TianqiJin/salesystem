@@ -67,6 +67,7 @@ public class DBConnect {
 
     public static int executeUpdate(String query, Object... params) throws SQLException {
         PreparedStatement preparedStatement = createStatement(query, params);
+        System.out.println(preparedStatement.toString());
         return preparedStatement.executeUpdate();
     }
 
