@@ -2,6 +2,7 @@ package PDF;
 
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
+import javafx.scene.paint.Color;
 import model.Customer;
 import model.ProductTransaction;
 import model.Transaction;
@@ -42,10 +43,10 @@ public class PDFGenerator {
         writer.setPageEvent(header);
         document.setMargins(50, 45, 90, 40);
         document.open();
-        header.setHeader("Customer Report");
-        PdfPTable table = new PdfPTable(5);
+        header.setHeader("MILAN TILE REVENUE REPORT");
+        PdfPTable table = new PdfPTable(6);
         table.setWidthPercentage(100);
-        table.setWidths(new int[]{15,10,15,15,50});
+        table.setWidths(new int[]{15,10,15,15,10,40});
         table.getDefaultCell().setBorder(Rectangle.BOTTOM);
         table.addCell("Date");
         table.getDefaultCell().setBorder(Rectangle.BOTTOM);
@@ -55,26 +56,30 @@ public class PDFGenerator {
         table.getDefaultCell().setBorder(Rectangle.BOTTOM);
         table.addCell("Type");
         table.getDefaultCell().setBorder(Rectangle.BOTTOM);
+        table.addCell("Total");
+        table.getDefaultCell().setBorder(Rectangle.BOTTOM);
         table.addCell("Transaction Details");
         for(Transaction transaction : transactionList){
             table.addCell(DateUtil.format(transaction.getDate()));
             table.addCell(String.valueOf(transaction.getStaffId()));
             table.addCell(String.valueOf(transaction.getInfo()));
             table.addCell(transaction.getType().toString());
+            table.addCell(String.valueOf(transaction.getTotal()));
             generateInnerTable(table, transaction);
         }
         boolean flag = true;
-        for(PdfPRow row: table.getRows().subList(1, table.getRows().size()-1)) {
+        for(PdfPRow row: table.getRows().subList(1, table.getRows().size())) {
             for(PdfPCell cell: row.getCells()) {
-                cell.setBackgroundColor(flag ? BaseColor.LIGHT_GRAY : BaseColor.BLUE);
+                cell.setBackgroundColor(flag ? BaseColor.LIGHT_GRAY : BaseColor.WHITE);
             }
             flag = !flag;
         }
         document.add(table);
+        document.add(generateResult());
         document.close();
     }
 
-    private void generateInnerTable(PdfPTable outterTable, Transaction transaction) throws DocumentException {
+    private void generateInnerTable(PdfPTable outerTable, Transaction transaction) throws DocumentException {
         PdfPTable table = new PdfPTable(4);
         table.setWidthPercentage(100);
         table.setWidths(new int[]{25,25,25,25});
@@ -88,7 +93,35 @@ public class PDFGenerator {
             table.addCell(String.valueOf(productTransaction.getQuantity()));
             table.addCell(String.valueOf(productTransaction.getSubTotal()));
         }
-        outterTable.addCell(table);
+        table.setSpacingAfter(10);
+        outerTable.addCell(table);
+    }
+
+    private PdfPTable generateResult() throws DocumentException{
+        PdfPTable table = new PdfPTable(3);
+        table.setSpacingBefore(100);
+        table.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        table.setWidthPercentage(50);
+        table.setWidths(new int[]{35,35,35});
+        table.addCell("Total OUT");
+        table.addCell("Total IN");
+        table.addCell("Total RETURN");
+        double totalOut = 0;
+        double totalIn = 0;
+        double totalReturn = 0;
+        for(Transaction transaction : transactionList){
+            if(transaction.getType().equals(Transaction.TransactionType.IN)){
+                totalIn += transaction.getTotal();
+            }else if(transaction.getType().equals(Transaction.TransactionType.IN.OUT)){
+                totalOut += transaction.getTotal();
+            }else if(transaction.getType().equals(Transaction.TransactionType.RETURN)){
+                totalReturn += transaction.getTotal();
+            }
+        }
+        table.addCell(String.valueOf(totalOut));
+        table.addCell(String.valueOf(totalIn));
+        table.addCell(String.valueOf(totalReturn));
+        return table;
     }
 
     public static class PDFGeneratorBuilder{
@@ -100,7 +133,7 @@ public class PDFGenerator {
 
         public PDFGeneratorBuilder destination(String destination){
             this.destination =
-                    new File(destination, "Customer_Report_" + new SimpleDateFormat("yyyy-MM-dd'at'HH-mm-ss").format(new Date()) + ".pdf").getPath();
+                    new File(destination, "Report_" + new SimpleDateFormat("yyyy-MM-dd'at'HH-mm-ss").format(new Date()) + ".pdf").getPath();
             return this;
         }
         public PDFGeneratorBuilder productId(Integer productId){

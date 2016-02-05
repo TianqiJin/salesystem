@@ -31,16 +31,9 @@ public class DBExecuteStaff extends DBExecute<Staff>{
     }
 
     @Override
-    public List selectFromDatabase(String query, Object... params) {
-        try {
-            selectResult = DBConnect.executeQuery(query, ObjectDeserializer.STAFF_OBJECT_DESERIALIZER, params);
-            if (selectResult != null) {
-                return selectResult;
-            }
-        } catch (SQLException e) {
-            logger.error(e.getMessage());
-        }
-        return null;
+    public List selectFromDatabase(String query, Object... params) throws SQLException{
+        selectResult = DBConnect.executeQuery(query, ObjectDeserializer.STAFF_OBJECT_DESERIALIZER, params);
+        return selectResult;
     }
 
     public int getMaxNum(String query){

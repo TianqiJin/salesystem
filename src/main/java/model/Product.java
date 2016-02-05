@@ -19,14 +19,10 @@ public class Product extends ProductBase{
     public static Logger logger= Logger.getLogger(Product.class);
 
     private StringProperty texture;
-    private IntegerProperty totalFeet;
-
 
     public Product(ProductBuilder builder){
         super(builder.productId, builder.totalNum, builder.unitPrice, builder.piecesPerBox, builder.size, builder.sizeNumeric);
         this.texture = new SimpleStringProperty(builder.texture);
-        this.totalFeet = new SimpleIntegerProperty(builder.totalFeet);
-        this.totalFeet.bind(totalNumProperty().multiply(piecePerBoxProperty()).multiply(sizeNumericProperty()));
     }
 
     public static class ProductBuilder{
@@ -37,7 +33,6 @@ public class Product extends ProductBase{
         private String size = null;
         private int piecesPerBox;
         private int sizeNumeric;
-        private int totalFeet;
 
         public ProductBuilder productId(String productId){
             this.productId = productId;
@@ -63,10 +58,6 @@ public class Product extends ProductBase{
             this.sizeNumeric = sizeNumeric;
             return this;
         }
-        public ProductBuilder totalFeet(int totalFeet){
-            this.totalFeet = totalFeet;
-            return this;
-        }
         public ProductBuilder piecesPerBox(int piecesPerBox){
             this.piecesPerBox = piecesPerBox;
             return this;
@@ -84,20 +75,12 @@ public class Product extends ProductBase{
         this.texture.set(texture);
     }
 
-    public int getTotalFeet() {
-        return totalFeet.get();
-    }
-
-    public void setTotalFeet(int totalFeet) {
-        this.totalFeet.set(totalFeet);
-    }
-
     public Object[] getAllProperties(){
-        return (new Object[]{getProductId(), getTexture(), getTotalNum(), getUnitPrice(), getPiecePerBox(), getSize(), getSizeNumeric()});
+        return (new Object[]{getProductId(), getTexture(), getTotalNum(), getUnitPrice(), getPiecesPerBox(), getSize(), getSizeNumeric()});
     }
 
     public Object[] getAllPropertiesForUpdate(){
-        return (new Object[]{ getTexture(), getTotalNum(), getUnitPrice(), getPiecePerBox(),getSize(), getSizeNumeric() ,getProductId()});
+        return (new Object[]{ getTexture(), getUnitPrice(), getPiecesPerBox(),getSize(), getSizeNumeric() ,getProductId()});
     }
 
 }

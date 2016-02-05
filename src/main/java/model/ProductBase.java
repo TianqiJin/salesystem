@@ -16,7 +16,7 @@ public abstract class ProductBase {
     private StringProperty productId;
     private IntegerProperty totalNum;
     private FloatProperty unitPrice;
-    private IntegerProperty piecePerBox;
+    private IntegerProperty piecesPerBox;
     private StringProperty size;
     private IntegerProperty sizeNumeric;
 
@@ -25,14 +25,14 @@ public abstract class ProductBase {
             this.productId = new SimpleStringProperty((String) params[0]);
             this.totalNum = new SimpleIntegerProperty((Integer) params[1]);
             this.unitPrice = new SimpleFloatProperty((Float) params[2]);
-            this.piecePerBox = new SimpleIntegerProperty((Integer) params[3]);
+            this.piecesPerBox = new SimpleIntegerProperty((Integer) params[3]);
             this.size = new SimpleStringProperty((String) params[4]);
             this.sizeNumeric = new SimpleIntegerProperty((Integer) params[5]);
         }else{
             this.productId = new SimpleStringProperty(null);
             this.totalNum = new SimpleIntegerProperty(0) ;
             this.unitPrice = new SimpleFloatProperty(0);
-            this.piecePerBox = new SimpleIntegerProperty(0);
+            this.piecesPerBox = new SimpleIntegerProperty(0);
             this.size = new SimpleStringProperty(null);
             this.sizeNumeric = new SimpleIntegerProperty(0);
         }
@@ -75,16 +75,16 @@ public abstract class ProductBase {
         return totalNum;
     }
 
-    public int getPiecePerBox() {
-        return piecePerBox.get();
+    public int getPiecesPerBox() {
+        return piecesPerBox.get();
     }
  
-    public IntegerProperty piecePerBoxProperty() {
-        return piecePerBox;
+    public IntegerProperty piecesPerBoxProperty() {
+        return piecesPerBox;
     }
 
-    public void setPiecePerBox(int piecePerBox) {
-        this.piecePerBox.set(piecePerBox);
+    public void setPiecesPerBox(int piecePerBox) {
+        this.piecesPerBox.set(piecePerBox);
     }
 
     public String getSize() {

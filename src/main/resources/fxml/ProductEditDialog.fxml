@@ -15,7 +15,7 @@
                <GridPane.margin>
                   <Insets />
                </GridPane.margin></Label>
-        <Label text="UnitPrice" GridPane.rowIndex="1" />
+        <Label text="UnitPrice" GridPane.columnIndex="2" GridPane.rowIndex="2" />
 
         <TextField fx:id="productIdField" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="0">
                <GridPane.margin>
@@ -25,24 +25,24 @@
                <GridPane.margin>
                   <Insets right="30.0" />
                </GridPane.margin></TextField>
-        <TextField fx:id="unitPriceField" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+        <TextField fx:id="unitPriceField" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="2">
                <GridPane.margin>
                   <Insets right="30.0" />
                </GridPane.margin></TextField>
-            <Label text="Pieces Per Box" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-            <TextField fx:id="piecesPerBoxField" GridPane.columnIndex="3" GridPane.rowIndex="1">
+            <Label text="Length" GridPane.rowIndex="1" />
+            <Label text="Width" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+            <TextField fx:id="lengthField" GridPane.columnIndex="1" GridPane.rowIndex="1">
                <GridPane.margin>
                   <Insets right="30.0" />
                </GridPane.margin>
             </TextField>
-            <Label text="Length" GridPane.rowIndex="2" />
-            <Label text="Width" GridPane.columnIndex="2" GridPane.rowIndex="2" />
-            <TextField fx:id="lengthField" GridPane.columnIndex="1" GridPane.rowIndex="2">
+            <TextField fx:id="widthField" GridPane.columnIndex="3" GridPane.rowIndex="1">
                <GridPane.margin>
                   <Insets right="30.0" />
                </GridPane.margin>
             </TextField>
-            <TextField fx:id="widthField" GridPane.columnIndex="3" GridPane.rowIndex="2">
+            <Label text="Pieces Per Box" GridPane.rowIndex="2" />
+            <TextField fx:id="piecesPerBoxField" GridPane.columnIndex="1" GridPane.rowIndex="2">
                <GridPane.margin>
                   <Insets right="30.0" />
                </GridPane.margin>
@@ -68,7 +68,7 @@
             <Insets right="5.0" />
           </HBox.margin>
         </Button>
-        <Button mnemonicParsing="false" onAction="#handleCancle" prefHeight="30.0" prefWidth="100.0" text="Cancel">
+        <Button mnemonicParsing="false" onAction="#handleCancel" prefHeight="30.0" prefWidth="100.0" text="Cancel">
           <HBox.margin>
             <Insets left="5.0" />
           </HBox.margin>
