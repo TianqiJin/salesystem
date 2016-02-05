@@ -37,37 +37,6 @@
                 <Font size="15.0" />
               </font>
             </Label>
-            <GridPane gridLinesVisible="false" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="30.0">
-              <children>
-                <Label text="ProductId" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                <Label text="Texture" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                <Label text="Size" textAlignment="CENTER" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-                <Label text="Total Pieces" GridPane.columnIndex="0" GridPane.rowIndex="4" />
-                <Label fx:id="productIdLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-                <Label fx:id="textualLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                <Label fx:id="sizeLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                <Label fx:id="totalNumLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-                        <Label text="Unit Price" GridPane.rowIndex="3" />
-                        <Label fx:id="unitPriceLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                        <Label text="Total Feet:" GridPane.rowIndex="5" />
-                        <Label fx:id="totalFeetLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="5" />
-                        <Label text="Pieces Per Box: " GridPane.rowIndex="6" />
-                        <Label fx:id="piecesPerBoxLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="6" />
-              </children>
-              <columnConstraints>
-                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-              </columnConstraints>
-              <rowConstraints>
-                <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                        <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-              </rowConstraints>
-            </GridPane>
             <Separator prefWidth="200.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0" />
             <HBox id="HBox" alignment="BOTTOM_RIGHT" spacing="5.0" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0">
               <children>
@@ -80,6 +49,57 @@
                 <!--<Button mnemonicParsing="false" onAction="#handleDeleteProduct" text="Delete" />-->
               </children>
             </HBox>
+                  <SplitPane dividerPositions="0.45" layoutX="147.0" layoutY="240.0" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="35.0">
+                    <items>
+                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+                           <children>
+                        <GridPane gridLinesVisible="false" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0">
+                          <children>
+                            <Label text="ProductId" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                            <Label text="Texture" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                            <Label text="Size" textAlignment="CENTER" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                            <Label fx:id="productIdLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                            <Label fx:id="textualLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                            <Label fx:id="sizeLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                    <Label text="Unit Price" GridPane.rowIndex="3" />
+                                    <Label fx:id="unitPriceLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                    <Label text="Total Feet:" GridPane.rowIndex="4" />
+                                    <Label fx:id="totalNumLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                                    <Label text="Pieces Per Box: " GridPane.rowIndex="5" />
+                                    <Label fx:id="piecesPerBoxLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                          </children>
+                          <columnConstraints>
+                            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                          </columnConstraints>
+                          <rowConstraints>
+                            <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                            <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                            <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                            <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                            <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                          </rowConstraints>
+                        </GridPane>
+                           </children>
+                        </AnchorPane>
+                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+                           <children>
+                              <TableView fx:id="productTransactionTableView" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0">
+                                 <columns>
+                                    <TableColumn fx:id="productTransactionDateCol" prefWidth="75.0" text="Date" />
+                                    <TableColumn fx:id="productTransactionStaffIdCol" prefWidth="75.0" text="Staff ID" />
+                                    <TableColumn fx:id="productTransactionInfoCol" prefWidth="75.0" text="Supplier " />
+                                    <TableColumn fx:id="productTransactionQuantityCol" prefWidth="75.0" text="Quantity (Boxes)" />
+                                 </columns>
+                                 <columnResizePolicy>
+                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                 </columnResizePolicy>
+                              </TableView>
+                           </children>
+                        </AnchorPane>
+                    </items>
+                  </SplitPane>
           </children>
         </AnchorPane>
       </items>

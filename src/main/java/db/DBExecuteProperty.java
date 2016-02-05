@@ -13,19 +13,12 @@ public class DBExecuteProperty extends DBExecute<Property>{
     public static Logger logger= Logger.getLogger(DBExecuteProduct.class);
     private static List<Property> selectResult;
 
-    public List<Property> selectFromDatabase(String query, Object... params){
-        try {
-            selectResult = DBConnect.executeQuery(query, ObjectDeserializer.PROPERTY_OBJECT_DESERIALIZER, params);
-            if (selectResult != null) {
-                return selectResult;
-            }
-        } catch (SQLException e) {
-            logger.error(e.getMessage());
-        }
-        return null;
+    public List<Property> selectFromDatabase(String query, Object... params) throws SQLException{
+        selectResult = DBConnect.executeQuery(query, ObjectDeserializer.PROPERTY_OBJECT_DESERIALIZER, params);
+        return selectResult;
     }
 
-    public Property selectFirstFromDatabase(String query, Object... params){
+    public Property selectFirstFromDatabase(String query, Object... params)throws  SQLException{
         List<Property> result = selectFromDatabase(query, params);
         if(result != null){
             return result.get(0);

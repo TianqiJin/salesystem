@@ -11,7 +11,7 @@ import java.util.List;
  */
 public abstract class DBExecute<T> {
     public static Logger logger= Logger.getLogger(DBExecute.class);
-    public abstract List<T> selectFromDatabase(String query, Object... params);
+    public abstract List<T> selectFromDatabase(String query, Object... params) throws SQLException;
 
     public int insertIntoDatabase(String query, Object... params) throws SQLException {
         return DBConnect.executeUpdate(query, params);

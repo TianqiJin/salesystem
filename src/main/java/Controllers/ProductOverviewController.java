@@ -3,28 +3,46 @@ package Controllers;
 
 import MainClass.SaleSystem;
 import db.DBExecuteProduct;
+import db.DBExecuteTransaction;
 import db.DBQueries;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ReadOnlyIntegerWrapper;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.paint.Color;
 import javafx.util.Callback;
 import model.Product;
+import model.ProductTransaction;
+import model.Staff;
+import model.Transaction;
 
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 
 public class ProductOverviewController implements OverviewController{
 
     private SaleSystem saleSystem;
     private ObservableList<Product> productList;
-
+    private List<Transaction> transactionList;
+    private Executor executor;
+    private DBExecuteProduct dbExecute;
+    private DBExecuteTransaction dbExecuteTransaction;
 
     @FXML
     private TableView<Product> productTable;
@@ -47,9 +65,21 @@ public class ProductOverviewController implements OverviewController{
     @FXML
     private Label unitPriceLabel;
     @FXML
-    private Label totalFeetLabel;
-    @FXML
     private Label piecesPerBoxLabel;
+    @FXML
+    private TableView<Transaction> productTransactionTableView;
+    @FXML
+    private TableColumn<Transaction, LocalDate> productTransactionDateCol;
+    @FXML
+    private TableColumn<Transaction, Integer> productTransactionStaffIdCol;
+    @FXML
+    private TableColumn<Transaction, String> productTransactionInfoCol;
+    @FXML
+    private TableColumn<Transaction, Number> productTransactionQuantityCol;
+    @FXML
+    private TableColumn<Transaction, Number> productTransactionUnitPriceCol;
+    @FXML
+    private TableColumn<Transaction, Number> productTransactionSubtotalCol;
 
     @FXML
     private void initialize(){
@@ -66,40 +96,36 @@ public class ProductOverviewController implements OverviewController{
                         if(item == null || empty){
                             setText(null);
                             setStyle("");
+                            getTableRow().setStyle("");
                         }else{
                             setText(String.valueOf(item));
                             if(item < saleSystem.getProductWarnLimit()){
                                 setStyle("-fx-background-color: chocolate");
+                                getTableRow().setStyle("-fx-background-color: chocolate");
                             }
                             else{
                                 setStyle("");
+                                getTableRow().setStyle("");
                             }
                         }
                     }
                 };
             }
         });
-        loadDataFromDB();
-        showProductDetail(null);
-        FilteredList<Product> filteredData = new FilteredList<Product>(productList,p->true);
-        filterField.textProperty().addListener((observable,oldVal,newVal)->{
-            filteredData.setPredicate(product -> {
-                if (newVal == null || newVal.isEmpty()){
-                    return true;
-                }
-                String lowerCase = newVal.toLowerCase();
-                if (String.valueOf(product.getTotalNum()).contains(lowerCase)){
-                    return true;
-                }else if (String.valueOf(product.getProductId()).contains(lowerCase)){
-                    return true;
-                }else if(product.getSize().contains(lowerCase)){
-                    return true;
-                }
-                return false;
-            });
-            productTable.setItems(filteredData);
+        productTransactionDateCol.setCellValueFactory(new PropertyValueFactory<>("date"));
+        productTransactionStaffIdCol.setCellValueFactory(new PropertyValueFactory<>("staffId"));
+        productTransactionInfoCol.setCellValueFactory(new PropertyValueFactory<>("info"));
+        productTransactionQuantityCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Transaction, Number>, ObservableValue<Number>>() {
+            @Override
+            public ObservableValue<Number> call(TableColumn.CellDataFeatures<Transaction, Number> param) {
+                return new SimpleIntegerProperty(
+                        param.getValue().getProductTransactionList().get(0).getQuantity()/
+                        param.getValue().getProductTransactionList().get(0).getSizeNumeric()/
+                        param.getValue().getProductTransactionList().get(0).getPiecesPerBox());
+            }
         });
 
+        showProductDetail(null);
         productTable.getSelectionModel().selectedItemProperty().addListener(
                 new ChangeListener<Product>() {
                     @Override
@@ -108,6 +134,11 @@ public class ProductOverviewController implements OverviewController{
                     }
                 }
         );
+        executor = Executors.newCachedThreadPool(r -> {
+            Thread t = new Thread(r);
+            t.setDaemon(true);
+            return t;
+        });
     }
 
     @FXML
@@ -126,10 +157,8 @@ public class ProductOverviewController implements OverviewController{
                 }catch(SQLException e){
                     e.printStackTrace();
                     flag = false;
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    Alert alert = new Alert(Alert.AlertType.ERROR, "Error when deleting product: "+tempID+" "+temptotalNum+"pieces");
                     alert.setTitle("Delete Product Error");
-                    alert.setHeaderText(null);
-                    alert.setContentText("Error when deleting product: "+tempID+" "+temptotalNum+"pieces");
                     alert.showAndWait();
                 }finally{
                     if(flag){
@@ -164,7 +193,7 @@ public class ProductOverviewController implements OverviewController{
                         newProduct.getAllProperties());
             }catch(SQLException e){
                 Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Unable To Add New Product");
+                alert.setTitle("Unable To Add New Product.\n" + e.getMessage());
                 alert.setHeaderText(null);
                 alert.setContentText(e.getMessage());
                 alert.showAndWait();
@@ -187,14 +216,12 @@ public class ProductOverviewController implements OverviewController{
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Unable To Edit Product");
                     alert.setHeaderText(null);
-                    alert.setContentText("Unable To Edit Product" + selectedProduct.getProductId());
+                    alert.setContentText("Unable To Edit Product " + selectedProduct.getProductId() + "\n" + e.getMessage());
                     alert.showAndWait();
                 }finally{
-                    showProductDetail(selectedProduct);
+                    loadDataFromDB();
                 }
             }
-
-
         }
         else{
             Alert alert = new Alert(Alert.AlertType.WARNING);
@@ -205,33 +232,96 @@ public class ProductOverviewController implements OverviewController{
         }
     }
 
-    private DBExecuteProduct dbExecute;
     public ProductOverviewController(){
         dbExecute = new DBExecuteProduct();
+        dbExecuteTransaction = new DBExecuteTransaction();
     }
     public void loadDataFromDB(){
-        productList = FXCollections.observableArrayList(
-                dbExecute.selectFromDatabase(DBQueries.SelectQueries.Product.SELECT_ALL_PRODUCT)
-        );
-        productTable.setItems(productList);
-        productTable.getSelectionModel().selectFirst();
-        showProductDetail(productTable.getSelectionModel().getSelectedItem());
+        Task<List<Product>> productListTask = new Task<List<Product>>() {
+            @Override
+            protected List<Product> call() throws Exception {
+                return dbExecute.selectFromDatabase(DBQueries.SelectQueries.Product.SELECT_ALL_PRODUCT);
+            }
+        };
+        Task<List<Transaction>> transactionListTask = new Task<List<Transaction>>() {
+            @Override
+            protected List<Transaction> call() throws Exception {
+                return dbExecuteTransaction.selectFromDatabase(DBQueries.SelectQueries.Transaction.SELECT_ALL_TRANSACTION);
+            }
+        };
+        productListTask.setOnSucceeded(event -> {
+            productList = FXCollections.observableArrayList(productListTask.getValue());
+            productTable.setItems(productList);
+            productTable.getSelectionModel().selectFirst();
+            FilteredList<Product> filteredData = new FilteredList<Product>(productList,p->true);
+            filterField.textProperty().addListener((observable,oldVal,newVal)->{
+                filteredData.setPredicate(product -> {
+                    if (newVal == null || newVal.isEmpty()){
+                        return true;
+                    }
+                    String lowerCase = newVal.toLowerCase();
+                    if (String.valueOf(product.getTotalNum()).contains(lowerCase)){
+                        return true;
+                    }else if (String.valueOf(product.getProductId()).contains(lowerCase)){
+                        return true;
+                    }else if(product.getSize().contains(lowerCase)){
+                        return true;
+                    }
+                    return false;
+                });
+                productTable.setItems(filteredData);
+            });
+        });
+        transactionListTask.setOnSucceeded(event -> {
+            transactionList = FXCollections.observableArrayList(transactionListTask.getValue());
+            executor.execute(productListTask);
+        });
+        productListTask.setOnFailed(event -> {
+            Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to grab data from database!\n" + event.toString());
+            alert.setTitle("Database Error");
+            alert.showAndWait();
+        });
+        transactionListTask.setOnFailed(event -> {
+            Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to grab data from database!\n" + event.toString());
+            alert.setTitle("Database Error");
+            alert.showAndWait();
+        });
+        executor.execute(transactionListTask);
     }
 
     @Override
     public void setMainClass(SaleSystem saleSystem) {
         this.saleSystem = saleSystem;
+        loadDataFromDB();
+        if(this.saleSystem.getStaff().getPosition().equals(Staff.Position.MANAGER)){
+            productTransactionSubtotalCol = new TableColumn<>("SubTotal");
+            productTransactionUnitPriceCol = new TableColumn<>("UnitPrice");
+            productTransactionUnitPriceCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Transaction, Number>, ObservableValue<Number>>() {
+                @Override
+                public ObservableValue<Number> call(TableColumn.CellDataFeatures<Transaction, Number> param) {
+                    return param.getValue().getProductTransactionList().get(0).unitPriceProperty();
+                }
+            });
+            productTransactionSubtotalCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Transaction, Number>, ObservableValue<Number>>() {
+                @Override
+                public ObservableValue<Number> call(TableColumn.CellDataFeatures<Transaction, Number> param) {
+                    return param.getValue().getProductTransactionList().get(0).subTotalProperty();
+                }
+            });
+            productTransactionTableView.getColumns().add(productTransactionUnitPriceCol);
+            productTransactionTableView.getColumns().add(productTransactionSubtotalCol);
+        }
     }
 
-    public void showProductDetail(Product product){
+    private void showProductDetail(Product product){
         if(product != null){
             productIdLabel.setText(String.valueOf(product.getProductId()));
             textualLabel.setText(product.getTexture());
             sizeLabel.setText(product.getSize());
             totalNumLabel.setText(String.valueOf(product.getTotalNum()));
             unitPriceLabel.setText(String.valueOf(product.getUnitPrice()));
-            totalFeetLabel.setText(String.valueOf(product.getTotalFeet()));
-            piecesPerBoxLabel.setText(String.valueOf(product.getPiecePerBox()));
+            piecesPerBoxLabel.setText(String.valueOf(product.getPiecesPerBox()));
+            showProductTransactionDetail(product);
         }
         else{
             productIdLabel.setText("");
@@ -239,9 +329,30 @@ public class ProductOverviewController implements OverviewController{
             sizeLabel.setText("");
             totalNumLabel.setText("");
             unitPriceLabel.setText("");
-            totalFeetLabel.setText("");
             piecesPerBoxLabel.setText("");
         }
+    }
+    private void showProductTransactionDetail(Product product){
+        List<Transaction> tmpTransactionList = transactionList.stream()
+                .filter(t->t.getProductTransactionList().stream()
+                        .anyMatch(p -> p.getProductId().equals(product.getProductId())))
+                .filter(t -> t.getType().equals(Transaction.TransactionType.IN))
+                .collect(Collectors.toList());
+
+        List<Transaction> realTransactionList = new ArrayList<>();
+        tmpTransactionList.forEach(transaction -> {
+            Transaction tmpTransaction = new Transaction.TransactionBuilder()
+                    .date(transaction.getDate().toString())
+                    .staffId(transaction.getStaffId())
+                    .info(transaction.getInfo())
+                    .build();
+            List<ProductTransaction> tmpProductTransactionList = transaction.getProductTransactionList().stream()
+                    .filter(p->p.getProductId().equals(product.getProductId()))
+                    .collect(Collectors.toList());
+            tmpTransaction.setProductTransactionList(tmpProductTransactionList);
+            realTransactionList.add(tmpTransaction);
+        });
+        productTransactionTableView.setItems(FXCollections.observableArrayList(realTransactionList));
     }
 
 }

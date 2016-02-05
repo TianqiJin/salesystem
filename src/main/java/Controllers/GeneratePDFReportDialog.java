@@ -20,6 +20,7 @@ import util.AutoCompleteComboBoxListener;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -66,10 +67,15 @@ public class GeneratePDFReportDialog {
     private void initialize(){
         destinationLabel.setText("Please select a directory");
 
-        customerList = dbExecuteCustomer.selectFromDatabase(DBQueries.SelectQueries.Customer.SELECT_ALL_CUSTOMER);
-        productList = dbExecuteProduct.selectFromDatabase(DBQueries.SelectQueries.Product.SELECT_ALL_PRODUCT);
-        staffList = dbExecuteStaff.selectFromDatabase(DBQueries.SelectQueries.Staff.SELECT_ALL_STAFF);
-
+        try{
+            customerList = dbExecuteCustomer.selectFromDatabase(DBQueries.SelectQueries.Customer.SELECT_ALL_CUSTOMER);
+            productList = dbExecuteProduct.selectFromDatabase(DBQueries.SelectQueries.Product.SELECT_ALL_PRODUCT);
+            staffList = dbExecuteStaff.selectFromDatabase(DBQueries.SelectQueries.Staff.SELECT_ALL_STAFF);
+        }catch(SQLException e){
+            Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to grab data from database!\n" + e.getMessage());
+            alert.setTitle("Database Error");
+            alert.showAndWait();
+        }
         List<String> tmpCustomerList = new ArrayList<>();
         List<String> tmpProductList = new ArrayList<>();
         List<String> tmpStaffList = new ArrayList<>();
@@ -104,24 +110,6 @@ public class GeneratePDFReportDialog {
                 }
             }
         });
-
-//        productComboBox.setConverter(new StringConverter<Integer>() {
-//            @Override
-//            public String toString(Integer object) {
-//                return String.valueOf(object);
-//            }
-//
-//            @Override
-//            public Integer fromString(String string) {
-//                return Integer.valueOf(string);
-//            }
-//        });
-//        productComboBox.valueProperty().addListener(new ChangeListener<Integer>() {
-//            @Override
-//            public void changed(ObservableValue observable, Integer oldValue, Integer newValue) {
-//                productId = newValue;
-//            }
-//        });
 
         staffComboBox.valueProperty().addListener(new ChangeListener() {
             @Override
@@ -163,9 +151,16 @@ public class GeneratePDFReportDialog {
             alert.setHeaderText(null);
             alert.showAndWait();
         }
-        List<Transaction> returnedTransaction =
-                dbExecuteTransaction.selectFromDatabase(
-                        DBQueries.SelectQueries.Transaction.SELECT_ALL_TRANSACTION_FOR_REPORT, startDate, endDate);
+        List<Transaction> returnedTransaction = null;
+        try{
+            returnedTransaction = dbExecuteTransaction.selectFromDatabase(
+                            DBQueries.SelectQueries.Transaction.SELECT_ALL_TRANSACTION_FOR_REPORT, startDate, endDate);
+        }catch(SQLException e){
+            Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to grab data from database!\n" + e.getMessage());
+            alert.setTitle("Database Error");
+            alert.showAndWait();
+        }
+
         if(returnedTransaction.size() == 0){
             Alert alert = new Alert(Alert.AlertType.ERROR, "No transactions are returned in selected date range!");
             alert.setHeaderText(null);
@@ -185,6 +180,7 @@ public class GeneratePDFReportDialog {
                     .destination(selectedDirectory.getPath())
                     .build()
                     .generate();
+            dialogStage.close();
         }
     }
 
@@ -198,6 +194,4 @@ public class GeneratePDFReportDialog {
         dbExecuteStaff = new DBExecuteStaff();
         dbExecuteTransaction = new DBExecuteTransaction();
     }
-
-
 }

@@ -178,9 +178,15 @@ public class StaffOverviewController implements OverviewController{
 
     @Override
     public void loadDataFromDB() {
-        staffList = FXCollections.observableArrayList(
-                dbExecute.selectFromDatabase(DBQueries.SelectQueries.Staff.SELECT_ALL_STAFF)
-        );
+        try{
+            staffList = FXCollections.observableArrayList(
+                    dbExecute.selectFromDatabase(DBQueries.SelectQueries.Staff.SELECT_ALL_STAFF)
+            );
+        }catch(SQLException e){
+            Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to grab data from database!\n" + e.getMessage());
+            alert.setTitle("Database Error");
+            alert.showAndWait();
+        }
         staffTable.setItems(staffList);
     }
 

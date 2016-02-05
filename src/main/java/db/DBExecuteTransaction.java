@@ -13,18 +13,10 @@ public class DBExecuteTransaction extends DBExecute<Transaction> {
     public static Logger logger= Logger.getLogger(DBExecuteTransaction.class);
     private static List<Transaction> selectResult;
 
-
     @Override
-    public List selectFromDatabase(String query, Object... params) {
-        try {
-            selectResult = DBConnect.executeQuery(query, ObjectDeserializer.TRANSACTION_OBJECT_DESERIALIZER, params);
-            if (selectResult != null) {
-                return selectResult;
-            }
-        } catch (SQLException e) {
-            logger.error(e.getMessage());
-        }
-        return null;
+    public List selectFromDatabase(String query, Object... params) throws SQLException{
+        selectResult = DBConnect.executeQuery(query, ObjectDeserializer.TRANSACTION_OBJECT_DESERIALIZER, params);
+        return  selectResult;
     }
 
 

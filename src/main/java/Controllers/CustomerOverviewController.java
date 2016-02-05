@@ -7,6 +7,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -14,7 +15,10 @@ import model.Customer;
 import MainClass.SaleSystem;
 
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 /**
  * Created by tjin on 11/29/2015.
@@ -24,6 +28,7 @@ public class CustomerOverviewController implements OverviewController{
     private DBExecuteCustomer dbExecute;
     private ObservableList<Customer> customerList;
     private SaleSystem saleSystem;
+    private Executor executor;
 
     @FXML
     private TableView<Customer> customerTable;
@@ -58,23 +63,6 @@ public class CustomerOverviewController implements OverviewController{
     private void initialize(){
         firstNameCol.setCellValueFactory(new PropertyValueFactory<Customer, String>("firstName"));
         lastNameCol.setCellValueFactory(new PropertyValueFactory<Customer, String>("lastName"));
-        loadDataFromDB();
-        FilteredList<Customer> filteredData = new FilteredList<Customer>(customerList,p->true);
-        filterField.textProperty().addListener((observable,oldVal,newVal)->{
-            filteredData.setPredicate(customer -> {
-                if (newVal == null || newVal.isEmpty()){
-                    return true;
-                }
-                String lowerCase = newVal.toLowerCase();
-                if (customer.getFirstName().toLowerCase().contains(lowerCase)){
-                    return true;
-                }else if (customer.getLastName().toLowerCase().contains(lowerCase)){
-                    return true;
-                }
-                return false;
-            });
-            customerTable.setItems(filteredData);
-        });
         customerTable.getSelectionModel().selectedItemProperty().addListener(
             new ChangeListener<Customer>() {
                 @Override
@@ -83,6 +71,11 @@ public class CustomerOverviewController implements OverviewController{
                 }
             }
         );
+        executor = Executors.newCachedThreadPool(r -> {
+            Thread t = new Thread(r);
+            t.setDaemon(true);
+            return  t;
+        });
     }
 
     @FXML
@@ -186,17 +179,47 @@ public class CustomerOverviewController implements OverviewController{
     }
 
     public void loadDataFromDB(){
-        customerList = FXCollections.observableArrayList(
-                dbExecute.selectFromDatabase(DBQueries.SelectQueries.Customer.SELECT_ALL_CUSTOMER)
-        );
-        customerTable.setItems(customerList);
-        customerTable.getSelectionModel().selectFirst();
-        showCustomerDetail(customerTable.getSelectionModel().getSelectedItem());
+        Task<List<Customer>> customerListTask = new Task<List<Customer>>() {
+            @Override
+            protected List<Customer> call() throws Exception {
+                return dbExecute.selectFromDatabase(DBQueries.SelectQueries.Customer.SELECT_ALL_CUSTOMER);
+            }
+        };
+        customerListTask.setOnSucceeded(event -> {
+            customerList = FXCollections.observableArrayList(customerListTask.getValue());
+            customerTable.setItems(customerList);
+            customerTable.getSelectionModel().selectFirst();
+            showCustomerDetail(customerTable.getSelectionModel().getSelectedItem());
+            FilteredList<Customer> filteredData = new FilteredList<Customer>(customerList,p->true);
+            filterField.textProperty().addListener((observable,oldVal,newVal)->{
+                filteredData.setPredicate(customer -> {
+                    if (newVal == null || newVal.isEmpty()){
+                        return true;
+                    }
+                    String lowerCase = newVal.toLowerCase();
+                    if (customer.getFirstName().toLowerCase().contains(lowerCase)){
+                        return true;
+                    }else if (customer.getLastName().toLowerCase().contains(lowerCase)){
+                        return true;
+                    }
+                    return false;
+                });
+                customerTable.setItems(filteredData);
+            });
+        });
+
+        customerListTask.setOnFailed(event -> {
+            Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to grab data from database!\n" + event.toString());
+            alert.setTitle("Database Error");
+            alert.showAndWait();
+        });
+        executor.execute(customerListTask);
     }
 
     @Override
     public void setMainClass(SaleSystem saleSystem) {
         this.saleSystem = saleSystem;
+        loadDataFromDB();
     }
 
     public void showCustomerDetail(Customer customer){
