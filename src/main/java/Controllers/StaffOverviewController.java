@@ -1,6 +1,7 @@
 package Controllers;
 
 
+import Constants.Constant;
 import MainClass.SaleSystem;
 import db.DBExecuteStaff;
 import db.DBQueries;
@@ -9,19 +10,24 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import model.Staff;
+import util.AlertBuilder;
 
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public class StaffOverviewController implements OverviewController{
 
     private SaleSystem saleSystem;
     private ObservableList<Staff> staffList;
-
+    private Executor executor;
 
     @FXML
     private TableView<Staff> staffTable;
@@ -48,26 +54,7 @@ public class StaffOverviewController implements OverviewController{
         nameCol.setCellValueFactory(new PropertyValueFactory<>("FullName"));
         positionCol.setCellValueFactory(new PropertyValueFactory<>("Position"));
         locationCol.setCellValueFactory(new PropertyValueFactory<>("Location"));
-        loadDataFromDB();
         showStaffDetail(null);
-        FilteredList<Staff> filteredData = new FilteredList<Staff>(staffList,p->true);
-        filterField.textProperty().addListener((observable,oldVal,newVal)->{
-            filteredData.setPredicate(staff -> {
-                if (newVal == null || newVal.isEmpty()){
-                    return true;
-                }
-                String lowerCase = newVal.toLowerCase();
-                if (staff.getFullName().toLowerCase().contains(lowerCase)){
-                    return true;
-                }else if (staff.getPosition().name().toLowerCase().contains(lowerCase)){
-                    return true;
-                }else if (staff.getLocation().name().toLowerCase().contains(lowerCase)){
-                    return true;
-                }
-                return false;
-            });
-            staffTable.setItems(filteredData);
-        });
         staffTable.getSelectionModel().selectedItemProperty().addListener(
                 new ChangeListener<Staff>() {
                     @Override
@@ -76,6 +63,11 @@ public class StaffOverviewController implements OverviewController{
                     }
                 }
         );
+        executor = Executors.newCachedThreadPool(r -> {
+            Thread t = new Thread(r);
+            t.setDaemon(true);
+            return t;
+        });
     }
 
     @FXML
@@ -94,29 +86,31 @@ public class StaffOverviewController implements OverviewController{
                 }catch(SQLException e){
                     e.printStackTrace();
                     flag = false;
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle("Delete Staff Error");
-                    alert.setHeaderText(null);
-                    alert.setContentText("Error when deleting staff "+tempName+" "+tempPosition);
-                    alert.showAndWait();
+                    new AlertBuilder()
+                            .alertType(Alert.AlertType.ERROR)
+                            .alertTitle(Constant.DatabaseError.databaseErrorAlertTitle)
+                            .alertContentText(Constant.DatabaseError.databaseDeleteError + e.toString())
+                            .build()
+                            .showAndWait();
                 }finally{
                     if(flag){
                         staffTable.getItems().remove(selectedIndex);
-                        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                        alert.setTitle("Delete Staff Successfully");
-                        alert.setHeaderText(null);
-                        alert.setContentText("Successfully deleted staff "+tempName+" "+tempPosition);
-                        alert.showAndWait();
+                        new AlertBuilder()
+                                .alertTitle("Delete Staff Successfully")
+                                .alertContentText("Successfully deleted staff "+tempName+" "+tempPosition)
+                                .build()
+                                .showAndWait();
                     }
                 }
             }
         }
         else{
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("No Staff Selected");
-            alert.setHeaderText(null);
-            alert.setContentText("Please select a person in the table.");
-            alert.showAndWait();
+            new AlertBuilder()
+                    .alertType(Alert.AlertType.WARNING)
+                    .alertTitle("No Staff Selected")
+                    .alertContentText("Please select a person in the table.")
+                    .build()
+                    .showAndWait();
         }
 
     }
@@ -131,11 +125,12 @@ public class StaffOverviewController implements OverviewController{
                 dbExecute.insertIntoDatabase(DBQueries.InsertQueries.Staff.INSERT_INTO_STAFF,
                         newStaff.getAllProperties());
             }catch(SQLException e){
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Unable To Add New Staff");
-                alert.setHeaderText(null);
-                alert.setContentText("Unable To Add New Staff" + newStaff.getUserName());
-                alert.showAndWait();
+                new AlertBuilder()
+                        .alertType(Alert.AlertType.ERROR)
+                        .alertTitle(Constant.DatabaseError.databaseErrorAlertTitle)
+                        .alertContentText(Constant.DatabaseError.databaseCreateError + e.toString())
+                        .build()
+                        .showAndWait();
             }finally{
                 loadDataFromDB();
             }
@@ -152,22 +147,24 @@ public class StaffOverviewController implements OverviewController{
                     dbExecute.updateDatabase(DBQueries.UpdateQueries.Staff.UPDATE_STAFF,
                             selectedStaff.getAllPropertiesForUpdate());
                 }catch(SQLException e){
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle("Unable To Edit Staff");
-                    alert.setHeaderText(null);
-                    alert.setContentText("Unable To Edit Staff" + selectedStaff.getFullName());
-                    alert.showAndWait();
+                    new AlertBuilder()
+                            .alertType(Alert.AlertType.ERROR)
+                            .alertTitle(Constant.DatabaseError.databaseErrorAlertTitle)
+                            .alertContentText(Constant.DatabaseError.databaseUpdateError + e.toString())
+                            .build()
+                            .showAndWait();
                 }finally{
                     showStaffDetail(selectedStaff);
                 }
             }
         }
         else{
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("No Staff Selected");
-            alert.setHeaderText(null);
-            alert.setContentText("Please select a person in the table.");
-            alert.showAndWait();
+            new AlertBuilder()
+                    .alertType(Alert.AlertType.WARNING)
+                    .alertTitle("No Staff Selected\n")
+                    .alertContentText("Please select a person in the table.")
+                    .build()
+                    .showAndWait();
         }
     }
 
@@ -178,21 +175,50 @@ public class StaffOverviewController implements OverviewController{
 
     @Override
     public void loadDataFromDB() {
-        try{
-            staffList = FXCollections.observableArrayList(
-                    dbExecute.selectFromDatabase(DBQueries.SelectQueries.Staff.SELECT_ALL_STAFF)
-            );
-        }catch(SQLException e){
-            Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to grab data from database!\n" + e.getMessage());
-            alert.setTitle("Database Error");
-            alert.showAndWait();
-        }
-        staffTable.setItems(staffList);
+        Task<List<Staff>> staffListTask = new Task<List<Staff>>(){
+            @Override
+            protected List<Staff> call() throws Exception {
+                return dbExecute.selectFromDatabase(DBQueries.SelectQueries.Staff.SELECT_ALL_STAFF);
+            }
+        };
+        staffListTask.setOnFailed(event -> {
+            new AlertBuilder()
+                    .alertType(Alert.AlertType.ERROR)
+                    .alertContentText(Constant.DatabaseError.databaseReturnError + event.toString())
+                    .alertHeaderText(Constant.DatabaseError.databaseErrorAlertTitle)
+                    .build()
+                    .showAndWait();
+        });
+        staffListTask.setOnSucceeded(event -> {
+            staffList = FXCollections.observableArrayList(staffListTask.getValue());
+            staffTable.setItems(staffList);
+            staffTable.getSelectionModel().selectFirst();
+            FilteredList<Staff> filteredData = new FilteredList<Staff>(staffList,p->true);
+            filterField.textProperty().addListener((observable,oldVal,newVal)->{
+                filteredData.setPredicate(staff -> {
+                    if (newVal == null || newVal.isEmpty()){
+                        return true;
+                    }
+                    String lowerCase = newVal.toLowerCase();
+                    if (staff.getFullName().toLowerCase().contains(lowerCase)){
+                        return true;
+                    }else if (staff.getPosition().name().toLowerCase().contains(lowerCase)){
+                        return true;
+                    }else if (staff.getLocation().name().toLowerCase().contains(lowerCase)){
+                        return true;
+                    }
+                    return false;
+                });
+                staffTable.setItems(filteredData);
+            });
+        });
+        executor.execute(staffListTask);
     }
 
     @Override
     public void setMainClass(SaleSystem saleSystem) {
         this.saleSystem = saleSystem;
+        loadDataFromDB();
     }
 
 

@@ -1,5 +1,6 @@
 package Controllers;
 
+import Constants.Constant;
 import MainClass.SaleSystem;
 import db.*;
 import javafx.beans.binding.Bindings;
@@ -20,6 +21,7 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 import model.*;
+import util.AlertBuilder;
 import util.AutoCompleteComboBoxListener;
 import util.ButtonCell;
 import util.DateUtil;
@@ -383,9 +385,13 @@ public class TransactionEditDialogController {
             }
             connection.commit();
         }catch(SQLException e){
-            connection.rollback(); //TODO: CRITICAL BUG!!!
-            Alert alert = new Alert(Alert.AlertType.ERROR, "Unable to update transaction to database!\n" + e.getMessage());
-            alert.showAndWait();
+            connection.rollback();
+            new AlertBuilder()
+                    .alertType(Alert.AlertType.ERROR)
+                    .alertContentText(Constant.DatabaseError.databaseUpdateError + e.getMessage())
+                    .alertTitle(Constant.DatabaseError.databaseErrorAlertTitle)
+                    .build()
+                    .showAndWait();
         }
         connection.setAutoCommit(true);
     }

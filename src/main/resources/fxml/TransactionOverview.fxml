@@ -46,7 +46,6 @@
                 <Button mnemonicParsing="false" onAction="#handleStockTransaction" text="Stock" />
                         <Button mnemonicParsing="false" onAction="#handleReturnTransaction" text="Return" />
                 <Button mnemonicParsing="false" onAction="#handleEditTransaction" text="Edit" />
-                <Button mnemonicParsing="false" onAction="#handleDeleteTransaction" text="Delete" />
               </children>
             </HBox>
                   <SplitPane dividerPositions="0.55" layoutX="55.0" layoutY="33.0" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="35.0">

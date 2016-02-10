@@ -1,5 +1,6 @@
 package Controllers;
 
+import Constants.Constant;
 import MainClass.SaleSystem;
 import db.*;
 import javafx.beans.binding.Bindings;
@@ -17,6 +18,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
@@ -162,30 +164,6 @@ public class GenerateProductTransactController {
 
     }
 
-//    @FXML
-//    public void handleAddItem(){
-//        List<Product> productResult = dbExecuteProduct.selectFromDatabase(DBQueries.SelectQueries.Product.SELECT_PRODUCTID_PROJECT,
-//                productIdField.getText().trim());
-//        if(productResult.isEmpty()){
-//             Alert alert = new Alert(Alert.AlertType.WARNING);
-//             alert.initOwner(dialogStage);
-//             alert.setTitle("Invalid Product ID");
-//             alert.setHeaderText(null);
-//             alert.setContentText("Please input valid product ID");
-//             alert.showAndWait();
-//         }
-//        else{
-//            ProductTransaction newTransaction = new ProductTransaction.ProductTransactionBuilder()
-//                    .productId(productResult.get(0).getProductId())
-//                    .totalNum(productResult.get(0).getTotalNum())
-//                    .unitPrice(productResult.get(0).getUnitPrice())
-//                    .build();
-//            productTransactionObservableList.add(newTransaction);
-//        }
-//
-//    }
-
-
     @FXML
     public void handleCancelButton(){
         this.dialogStage.close();
@@ -238,6 +216,8 @@ public class GenerateProductTransactController {
             alert.setHeaderText("Please confirm the following transaction");
             alert.setResizable(true);
             alert.getDialogPane().setPrefWidth(500);
+            Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+            alertStage.getIcons().add(new Image(this.getClass().getResourceAsStream(Constant.Image.appIconPath)));
 
             Optional<ButtonType> result = alert.showAndWait();
             if(result.isPresent() && result.get() == ButtonType.OK){
@@ -331,7 +311,7 @@ public class GenerateProductTransactController {
             }
             connection.commit();
         }catch(SQLException e){
-            connection.rollback(); //TODO: CRITICAL BUG!!!
+            connection.rollback();
             Alert alert = new Alert(Alert.AlertType.ERROR, "Unable to store transaction to database!\n" + e.getMessage());
             alert.showAndWait();
         }

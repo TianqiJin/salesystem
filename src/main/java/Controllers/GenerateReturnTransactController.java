@@ -1,5 +1,6 @@
 package Controllers;
 
+import Constants.Constant;
 import MainClass.SaleSystem;
 import db.*;
 import javafx.beans.binding.BooleanBinding;
@@ -15,6 +16,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.image.Image;
 import javafx.scene.layout.Region;
 import javafx.stage.Stage;
 import javafx.util.Callback;
@@ -33,6 +35,7 @@ import java.util.*;
 /**
  * Created by tjin on 1/12/2016.
  */
+
 public class GenerateReturnTransactController {
 
     private final static String INIT_TRANSACTION_PAYMENT_TYPE = "Return";
@@ -287,6 +290,9 @@ public class GenerateReturnTransactController {
             alert.setHeaderText("Please confirm the following transaction");
             alert.setResizable(true);
             alert.getDialogPane().setPrefWidth(500);
+            Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+            alertStage.getIcons().add(new Image(this.getClass().getResourceAsStream(Constant.Image.appIconPath)));
+
             Optional<ButtonType> result = alert.showAndWait();
             if(result.isPresent() && result.get() == ButtonType.OK){
                 commitTransactionToDatabase();
@@ -481,3 +487,4 @@ public class GenerateReturnTransactController {
         return this.confirmedClicked;
     }
 }
+

@@ -1,6 +1,7 @@
 package Controllers;
 
 
+import Constants.Constant;
 import MainClass.SaleSystem;
 import db.*;
 import javafx.beans.value.ChangeListener;
@@ -15,8 +16,10 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.util.converter.BigDecimalStringConverter;
 import model.Customer;
 import model.ProductTransaction;
+import model.Staff;
 import model.Transaction;
 import sun.java2d.loops.GraphicsPrimitive;
+import util.AlertBuilder;
 import util.DateUtil;
 
 import java.io.IOException;
@@ -105,14 +108,6 @@ public class TransactionOverviewController implements OverviewController{
     }
 
     @FXML
-    private void handleDeleteTransaction(){
-        int selectedIndex = transactionTable.getSelectionModel().getSelectedIndex();
-        //transactionTable.getItems().remove(selectedIndex);
-        //TODO: delete the corresponding info in the database
-        //TODO: add if-else block for selectedIndex = -1 situation
-    }
-
-    @FXML
     private void handleAddTransaction(){
         Transaction newTransaction = saleSystem.showGenerateCustomerTransactionDialog();
         if(newTransaction != null){
@@ -144,8 +139,11 @@ public class TransactionOverviewController implements OverviewController{
         Transaction selectedTransaction = transactionTable.getSelectionModel().getSelectedItem();
         if(selectedTransaction != null){
             if(!selectedTransaction.getType().equals(Transaction.TransactionType.OUT)){
-                Alert alert = new Alert(Alert.AlertType.ERROR, "You can only edit OUT transaction!\n");
-                alert.showAndWait();
+                new AlertBuilder()
+                        .alertType(Alert.AlertType.ERROR)
+                        .alertContentText("You can only edit OUT transaction!\n")
+                        .build()
+                        .showAndWait();
             }else{
                 boolean okClicked = saleSystem.showTransactionEditDialog(selectedTransaction);
                 if(okClicked){
@@ -195,9 +193,12 @@ public class TransactionOverviewController implements OverviewController{
             });
         });
         transactionListTask.setOnFailed(event -> {
-            Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to grab data from database!\n" + event.toString());
-            alert.setTitle("Database Error");
-            alert.showAndWait();
+            new AlertBuilder()
+                    .alertType(Alert.AlertType.ERROR)
+                    .alertContentText(Constant.DatabaseError.databaseReturnError + event.toString())
+                    .alertHeaderText(Constant.DatabaseError.databaseErrorAlertTitle)
+                    .build()
+                    .showAndWait();
         });
         executor.execute(transactionListTask);
     }
@@ -220,6 +221,14 @@ public class TransactionOverviewController implements OverviewController{
             staffLabel.setText(String.valueOf(transaction.getStaffId()));
             typeLabel.setText(transaction.getType().name());
             infoLabel.setText(transaction.getInfo());
+            if(!saleSystem.getStaff().getPosition().equals(Staff.Position.MANAGER)
+                    && transaction.getType().equals(Transaction.TransactionType.IN)){
+                unitPriceCol.setVisible(false);
+                subTotalCol.setVisible(false);
+            }else{
+                unitPriceCol.setVisible(true);
+                subTotalCol.setVisible(true);
+            }
             transactionDetaiTableView.setItems(
                     FXCollections.observableArrayList(transaction.getProductTransactionList()));
         }
