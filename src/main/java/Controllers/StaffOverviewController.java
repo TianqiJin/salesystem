@@ -18,6 +18,7 @@ import model.Staff;
 import util.AlertBuilder;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executor;
@@ -47,7 +48,8 @@ public class StaffOverviewController implements OverviewController{
     private Label positionLabel;
     @FXML
     private Label locationLabel;
-
+    @FXML
+    private ProgressBar progressBar;
 
     @FXML
     private void initialize(){
@@ -178,9 +180,15 @@ public class StaffOverviewController implements OverviewController{
         Task<List<Staff>> staffListTask = new Task<List<Staff>>(){
             @Override
             protected List<Staff> call() throws Exception {
-                return dbExecute.selectFromDatabase(DBQueries.SelectQueries.Staff.SELECT_ALL_STAFF);
+                List<Staff> tmpStaffList = new ArrayList<>();
+                for(int i = 0; i < 1; i++){
+                    tmpStaffList = dbExecute.selectFromDatabase(DBQueries.SelectQueries.Staff.SELECT_ALL_STAFF);
+                    updateProgress(i+1, 1);
+                }
+                return tmpStaffList;
             }
         };
+        progressBar.progressProperty().bind(staffListTask.progressProperty());
         staffListTask.setOnFailed(event -> {
             new AlertBuilder()
                     .alertType(Alert.AlertType.ERROR)

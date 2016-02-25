@@ -248,7 +248,7 @@ public class SaleSystem extends Application{
         }
     }
 
-    public boolean showProductEditDialog(Product product){
+    public boolean showProductEditDialog(Product product, boolean isEditClicked){
         try{
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(SaleSystem.class.getResource("/fxml/ProductEditDialog.fxml"));
@@ -264,7 +264,7 @@ public class SaleSystem extends Application{
 
             ProductEditDialogController controller = loader.getController();
             controller.setDialogStage(dialogStage);
-            controller.setMainClass(SaleSystem.this);
+            controller.setMainClass(SaleSystem.this, isEditClicked);
             controller.setTextField(product);
 
             dialogStage.showAndWait();
@@ -311,6 +311,7 @@ public class SaleSystem extends Application{
             Stage dialogStage = new Stage();
             dialogStage.getIcons().add(new Image(SaleSystem.class.getResourceAsStream(Constant.Image.appIconPath)));
             dialogStage.setTitle("Login Dialog");
+            page.getStylesheets().add(SaleSystem.class.getResource("/css/theme.css").toExternalForm());
             Scene scene = new Scene(page);
             dialogStage.setScene(scene);
             dialogStage.initModality(Modality.WINDOW_MODAL);

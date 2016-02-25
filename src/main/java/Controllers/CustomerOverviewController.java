@@ -15,6 +15,7 @@ import model.Customer;
 import MainClass.SaleSystem;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executor;
@@ -58,6 +59,8 @@ public class CustomerOverviewController implements OverviewController{
     private Label storeCreditLabel;
     @FXML
     private Label companyLabel;
+    @FXML
+    private ProgressBar progressBar;
 
     @FXML
     private void initialize(){
@@ -102,11 +105,6 @@ public class CustomerOverviewController implements OverviewController{
                 }finally {
                     if(flag){
                         customerTable.getItems().remove(selectedIndex);
-                        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                        alert.setTitle("Delete Customer Successfully");
-                        alert.setHeaderText(null);
-                        alert.setContentText("Successfully deleted customer "+tempFirstName+" "+tempLastName);
-                        alert.showAndWait();
                     }
                 }
             }
@@ -182,9 +180,15 @@ public class CustomerOverviewController implements OverviewController{
         Task<List<Customer>> customerListTask = new Task<List<Customer>>() {
             @Override
             protected List<Customer> call() throws Exception {
-                return dbExecute.selectFromDatabase(DBQueries.SelectQueries.Customer.SELECT_ALL_CUSTOMER);
+                List<Customer> tmpCustomerList = new ArrayList<>();
+                for(int i = 0; i < 1; i++){
+                    tmpCustomerList = dbExecute.selectFromDatabase(DBQueries.SelectQueries.Customer.SELECT_ALL_CUSTOMER);
+                    updateProgress(i+1, 1);
+                }
+                return tmpCustomerList;
             }
         };
+        progressBar.progressProperty().bind(customerListTask.progressProperty());
         customerListTask.setOnSucceeded(event -> {
             customerList = FXCollections.observableArrayList(customerListTask.getValue());
             customerTable.setItems(customerList);

@@ -80,6 +80,8 @@ public class ProductOverviewController implements OverviewController{
     private TableColumn<Transaction, Number> productTransactionUnitPriceCol;
     @FXML
     private TableColumn<Transaction, Number> productTransactionSubtotalCol;
+    @FXML
+    private ProgressBar progressBar;
 
     @FXML
     private void initialize(){
@@ -95,16 +97,13 @@ public class ProductOverviewController implements OverviewController{
                         super.updateItem(item, empty);
                         if(item == null || empty){
                             setText(null);
-                            setStyle("");
                             getTableRow().setStyle("");
                         }else{
                             setText(String.valueOf(item));
                             if(item < saleSystem.getProductWarnLimit()){
-                                setStyle("-fx-background-color: chocolate");
-                                getTableRow().setStyle("-fx-background-color: chocolate");
+                                getTableRow().setStyle("-fx-background-color: lightcoral");
                             }
                             else{
-                                setStyle("");
                                 getTableRow().setStyle("");
                             }
                         }
@@ -142,7 +141,7 @@ public class ProductOverviewController implements OverviewController{
     }
 
     @FXML
-    private void handleDeleteProduct(){
+    private void  handleDeleteProduct(){
         int selectedIndex = productTable.getSelectionModel().getSelectedIndex();
         if(selectedIndex >= 0){
             String tempID = productTable.getItems().get(selectedIndex).getProductId();
@@ -186,7 +185,7 @@ public class ProductOverviewController implements OverviewController{
     @FXML
     private void handleAddProduct(){
         Product newProduct = new Product(new Product.ProductBuilder());
-        boolean okClicked = saleSystem.showProductEditDialog(newProduct);
+        boolean okClicked = saleSystem.showProductEditDialog(newProduct, false);
         if(okClicked){
             try{
                 dbExecute.insertIntoDatabase(DBQueries.InsertQueries.Product.INSERT_INTO_PRODUCT,
@@ -207,7 +206,7 @@ public class ProductOverviewController implements OverviewController{
     private void handleEditProduct(){
         Product selectedProduct = productTable.getSelectionModel().getSelectedItem();
         if(selectedProduct != null){
-            boolean onClicked = saleSystem.showProductEditDialog(selectedProduct);
+            boolean onClicked = saleSystem.showProductEditDialog(selectedProduct, true);
             if(onClicked){
                 try{
                     dbExecute.updateDatabase(DBQueries.UpdateQueries.Product.UPDATE_PRODUCT,
@@ -240,15 +239,37 @@ public class ProductOverviewController implements OverviewController{
         Task<List<Product>> productListTask = new Task<List<Product>>() {
             @Override
             protected List<Product> call() throws Exception {
-                return dbExecute.selectFromDatabase(DBQueries.SelectQueries.Product.SELECT_ALL_PRODUCT);
+                List<Product> tmpProductList = new ArrayList<>();
+                for(int i = 0; i < 1; i++){
+                    tmpProductList = dbExecute.selectFromDatabase(DBQueries.SelectQueries.Product.SELECT_ALL_PRODUCT);
+                    updateProgress(i+1, 1);
+                }
+                return tmpProductList;
             }
         };
         Task<List<Transaction>> transactionListTask = new Task<List<Transaction>>() {
             @Override
             protected List<Transaction> call() throws Exception {
-                return dbExecuteTransaction.selectFromDatabase(DBQueries.SelectQueries.Transaction.SELECT_ALL_TRANSACTION);
+                List<Transaction> tmpTransactionList = new ArrayList<>();
+                for(int i = 0; i < 1; i++){
+                    tmpTransactionList = dbExecuteTransaction.selectFromDatabase(DBQueries.SelectQueries.Transaction.SELECT_ALL_TRANSACTION);
+                    updateProgress(i+1, 1);
+                }
+                return tmpTransactionList;
             }
         };
+        progressBar.progressProperty().bind(transactionListTask.progressProperty());
+        transactionListTask.setOnSucceeded(event -> {
+            transactionList = FXCollections.observableArrayList(transactionListTask.getValue());
+            progressBar.progressProperty().unbind();
+            progressBar.progressProperty().bind(productListTask.progressProperty());
+            executor.execute(productListTask);
+        });
+        transactionListTask.setOnFailed(event -> {
+            Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to grab data from database!\n" + event.toString());
+            alert.setTitle("Database Error");
+            alert.showAndWait();
+        });
         productListTask.setOnSucceeded(event -> {
             productList = FXCollections.observableArrayList(productListTask.getValue());
             productTable.setItems(productList);
@@ -272,16 +293,7 @@ public class ProductOverviewController implements OverviewController{
                 productTable.setItems(filteredData);
             });
         });
-        transactionListTask.setOnSucceeded(event -> {
-            transactionList = FXCollections.observableArrayList(transactionListTask.getValue());
-            executor.execute(productListTask);
-        });
         productListTask.setOnFailed(event -> {
-            Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to grab data from database!\n" + event.toString());
-            alert.setTitle("Database Error");
-            alert.showAndWait();
-        });
-        transactionListTask.setOnFailed(event -> {
             Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to grab data from database!\n" + event.toString());
             alert.setTitle("Database Error");
             alert.showAndWait();

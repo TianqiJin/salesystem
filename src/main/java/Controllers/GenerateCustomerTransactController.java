@@ -366,6 +366,8 @@ public class GenerateCustomerTransactController {
             alert.getDialogPane().setPrefWidth(500);
             Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
             alertStage.getIcons().add(new Image(this.getClass().getResourceAsStream(Constant.Image.appIconPath)));
+            alert.getDialogPane().getStylesheets().add(getClass().getResource("/css/theme.css").toExternalForm());
+
             Optional<ButtonType> result = alert.showAndWait();
             if(result.isPresent() && result.get() == ButtonType.OK){
                 commitTransactionToDatabase();
@@ -514,9 +516,13 @@ public class GenerateCustomerTransactController {
         if(customer == null){
             errorMsgBuilder.append("Customer is neither selected nor created!\n");
         }
-        if(storeCreditCheckBox.isSelected() && !storeCreditField.getText().trim().isEmpty()){
-            if(!isStoreCreditValid()){
-                errorMsgBuilder.append("Either Store Credit exceeds customer's limit or Store Credit must be numbers!\n");
+        if(storeCreditCheckBox.isSelected()){
+            if(storeCreditField.getText().trim().isEmpty()){
+                errorMsgBuilder.append("Store Credit Field is empty, but it is selected!\n");
+            }else{
+                if(!isStoreCreditValid()){
+                    errorMsgBuilder.append("Either Store Credit exceeds customer's limit or Store Credit must be numbers!\n");
+                }
             }
         }
         if(errorMsgBuilder.length() != 0){
@@ -583,7 +589,7 @@ public class GenerateCustomerTransactController {
                e.printStackTrace();
             }
         }catch(SQLException e){
-            connection.rollback(); //TODO: CRITICAL BUG!!!
+            connection.rollback();
             Alert alert = new Alert(Alert.AlertType.ERROR, "Unable to store transaction to database!");
             alert.showAndWait();
         }

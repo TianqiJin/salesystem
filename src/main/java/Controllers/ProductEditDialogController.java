@@ -12,6 +12,7 @@ import model.Customer;
 import model.Product;
 import model.Staff;
 import model.Transaction;
+import util.AlertBuilder;
 
 /**
  * Created by tjin on 12/2/2015.
@@ -79,12 +80,13 @@ public class ProductEditDialogController {
             dialogStage.close();
         }
         else{
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.initOwner(dialogStage);
-            alert.setTitle("Invalid Fields");
-            alert.setHeaderText("Please correct the invalid fields");
-            alert.setContentText(errorMsg);
-            alert.showAndWait();
+            new AlertBuilder()
+                    .alertType(Alert.AlertType.WARNING)
+                    .alertHeaderText("Please correct the invalid fields")
+                    .alertTitle("Invalid Fields")
+                    .alertContentText(errorMsg)
+                    .build()
+                    .showAndWait();
         }
     }
     public void handleCancel(){
@@ -95,9 +97,9 @@ public class ProductEditDialogController {
         return okClicked;
     }
 
-    public void setMainClass(SaleSystem saleSystem) {
+    public void setMainClass(SaleSystem saleSystem, boolean isEditClicked) {
         this.saleSystem = saleSystem;
-        if(!this.saleSystem.getStaff().getPosition().equals(Staff.Position.MANAGER)){
+        if(!this.saleSystem.getStaff().getPosition().equals(Staff.Position.MANAGER) && isEditClicked){
             unitPriceField.setDisable(true);
         }
     }

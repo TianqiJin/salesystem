@@ -269,11 +269,11 @@ public class GenerateReturnTransactController {
 
             for(ProductTransaction tmp: transaction.getProductTransactionList()){
                 overviewProductTransactionString
-                        .append("Product ID: " + tmp.getProductId() + " ")
-                        .append("Total Num: " + tmp.getTotalNum() + " ")
-                        .append("Returned Quantity: " + tmp.getQuantity() + " ")
-                        .append("Unit Price: " + tmp.getUnitPrice() + " ")
-                        .append("Sub Total: " + tmp.getSubTotal() + " ")
+                        .append("Product ID: " + tmp.getProductId() + "\n")
+                        .append("Total Num: " + tmp.getTotalNum() + "\n")
+                        .append("Returned Quantity: " + tmp.getQuantity() + "\n")
+                        .append("Unit Price: " + tmp.getUnitPrice() + "\n")
+                        .append("Sub Total: " + tmp.getSubTotal() + "\n")
                         .append("\n");
             }
             overviewTransactionString
@@ -292,6 +292,7 @@ public class GenerateReturnTransactController {
             alert.getDialogPane().setPrefWidth(500);
             Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
             alertStage.getIcons().add(new Image(this.getClass().getResourceAsStream(Constant.Image.appIconPath)));
+            alert.getDialogPane().getStylesheets().add(getClass().getResource("/css/theme.css").toExternalForm());
 
             Optional<ButtonType> result = alert.showAndWait();
             if(result.isPresent() && result.get() == ButtonType.OK){

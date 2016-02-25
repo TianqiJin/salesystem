@@ -3,11 +3,8 @@ package Controllers;
 import Constants.Constant;
 import MainClass.SaleSystem;
 import db.*;
-import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -23,8 +20,6 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 import model.*;
-import util.AutoCompleteComboBoxListener;
-import util.ButtonCell;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -189,11 +184,11 @@ public class GenerateProductTransactController {
             BigDecimal total = new BigDecimal(0.00).setScale(2, BigDecimal.ROUND_HALF_EVEN);
             for(ProductTransaction tmp: transaction.getProductTransactionList()){
                 overviewProductTransactionString
-                        .append("Product ID: " + tmp.getProductId() + " ")
-                        .append("Total Num: " + tmp.getTotalNum() + " ")
-                        .append("Num feet added: " + tmp.getQuantity()+ " ")
-                        .append("Unit Price: " + tmp.getUnitPrice() + " ")
-                        .append("Sub Total: " + tmp.getSubTotal() + " ")
+                        .append("Product ID: " + tmp.getProductId() + "\n")
+                        .append("Total Num: " + tmp.getTotalNum() + "\n")
+                        .append("Purchased Feet: " + tmp.getQuantity()+ "\n")
+                        .append("Unit Price: " + tmp.getUnitPrice() + "\n")
+                        .append("Sub Total: " + tmp.getSubTotal() + "\n")
                         .append("\n");
                 total = total.add(new BigDecimal(tmp.getSubTotal()).setScale(2, BigDecimal.ROUND_HALF_EVEN));
             }
@@ -218,7 +213,7 @@ public class GenerateProductTransactController {
             alert.getDialogPane().setPrefWidth(500);
             Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
             alertStage.getIcons().add(new Image(this.getClass().getResourceAsStream(Constant.Image.appIconPath)));
-
+            alert.getDialogPane().getStylesheets().add(getClass().getResource("/css/theme.css").toExternalForm());
             Optional<ButtonType> result = alert.showAndWait();
             if(result.isPresent() && result.get() == ButtonType.OK){
                 commitTransactionToDatabase();

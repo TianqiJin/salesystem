@@ -1,0 +1,29 @@
+/*.dialog > .dialog-pane {*/
+	/*-fx-background-color: greenyellow;*/
+/*}*/
+
+/*.dialog > .dialog-pane > .button-bar {*/
+	/*-fx-font-size: 24px;*/
+	/*-fx-background-color: indianred;*/
+	/*-fx-font-family: "Andalus";*/
+/*}*/
+
+/*.dialog > .dialog-pane > .content.label {*/
+	/*-fx-font-size: 16px;*/
+	/*-fx-font-weight: bold;*/
+	/*-fx-fill: blue;*/
+/*}*/
+.root{
+}
+.alert .content{
+	-fx-font-weight: bold;
+}
+.button {
+	-fx-padding: 5 25 5 25;
+	-fx-border-width: 2;
+	-fx-background-radius: 0;
+}
+.progress-bar > .bar {
+	-fx-background-insets: 1 1 2 1;
+	-fx-padding: 0.20em;
+}
