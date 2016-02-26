@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.text.*?>
 <?import javafx.collections.*?>
 <?import java.lang.*?>
 <?import javafx.geometry.*?>
@@ -98,13 +99,25 @@
                           <Label text="Items In Cart" GridPane.columnIndex="0" GridPane.rowIndex="0" />
                           <Label fx:id="itemsCountLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="0" />
                           <Label text="Sub Total" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                          <Label text="Total" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                          <Label text="Total" GridPane.columnIndex="0" GridPane.rowIndex="4">
+                                       <font>
+                                          <Font name="System Bold" size="18.0" />
+                                       </font></Label>
                           <Label fx:id="subTotalLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                          <Label fx:id="totalLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                          <Label fx:id="totalLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                                       <font>
+                                          <Font name="System Bold" size="18.0" />
+                                       </font></Label>
                                     <Label text="Tax" GridPane.rowIndex="3" />
                                     <Label fx:id="taxLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                                    <Label text="Discount" GridPane.rowIndex="2" />
-                                    <Label fx:id="paymentDiscountLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                    <Label text="Discount" GridPane.rowIndex="2">
+                                       <font>
+                                          <Font name="System Bold" size="18.0" />
+                                       </font></Label>
+                                    <Label fx:id="paymentDiscountLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                       <font>
+                                          <Font name="System Bold" size="18.0" />
+                                       </font></Label>
                         </children>
                         <columnConstraints>
                           <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -160,8 +173,14 @@
                                        <padding>
                                           <Insets bottom="1.0" top="1.0" />
                                        </padding></TextField>
-                                    <Label text="Balance" GridPane.rowIndex="3" />
-                                    <Label fx:id="balanceLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                    <Label text="Balance" GridPane.rowIndex="3">
+                                       <font>
+                                          <Font name="System Bold" size="18.0" />
+                                       </font></Label>
+                                    <Label fx:id="balanceLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                                       <font>
+                                          <Font name="System Bold" size="18.0" />
+                                       </font></Label>
                                     <TextField fx:id="storeCreditField" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="2">
                                        <padding>
                                           <Insets bottom="1.0" top="1.0" />

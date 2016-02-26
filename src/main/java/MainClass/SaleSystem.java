@@ -1,11 +1,15 @@
 package MainClass;
 
+import Constants.Constant;
 import Controllers.*;
+import com.sun.deploy.ui.ProgressDialog;
+import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
 import db.DBExecuteProperty;
 import db.DBQueries;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -14,18 +18,22 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import model.*;
 import org.apache.log4j.Logger;
+import util.AlertBuilder;
 import util.PropertiesSys;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 /**
  * Created by tjin on 2015-11-21.
@@ -39,6 +47,8 @@ public class SaleSystem extends Application{
     private static Staff staff;
     private static Property property;
     private DBExecuteProperty dbExecuteProperty;
+    private Executor executor;
+
     @FXML
     public TabPane tabPane;
     @FXML
@@ -53,10 +63,15 @@ public class SaleSystem extends Application{
     }
     @Override
     public void start(Stage primaryStage) throws Exception {
+        primaryStage.getIcons().add(new Image(SaleSystem.class.getResourceAsStream(Constant.Image.appIconPath)));
+        executor = Executors.newCachedThreadPool(r->{
+            Thread t = new Thread(r);
+            t.setDaemon(true);
+            return t;
+        });
         showLoginDialog();
         if (state!=0){
             loadPropertyFromDB();
-            System.out.println(getProductWarnLimit());
             showMainLayOut(primaryStage);
         }
     }
@@ -80,9 +95,12 @@ public class SaleSystem extends Application{
         MenuItem generateReportMenuItem = new MenuItem("Generate Report");
         MenuItem settingsMenuItem = new MenuItem("Settings");
         MenuItem aboutMenuItem = new MenuItem("About");
+        MenuItem logOutMenuItem = new MenuItem("Log out");
         menuReport.getItems().add(generateReportMenuItem);
         menuEdit.getItems().add(settingsMenuItem);
         menuHelp.getItems().add(aboutMenuItem);
+        menuHelp.getItems().add(new SeparatorMenuItem());
+        menuHelp.getItems().add(logOutMenuItem);
         menuBar.getMenus().add(menuReport);
         menuBar.getMenus().add(menuEdit);
         menuBar.getMenus().add(menuHelp);
@@ -97,6 +115,26 @@ public class SaleSystem extends Application{
             @Override
             public void handle(ActionEvent event) {
                 showPropertySettingDialog();
+            }
+        });
+        aboutMenuItem.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                new AlertBuilder()
+                        .alertType(Alert.AlertType.INFORMATION)
+                        .alertContentText(Constant.CopyRight.copyRightConntent)
+                        .build().showAndWait();
+            }
+        });
+        logOutMenuItem.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                primaryStage.close();
+                showLoginDialog();
+                if (state!=0){
+                    loadPropertyFromDB();
+                    showMainLayOut(primaryStage);
+                }
             }
         });
     }
@@ -159,18 +197,6 @@ public class SaleSystem extends Application{
             logger.error(e.getMessage());
         }
     }
-    public void showCustomerOverview(){
-        try{
-            FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(SaleSystem.class.getResource("/fxml/CustomerOverview.fxml"));
-            AnchorPane customerOverview = loader.load();
-            rootLayout.setCenter(customerOverview);
-            CustomerOverviewController controller = loader.getController();
-            controller.loadDataFromDB();
-        }catch(IOException e){
-            logger.error(e.getMessage());
-        }
-    }
 
     public boolean showCustomerEditDialog(Customer customer){
         try{
@@ -179,6 +205,7 @@ public class SaleSystem extends Application{
             AnchorPane page = loader.load();
 
             Stage dialogStage = new Stage();
+            dialogStage.getIcons().add(new Image(SaleSystem.class.getResourceAsStream(Constant.Image.appIconPath)));
             dialogStage.setTitle("Edit Customer");
             dialogStage.initModality(Modality.WINDOW_MODAL);
             dialogStage.initOwner(primaryStage);
@@ -203,6 +230,7 @@ public class SaleSystem extends Application{
             AnchorPane page = loader.load();
 
             Stage dialogStage = new Stage();
+            dialogStage.getIcons().add(new Image(SaleSystem.class.getResourceAsStream(Constant.Image.appIconPath)));
             dialogStage.setTitle("Edit Transaction");
             dialogStage.initModality(Modality.WINDOW_MODAL);
             dialogStage.initOwner(primaryStage);
@@ -220,13 +248,14 @@ public class SaleSystem extends Application{
         }
     }
 
-    public boolean showProductEditDialog(Product product){
+    public boolean showProductEditDialog(Product product, boolean isEditClicked){
         try{
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(SaleSystem.class.getResource("/fxml/ProductEditDialog.fxml"));
             AnchorPane page = loader.load();
 
             Stage dialogStage = new Stage();
+            dialogStage.getIcons().add(new Image(SaleSystem.class.getResourceAsStream(Constant.Image.appIconPath)));
             dialogStage.setTitle("Edit Product");
             dialogStage.initModality(Modality.WINDOW_MODAL);
             dialogStage.initOwner(primaryStage);
@@ -235,7 +264,7 @@ public class SaleSystem extends Application{
 
             ProductEditDialogController controller = loader.getController();
             controller.setDialogStage(dialogStage);
-            controller.setMainClass(SaleSystem.this);
+            controller.setMainClass(SaleSystem.this, isEditClicked);
             controller.setTextField(product);
 
             dialogStage.showAndWait();
@@ -253,6 +282,7 @@ public class SaleSystem extends Application{
             AnchorPane page = loader.load();
 
             Stage dialogStage = new Stage();
+            dialogStage.getIcons().add(new Image(SaleSystem.class.getResourceAsStream(Constant.Image.appIconPath)));
             dialogStage.setTitle("Edit Staff");
             dialogStage.initModality(Modality.WINDOW_MODAL);
             dialogStage.initOwner(primaryStage);
@@ -279,7 +309,9 @@ public class SaleSystem extends Application{
             AnchorPane page = loader.load();
 
             Stage dialogStage = new Stage();
+            dialogStage.getIcons().add(new Image(SaleSystem.class.getResourceAsStream(Constant.Image.appIconPath)));
             dialogStage.setTitle("Login Dialog");
+            page.getStylesheets().add(SaleSystem.class.getResource("/css/theme.css").toExternalForm());
             Scene scene = new Scene(page);
             dialogStage.setScene(scene);
             dialogStage.initModality(Modality.WINDOW_MODAL);
@@ -303,6 +335,7 @@ public class SaleSystem extends Application{
             AnchorPane page = loader.load();
 
             Stage dialogStage = new Stage();
+            dialogStage.getIcons().add(new Image(SaleSystem.class.getResourceAsStream(Constant.Image.appIconPath)));
             dialogStage.setTitle("Generate Report");
             Scene scene = new Scene(page);
             dialogStage.setScene(scene);
@@ -326,6 +359,7 @@ public class SaleSystem extends Application{
             AnchorPane page = loader.load();
 
             Stage dialogStage = new Stage();
+            dialogStage.getIcons().add(new Image(SaleSystem.class.getResourceAsStream(Constant.Image.appIconPath)));
             dialogStage.setTitle("Property Setting");
             Scene scene = new Scene(page);
             dialogStage.setScene(scene);
@@ -349,6 +383,7 @@ public class SaleSystem extends Application{
             AnchorPane page = loader.load();
 
             Stage dialogStage = new Stage();
+            dialogStage.getIcons().add(new Image(SaleSystem.class.getResourceAsStream(Constant.Image.appIconPath)));
             dialogStage.setTitle("Create Customer Transaction");
             dialogStage.initModality(Modality.WINDOW_MODAL);
             dialogStage.initOwner(primaryStage);
@@ -375,6 +410,7 @@ public class SaleSystem extends Application{
             AnchorPane page = loader.load();
 
             Stage dialogStage = new Stage();
+            dialogStage.getIcons().add(new Image(SaleSystem.class.getResourceAsStream(Constant.Image.appIconPath)));
             dialogStage.setTitle("Create Stock Transaction");
             dialogStage.initModality(Modality.WINDOW_MODAL);
             dialogStage.initOwner(primaryStage);
@@ -402,6 +438,7 @@ public class SaleSystem extends Application{
             AnchorPane page = loader.load();
 
             Stage dialogStage = new Stage();
+            dialogStage.getIcons().add(new Image(SaleSystem.class.getResourceAsStream(Constant.Image.appIconPath)));
             dialogStage.setTitle("Create Return Transaction");
             dialogStage.initModality(Modality.WINDOW_MODAL);
             dialogStage.initOwner(primaryStage);
@@ -425,15 +462,29 @@ public class SaleSystem extends Application{
         return this.staff;
     }
     private void loadPropertyFromDB(){
-        try{
-            this.property = dbExecuteProperty.selectFirstFromDatabase(DBQueries.SelectQueries.Property.SELECT_ALL_PROPERTY);
-        }catch(SQLException e){
-            Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to grab data from database!\n" + e.getMessage());
-            alert.setTitle("Database Error");
-            alert.showAndWait();
-        }
+        Task<Property> getPropertyTask = new Task<Property>() {
+            @Override
+            protected Property call() throws Exception {
+                return dbExecuteProperty
+                        .selectFirstFromDatabase(DBQueries.SelectQueries.Property.SELECT_ALL_PROPERTY);
+            }
+        };
 
+        getPropertyTask.setOnFailed(event -> {
+            new AlertBuilder()
+                    .alertType(Alert.AlertType.WARNING)
+                    .alertContentText(Constant.DatabaseError.databaseReturnError + event.toString())
+                    .alertTitle(Constant.DatabaseError.databaseErrorAlertTitle)
+                    .build()
+                    .showAndWait();
+        });
+
+        getPropertyTask.setOnSucceeded(event -> {
+            property = getPropertyTask.getValue();
+        });
+        executor.execute(getPropertyTask);
     }
+
     public int getProductWarnLimit(){
         return this.property.getProductWarnLimit();
     }
@@ -445,8 +496,11 @@ public class SaleSystem extends Application{
         try{
             dbExecuteProperty.updateDatabase(DBQueries.UpdateQueries.Property.UPDATE_PRODUCT_WARN_LIMIT, productLimit);
         }catch(SQLException e){
-            Alert alert = new Alert(Alert.AlertType.ERROR, "Unable to update Product Limit into database!");
-            alert.showAndWait();
+            new AlertBuilder()
+                    .alertType(Alert.AlertType.ERROR)
+                    .alertContentText(Constant.DatabaseError.databaseUpdateError + e.toString())
+                    .build()
+                    .showAndWait();
         }
         loadPropertyFromDB();
     }
@@ -454,11 +508,12 @@ public class SaleSystem extends Application{
         try{
             dbExecuteProperty.updateDatabase(DBQueries.UpdateQueries.Property.UPDATE_TAX_RATE, taxRate);
         }catch(SQLException e){
-            Alert alert = new Alert(Alert.AlertType.ERROR, "Unable to update Tax Rate into database!");
-            alert.showAndWait();
+            new AlertBuilder()
+                    .alertType(Alert.AlertType.ERROR)
+                    .alertContentText(Constant.DatabaseError.databaseUpdateError + e.toString())
+                    .build()
+                    .showAndWait();
         }
         loadPropertyFromDB();
     }
-    //TODO: set DialogStage for each tab?
-
 }

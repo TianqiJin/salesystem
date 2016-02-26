@@ -1,6 +1,8 @@
 package Controllers;
 
+import Constants.Constant;
 import MainClass.SaleSystem;
+import PDF.InvoiceGenerator;
 import com.sun.prism.impl.Disposer;
 import db.*;
 import javafx.beans.binding.Bindings;
@@ -18,10 +20,12 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 import model.*;
+import org.apache.log4j.Logger;
 import util.AutoCompleteComboBoxListener;
 import util.ButtonCell;
 
@@ -193,8 +197,10 @@ public class GenerateCustomerTransactController {
         discountChoiceBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Integer>() {
             @Override
             public void changed(ObservableValue<? extends Integer> observable, Integer oldValue, Integer newValue) {
-                discount = newValue;
-                showPaymentDetails(productTransactionObservableList, customer);
+                if(newValue != null){
+                    discount = newValue;
+                    showPaymentDetails(productTransactionObservableList, customer);
+                }
             }
         });
 
@@ -337,11 +343,11 @@ public class GenerateCustomerTransactController {
             StringBuffer overviewProductTransactionString = new StringBuffer();
             for(ProductTransaction tmp: transaction.getProductTransactionList()){
                 overviewProductTransactionString
-                        .append("Product ID: " + tmp.getProductId() + " ")
-                        .append("Total Num: " + tmp.getTotalNum() + " ")
-                        .append("Quantity: " + tmp.getQuantity() + " ")
-                        .append("Unit Price: " + tmp.getUnitPrice() + " ")
-                        .append("Sub Total: " + tmp.getSubTotal() + " ")
+                        .append("Product ID: " + tmp.getProductId() + "\n")
+                        .append("Total Num: " + tmp.getTotalNum() + "\n")
+                        .append("Quantity: " + tmp.getQuantity() + "\n")
+                        .append("Unit Price: " + tmp.getUnitPrice() + "\n")
+                        .append("Sub Total: " + tmp.getSubTotal() + "\n")
                         .append("\n");
             }
             overviewTransactionString
@@ -358,6 +364,10 @@ public class GenerateCustomerTransactController {
             alert.setHeaderText("Please confirm the following transaction");
             alert.setResizable(true);
             alert.getDialogPane().setPrefWidth(500);
+            Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+            alertStage.getIcons().add(new Image(this.getClass().getResourceAsStream(Constant.Image.appIconPath)));
+            alert.getDialogPane().getStylesheets().add(getClass().getResource("/css/theme.css").toExternalForm());
+
             Optional<ButtonType> result = alert.showAndWait();
             if(result.isPresent() && result.get() == ButtonType.OK){
                 commitTransactionToDatabase();
@@ -396,6 +406,7 @@ public class GenerateCustomerTransactController {
             lastNameLabel.setText(customer.getLastName());
             discountChoiceBox.setDisable(false);
             discountChoiceBox.getItems().setAll(Customer.getDiscountMap().get(customer.getUserClass()));
+            discountChoiceBox.getSelectionModel().selectFirst();
             storeCreditLabel.setText(String.valueOf(customer.getStoreCredit()));
             discountLabel.setText(customer.getUserClass());
         }
@@ -505,9 +516,13 @@ public class GenerateCustomerTransactController {
         if(customer == null){
             errorMsgBuilder.append("Customer is neither selected nor created!\n");
         }
-        if(storeCreditCheckBox.isSelected() && !storeCreditField.getText().trim().isEmpty()){
-            if(!isStoreCreditValid()){
-                errorMsgBuilder.append("Either Store Credit exceeds customer's limit or Store Credit must be numbers!\n");
+        if(storeCreditCheckBox.isSelected()){
+            if(storeCreditField.getText().trim().isEmpty()){
+                errorMsgBuilder.append("Store Credit Field is empty, but it is selected!\n");
+            }else{
+                if(!isStoreCreditValid()){
+                    errorMsgBuilder.append("Either Store Credit exceeds customer's limit or Store Credit must be numbers!\n");
+                }
             }
         }
         if(errorMsgBuilder.length() != 0){
@@ -567,8 +582,14 @@ public class GenerateCustomerTransactController {
                     remainStoreCredit, customer.getUserName());
             }
             connection.commit();
+            InvoiceGenerator invoiceGenerator = new InvoiceGenerator();
+            try {
+                invoiceGenerator.buildInvoice(transaction, customer);
+            } catch (Exception e) {
+               e.printStackTrace();
+            }
         }catch(SQLException e){
-            connection.rollback(); //TODO: CRITICAL BUG!!!
+            connection.rollback();
             Alert alert = new Alert(Alert.AlertType.ERROR, "Unable to store transaction to database!");
             alert.showAndWait();
         }

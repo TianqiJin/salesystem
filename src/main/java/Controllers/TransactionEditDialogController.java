@@ -1,5 +1,6 @@
 package Controllers;
 
+import Constants.Constant;
 import MainClass.SaleSystem;
 import db.*;
 import javafx.beans.binding.Bindings;
@@ -16,10 +17,12 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 import model.*;
+import util.AlertBuilder;
 import util.AutoCompleteComboBoxListener;
 import util.ButtonCell;
 import util.DateUtil;
@@ -198,6 +201,10 @@ public class TransactionEditDialogController {
             alert.setHeaderText("Please confirm the following transaction");
             alert.setResizable(true);
             alert.getDialogPane().setPrefWidth(500);
+            Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+            alertStage.getIcons().add(new Image(this.getClass().getResourceAsStream(Constant.Image.appIconPath)));
+            alert.getDialogPane().getStylesheets().add(getClass().getResource("/css/theme.css").toExternalForm());
+
             Optional<ButtonType> result = alert.showAndWait();
             if(result.isPresent() && result.get() == ButtonType.OK){
                 commitTransactionToDatabase();
@@ -316,8 +323,14 @@ public class TransactionEditDialogController {
         if(customer == null){
             errorMsgBuilder.append("Customer is neither selected nor created!\n");
         }
-        if(storeCreditCheckBox.isSelected() && !isStoreCreditValid()){
-            errorMsgBuilder.append("Either Store Credit exceeds customer's limit or Store Credit must be numbers!\n");
+        if(storeCreditCheckBox.isSelected()){
+            if(storeCreditField.getText().trim().isEmpty()){
+                errorMsgBuilder.append("Store Credit Field is empty, but it is selected!\n");
+            }else{
+                if(!isStoreCreditValid()){
+                    errorMsgBuilder.append("Either Store Credit exceeds customer's limit or Store Credit must be numbers!\n");
+                }
+            }
         }
         if(!isProductQuantityValid()){
             errorMsgBuilder.append("Some product's quantity exceeds the stock quota!\n");
@@ -383,9 +396,13 @@ public class TransactionEditDialogController {
             }
             connection.commit();
         }catch(SQLException e){
-            connection.rollback(); //TODO: CRITICAL BUG!!!
-            Alert alert = new Alert(Alert.AlertType.ERROR, "Unable to update transaction to database!\n" + e.getMessage());
-            alert.showAndWait();
+            connection.rollback();
+            new AlertBuilder()
+                    .alertType(Alert.AlertType.ERROR)
+                    .alertContentText(Constant.DatabaseError.databaseUpdateError + e.getMessage())
+                    .alertTitle(Constant.DatabaseError.databaseErrorAlertTitle)
+                    .build()
+                    .showAndWait();
         }
         connection.setAutoCommit(true);
     }

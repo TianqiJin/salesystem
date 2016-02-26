@@ -5,6 +5,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import model.Customer;
+import util.AlertBuilder;
 
 /**
  * Created by tjin on 12/2/2015.
@@ -76,12 +77,13 @@ public class CustomerEditDialogController {
             dialogStage.close();
         }
         else{
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.initOwner(dialogStage);
-            alert.setTitle("Invalid Fields");
-            alert.setHeaderText("Please correct the invalid fields");
-            alert.setContentText(errorMsg);
-            alert.showAndWait();
+            new AlertBuilder()
+                    .alertHeaderText("Please correct the invalid fields")
+                    .alertType(Alert.AlertType.WARNING)
+                    .alertTitle("Invalid Customer Fields")
+                    .alertContentText(errorMsg)
+                    .build()
+                    .showAndWait();
         }
     }
     public void handleCancle(){

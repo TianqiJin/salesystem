@@ -37,6 +37,9 @@ public class DBQueries {
         public static class Staff{
             public final static String DELETE_FROM_STAFF = "DELETE FROM staff WHERE UserName = ?";
         }
+        public static class Transaction{
+            public final static String DELETE_FROM_TRANSACTION = "DELETE FROM transaction WHERE transactionId = ?";
+        }
     }
     public static class InsertQueries{
         public static class Customer{

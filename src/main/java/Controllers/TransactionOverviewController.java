@@ -1,8 +1,11 @@
 package Controllers;
 
 
+import Constants.Constant;
 import MainClass.SaleSystem;
 import db.*;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.DoubleBinding;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -13,18 +16,20 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.util.converter.BigDecimalStringConverter;
-import model.Customer;
-import model.ProductTransaction;
-import model.Transaction;
+import model.*;
 import sun.java2d.loops.GraphicsPrimitive;
+import util.AlertBuilder;
 import util.DateUtil;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -34,8 +39,10 @@ public class TransactionOverviewController implements OverviewController{
     private ObservableList<Transaction> transactionList;
     private DBExecuteTransaction dbExecuteTransaction;
     private DBExecuteCustomer dbExecuteCustomer;
+    private DBExecuteProduct dbExecuteProduct;
     private Executor executor;
-
+    private List<Customer> customerList;
+    private List<Product> productList;
     @FXML
     private TableView<Transaction> transactionTable;
     @FXML
@@ -76,6 +83,8 @@ public class TransactionOverviewController implements OverviewController{
     private TableColumn<ProductTransaction, Float> subTotalCol;
     @FXML
     private TableColumn<ProductTransaction, Float> unitPriceCol;
+    @FXML
+    private ProgressBar progressBar;
 
     @FXML
     private void initialize(){
@@ -102,14 +111,6 @@ public class TransactionOverviewController implements OverviewController{
             t.setDaemon(true);
             return t;
         });
-    }
-
-    @FXML
-    private void handleDeleteTransaction(){
-        int selectedIndex = transactionTable.getSelectionModel().getSelectedIndex();
-        //transactionTable.getItems().remove(selectedIndex);
-        //TODO: delete the corresponding info in the database
-        //TODO: add if-else block for selectedIndex = -1 situation
     }
 
     @FXML
@@ -140,12 +141,83 @@ public class TransactionOverviewController implements OverviewController{
     }
 
     @FXML
+    private void handleDeleteTransaction() throws SQLException {
+        Connection connection = DBConnect.getConnection();
+        int selectIndex = transactionTable.getSelectionModel().getFocusedIndex();
+        if(selectIndex >= 0){
+            Alert alertConfirm = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete this transaction?");
+            Optional<ButtonType> result =  alertConfirm.showAndWait();
+            if(result.isPresent() && result.get() == ButtonType.OK){
+                try{
+                    connection.setAutoCommit(false);
+                    Transaction deleteTransaction = transactionTable.getItems().get(selectIndex);
+                    for(ProductTransaction tmp : deleteTransaction.getProductTransactionList()){
+                        int quantity;
+                        int currentQuality = productList
+                                .stream()
+                                .filter(product -> product.getProductId().equals(tmp.getProductId()))
+                                .findFirst()
+                                .get()
+                                .getTotalNum();
+                        if(deleteTransaction.getType().equals(Transaction.TransactionType.OUT)){
+                            quantity = currentQuality + tmp.getQuantity();
+                            dbExecuteProduct.updateDatabase(DBQueries.UpdateQueries.Product.UPDATE_PRODUCT_QUANTITY,
+                                    quantity, tmp.getProductId());
+                        }else{
+                            quantity = currentQuality - tmp.getQuantity();
+                            dbExecuteProduct.updateDatabase(DBQueries.UpdateQueries.Product.UPDATE_PRODUCT_QUANTITY,
+                                    quantity, tmp.getProductId());
+                        }
+                    }
+                    if(!deleteTransaction.getType().equals(Transaction.TransactionType.IN)){
+                        Customer customer = customerList
+                                .stream()
+                                .filter(c -> c.getUserName().equals(deleteTransaction.getInfo()))
+                                .findFirst()
+                                .get();
+                        double storeCredit = 0;
+                        if(deleteTransaction.getType().equals(Transaction.TransactionType.OUT)){
+                            storeCredit = customer.getStoreCredit() + deleteTransaction.getStoreCredit();
+                        }else if(deleteTransaction.getType().equals(Transaction.TransactionType.RETURN)){
+                            storeCredit = customer.getStoreCredit() - deleteTransaction.getStoreCredit();
+                        }
+                        if(storeCredit > 0){
+                            dbExecuteCustomer.updateDatabase(DBQueries.UpdateQueries.Customer.UPDATE_CUSTOMER_STORE_CREDIT,
+                                    storeCredit, customer.getUserName());
+                        }
+                    }
+                    dbExecuteTransaction.deleteDatabase(DBQueries.DeleteQueries.Transaction.DELETE_FROM_TRANSACTION, deleteTransaction.getTransactionId());
+                    connection.commit();
+                }catch (SQLException e){
+                    connection.rollback();
+                    Alert alert = new Alert(Alert.AlertType.ERROR, "Unable to store transaction to database!");
+                    alert.showAndWait();
+                }
+                finally {
+                    connection.setAutoCommit(true);
+                    loadDataFromDB();
+                }
+            }
+        }
+        else{
+            new AlertBuilder()
+                    .alertTitle("No Transaction Selected!")
+                    .alertContentText("Please select a transaction in the table")
+                    .build()
+                    .showAndWait();
+        }
+    }
+
+    @FXML
     private void handleEditTransaction(){
         Transaction selectedTransaction = transactionTable.getSelectionModel().getSelectedItem();
         if(selectedTransaction != null){
             if(!selectedTransaction.getType().equals(Transaction.TransactionType.OUT)){
-                Alert alert = new Alert(Alert.AlertType.ERROR, "You can only edit OUT transaction!\n");
-                alert.showAndWait();
+                new AlertBuilder()
+                        .alertType(Alert.AlertType.ERROR)
+                        .alertContentText("You can only edit OUT transaction!\n")
+                        .build()
+                        .showAndWait();
             }else{
                 boolean okClicked = saleSystem.showTransactionEditDialog(selectedTransaction);
                 if(okClicked){
@@ -159,6 +231,7 @@ public class TransactionOverviewController implements OverviewController{
     public TransactionOverviewController(){
         dbExecuteTransaction = new DBExecuteTransaction();
         dbExecuteCustomer = new DBExecuteCustomer();
+        dbExecuteProduct = new DBExecuteProduct();
     }
 
     @Override
@@ -166,9 +239,48 @@ public class TransactionOverviewController implements OverviewController{
         Task<List<Transaction>> transactionListTask = new Task<List<Transaction>>() {
             @Override
             protected List<Transaction> call() throws Exception {
-                return  dbExecuteTransaction.selectFromDatabase(DBQueries.SelectQueries.Transaction.SELECT_ALL_TRANSACTION);
+                progressBar.setVisible(true);
+                List<Transaction> tmpTransactionList = new ArrayList<>();
+                for(int i = 0; i < 1; i++){
+                    tmpTransactionList = dbExecuteTransaction.selectFromDatabase(DBQueries.SelectQueries.Transaction.SELECT_ALL_TRANSACTION);
+                    updateProgress(i+1, 1);
+                }
+                return  tmpTransactionList;
             }
         };
+        Task<List<Customer>> customerListTask = new Task<List<Customer>>() {
+            @Override
+            protected List<Customer> call() throws Exception {
+                List<Customer> tmpCustomerList = new ArrayList<>();
+                for(int i = 0; i < 1; i++){
+                    tmpCustomerList = dbExecuteCustomer.selectFromDatabase(DBQueries.SelectQueries.Customer.SELECT_ALL_CUSTOMER);
+                    updateProgress(i+1, 1);
+                }
+                return tmpCustomerList;
+            }
+        };
+        Task<List<Product>> productListTask = new Task<List<Product>>() {
+            @Override
+            protected List<Product> call() throws Exception {
+                List<Product> tmpProductList = new ArrayList<>();
+                for(int i = 0; i < 1; i++){
+                    tmpProductList = dbExecuteProduct.selectFromDatabase(DBQueries.SelectQueries.Product.SELECT_ALL_PRODUCT);
+                    updateProgress(i+1, 1);
+                }
+                return tmpProductList;
+            }
+        };
+        final int numTasks = 3;
+        DoubleBinding totalProgress = Bindings.createDoubleBinding(new Callable<Double>() {
+            @Override
+            public Double call() throws Exception {
+                return ( Math.max(0, transactionListTask.getProgress())
+                        + Math.max(0, customerListTask.getProgress())
+                        + Math.max(0, productListTask.getProgress())) / numTasks ;
+            }
+        }, transactionListTask.progressProperty(), customerListTask.progressProperty(), productListTask.progressProperty());
+
+        progressBar.progressProperty().bind(totalProgress);
         transactionListTask.setOnSucceeded(event -> {
             transactionList = FXCollections.observableArrayList(transactionListTask.getValue());
             transactionTable.setItems(transactionList);
@@ -195,11 +307,38 @@ public class TransactionOverviewController implements OverviewController{
             });
         });
         transactionListTask.setOnFailed(event -> {
-            Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to grab data from database!\n" + event.toString());
-            alert.setTitle("Database Error");
-            alert.showAndWait();
+            new AlertBuilder()
+                    .alertType(Alert.AlertType.ERROR)
+                    .alertContentText(Constant.DatabaseError.databaseReturnError + event.toString())
+                    .alertHeaderText(Constant.DatabaseError.databaseErrorAlertTitle)
+                    .build()
+                    .showAndWait();
+        });
+        customerListTask.setOnSucceeded(event -> {
+            customerList = customerListTask.getValue();
+        });
+        customerListTask.setOnFailed(event -> {
+            new AlertBuilder()
+                    .alertType(Alert.AlertType.ERROR)
+                    .alertContentText(Constant.DatabaseError.databaseReturnError + event.toString())
+                    .alertHeaderText(Constant.DatabaseError.databaseErrorAlertTitle)
+                    .build()
+                    .showAndWait();
+        });
+        productListTask.setOnSucceeded(event -> {
+            productList = productListTask.getValue();
+        });
+        productListTask.setOnFailed(event -> {
+            new AlertBuilder()
+                    .alertType(Alert.AlertType.ERROR)
+                    .alertContentText(Constant.DatabaseError.databaseReturnError + event.toString())
+                    .alertHeaderText(Constant.DatabaseError.databaseErrorAlertTitle)
+                    .build()
+                    .showAndWait();
         });
         executor.execute(transactionListTask);
+        executor.execute(customerListTask);
+        executor.execute(productListTask);
     }
 
     @Override
@@ -220,6 +359,14 @@ public class TransactionOverviewController implements OverviewController{
             staffLabel.setText(String.valueOf(transaction.getStaffId()));
             typeLabel.setText(transaction.getType().name());
             infoLabel.setText(transaction.getInfo());
+            if(!saleSystem.getStaff().getPosition().equals(Staff.Position.MANAGER)
+                    && transaction.getType().equals(Transaction.TransactionType.IN)){
+                unitPriceCol.setVisible(false);
+                subTotalCol.setVisible(false);
+            }else{
+                unitPriceCol.setVisible(true);
+                subTotalCol.setVisible(true);
+            }
             transactionDetaiTableView.setItems(
                     FXCollections.observableArrayList(transaction.getProductTransactionList()));
         }
@@ -235,6 +382,4 @@ public class TransactionOverviewController implements OverviewController{
             infoLabel.setText("");
         }
     }
-
-
 }

@@ -43,7 +43,7 @@ public class PDFGenerator {
         writer.setPageEvent(header);
         document.setMargins(50, 45, 90, 40);
         document.open();
-        header.setHeader("MILAN TILE REVENUE REPORT");
+        header.setHeader("MILAN TILE CORPORATION REVENUE REPORT");
         PdfPTable table = new PdfPTable(6);
         table.setWidthPercentage(100);
         table.setWidths(new int[]{15,10,15,15,10,40});
@@ -160,7 +160,6 @@ public class PDFGenerator {
     private List<Transaction> filterTransaction(){
 
         if((productId == null) && (staffId == null) && (customer == null)){
-            System.out.println("No Filter Info is provided");
             return transactionList;
         }
         if(staffId != null){

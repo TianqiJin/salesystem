@@ -3,6 +3,7 @@ package model;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 /**
@@ -21,6 +22,7 @@ public class Invoice {
         this.id = transaction.getTransactionId();
         this.invoiceDate = Date.from(transaction.getDate().atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
         this.total = transaction.getPayment();
+        this.products = new ArrayList<>();
         for(ProductTransaction pt : transaction.getProductTransactionList()){
             products.add(pt);
         }
