@@ -16,18 +16,28 @@ public class Invoice {
     protected double total;
     protected List<ProductTransaction> products;
     protected Date invoiceDate;
+    protected List<PaymentRecord> paymentRecords;
 
     public Invoice(Transaction transaction, Customer customer){
         this.transaction = transaction;
         this.id = transaction.getTransactionId();
         this.invoiceDate = Date.from(transaction.getDate().atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
-        this.total = transaction.getPayment();
+        this.total = transaction.getTotal();
+        this.paymentRecords = transaction.getPayinfo();
         this.products = new ArrayList<>();
         for(ProductTransaction pt : transaction.getProductTransactionList()){
             products.add(pt);
         }
         this.customer = customer;
 
+    }
+
+    public List<PaymentRecord> getPaymentRecords() {
+        return paymentRecords;
+    }
+
+    public void setPaymentRecords(List<PaymentRecord> paymentRecords) {
+        this.paymentRecords = paymentRecords;
     }
 
     public int getId() {

@@ -43,11 +43,12 @@
             <Separator prefWidth="200.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0" />
             <HBox id="HBox" alignment="BOTTOM_RIGHT" spacing="5.0" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0">
               <children>
-                <Button mnemonicParsing="false" onAction="#handleAddTransaction" text="New" />
-                <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleStockTransaction" text="Stock" />
-                        <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleReturnTransaction" text="Return" />
-                <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleEditTransaction" text="Edit" />
-                        <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleDeleteTransaction" text="Delete" />
+                  <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleInvoice" text="Invoice" />
+                  <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleAddTransaction" text="New" />
+                  <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleStockTransaction" text="Stock" />
+                  <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleReturnTransaction" text="Return" />
+                  <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleEditTransaction" text="Edit" />
+                  <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleDeleteTransaction" text="Delete" />
               </children>
             </HBox>
                   <SplitPane dividerPositions="0.55" layoutX="55.0" layoutY="33.0" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="35.0">
