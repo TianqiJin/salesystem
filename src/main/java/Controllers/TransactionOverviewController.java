@@ -3,6 +3,7 @@ package Controllers;
 
 import Constants.Constant;
 import MainClass.SaleSystem;
+import PDF.InvoiceGenerator;
 import db.*;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleBinding;
@@ -215,7 +216,7 @@ public class TransactionOverviewController implements OverviewController{
             if(!selectedTransaction.getType().equals(Transaction.TransactionType.OUT)){
                 new AlertBuilder()
                         .alertType(Alert.AlertType.ERROR)
-                        .alertContentText("You can only edit OUT transaction!\n")
+                        .alertContentText("Please OUT transaction to generate Invoice!\n")
                         .build()
                         .showAndWait();
             }else{
@@ -226,6 +227,36 @@ public class TransactionOverviewController implements OverviewController{
             }
 
         }
+    }
+    @FXML
+    private void handleInvoice(){
+        Transaction selectedTransaction = transactionTable.getSelectionModel().getSelectedItem();
+        if(selectedTransaction != null){
+            if(!selectedTransaction.getType().equals(Transaction.TransactionType.OUT)){
+                new AlertBuilder()
+                        .alertType(Alert.AlertType.ERROR)
+                        .alertContentText("You can only edit OUT transaction!\n")
+                        .build()
+                        .showAndWait();
+            }else{
+                String info = selectedTransaction.getInfo();
+                try {
+                    Customer customer= dbExecuteCustomer.selectFromDatabase(DBQueries.SelectQueries.Customer.SELECT_SINGLE_CUSTOMER,info).get(0);
+                    InvoiceGenerator generator = new InvoiceGenerator();
+                    generator.buildInvoice(selectedTransaction,customer);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                new AlertBuilder()
+                        .alertType(Alert.AlertType.INFORMATION)
+                        .alertContentText("Report generated successfully!")
+                        .build()
+                        .showAndWait();
+            }
+
+        }
+
     }
 
     public TransactionOverviewController(){
