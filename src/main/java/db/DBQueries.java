@@ -59,8 +59,8 @@ public class DBQueries {
         }
         public static class Staff{
             public final static String INSERT_INTO_STAFF = "INSERT INTO staff "
-                    +"(UserName, Password, FullName, Position, Location) "
-                    +"VALUES (?, ?, ?, ?, ?)";
+                    +"(UserName, Password, FullName, Position, Street, City, PostalCode) "
+                    +"VALUES (?, ?, ?, ?, ?, ?, ?)";
         }
     }
     public static class UpdateQueries{
@@ -82,7 +82,7 @@ public class DBQueries {
         }
         public static class Staff{
             public final static String UPDATE_STAFF = "UPDATE staff "
-                    +"SET UserName = ?, Password = ?, FullName = ?, Position = ?, Location = ? "
+                    +"SET UserName = ?, Password = ?, FullName = ?, Position = ?, Street = ?, City = ?, PostalCode = ? "
                     +"WHERE StaffID = ? ";
         }
         public static class Property{

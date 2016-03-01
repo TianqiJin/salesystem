@@ -582,12 +582,6 @@ public class GenerateCustomerTransactController {
                     remainStoreCredit, customer.getUserName());
             }
             connection.commit();
-            InvoiceGenerator invoiceGenerator = new InvoiceGenerator();
-            try {
-                invoiceGenerator.buildInvoice(transaction, customer);
-            } catch (Exception e) {
-               e.printStackTrace();
-            }
         }catch(SQLException e){
             connection.rollback();
             Alert alert = new Alert(Alert.AlertType.ERROR, "Unable to store transaction to database!");

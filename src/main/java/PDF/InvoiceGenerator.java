@@ -18,7 +18,7 @@ import java.util.Date;
  */
 public class InvoiceGenerator {
     private static Logger logger = Logger.getLogger(InvoiceGenerator.class);
-        static Font catFont = new Font(Font.FontFamily.TIMES_ROMAN, 20);
+    static Font catFont = new Font(Font.FontFamily.TIMES_ROMAN, 20);
     //static Font redFont = new Font(Font.FontFamily.TIMES_ROMAN, 12,BaseColor.RED);
     static Font subFont = new Font(Font.FontFamily.TIMES_ROMAN, 18);
     static Font smallBold = new Font(Font.FontFamily.TIMES_ROMAN, 14,Font.BOLD);
@@ -30,14 +30,14 @@ public class InvoiceGenerator {
     private static String destination_Invoice;
     private static String destination_Delivery;
 
-    public InvoiceGenerator(){
+    public InvoiceGenerator(String destination_Folder){
         this.destination_Invoice =
-                new File("/Users/jiawei.liu/Desktop", "Invoice_" + new SimpleDateFormat("yyyy-MM-dd'at'HH-mm-ss").format(new Date()) + ".pdf").getPath();
+                new File(destination_Folder, "Invoice_" + new SimpleDateFormat("yyyy-MM-dd'at'HH-mm-ss").format(new Date()) + ".pdf").getPath();
         this.destination_Delivery =
-                new File("/Users/jiawei.liu/Desktop", "Delivery_" + new SimpleDateFormat("yyyy-MM-dd'at'HH-mm-ss").format(new Date()) + ".pdf").getPath();
+                new File(destination_Folder, "Delivery_" + new SimpleDateFormat("yyyy-MM-dd'at'HH-mm-ss").format(new Date()) + ".pdf").getPath();
     }
-    public void buildInvoice(Transaction transaction, Customer customer) throws Exception {
-        Invoice invoice = new Invoice(transaction, customer);
+    public void buildInvoice(Transaction transaction, Customer customer, Staff staff) throws Exception {
+        Invoice invoice = new Invoice(transaction, customer, staff);
         createPdf(invoice);
         createPdf_delivery(invoice);
     }
@@ -51,7 +51,7 @@ public class InvoiceGenerator {
         document.open();
 
         Paragraph p;
-        p = new Paragraph("Milan Tile Sale Inc.",catFont);
+        p = new Paragraph("Milan Building Supply LTD.",catFont);
         p.setAlignment(Element.HEADER);
         document.add(p);
         p = new Paragraph("Delivery Order" + " " + String.format("D/%05d", invoice.getId()), subFont);
@@ -92,7 +92,7 @@ public class InvoiceGenerator {
         table.addCell(getCellTitle("Item", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
         table.addCell(getCellTitle("Size", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
         table.addCell(getCellTitle("Price", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
-        table.addCell(getCellTitle("Qty(boxes)", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
+        table.addCell(getCellTitle("Qty(feet)", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
         table.addCell(getCellTitle("Subtotal", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
         int row=0;
         double total=0;
@@ -101,7 +101,7 @@ public class InvoiceGenerator {
             table.addCell(getCellwithBackground(product.getProductId(), Element.ALIGN_LEFT, totalFont, row));
             table.addCell(getCellwithBackground(product.getSize(), Element.ALIGN_LEFT, totalFont, row));
             table.addCell(getCellwithBackground(InvoiceData.format2dec(InvoiceData.round(product.getUnitPrice())), Element.ALIGN_RIGHT, totalFont, row));
-            table.addCell(getCellwithBackground(String.valueOf(product.getQuantity()/product.getPiecesPerBox()), Element.ALIGN_RIGHT, totalFont, row));
+            table.addCell(getCellwithBackground(String.valueOf(product.getQuantity()), Element.ALIGN_RIGHT, totalFont, row));
             table.addCell(getCellwithBackground(InvoiceData.format2dec(InvoiceData.round(product.getSubTotal())), Element.ALIGN_RIGHT, totalFont, row));
             row++;
         }
@@ -160,6 +160,7 @@ public class InvoiceGenerator {
         p.add(table);
         document.add(p);
 
+        document.newPage();
         table = new PdfPTable(1);
         table.setWidthPercentage(100);
         table.setSpacingBefore(10);
@@ -249,7 +250,7 @@ public class InvoiceGenerator {
 
         // header
         Paragraph p;
-        p = new Paragraph("Milan Tile Sale Inc.",catFont);
+        p = new Paragraph("Milan Building Supply LTD.",catFont);
         p.setAlignment(Element.HEADER);
         document.add(p);
         p = new Paragraph(basic.getName() + " " + basic.getId(), subFont);
@@ -295,7 +296,7 @@ public class InvoiceGenerator {
         table.addCell(getCellTitle("Item", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
         table.addCell(getCellTitle("Size", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
         table.addCell(getCellTitle("Price", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
-        table.addCell(getCellTitle("Qty(pieces)", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
+        table.addCell(getCellTitle("Qty(feet)", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
         table.addCell(getCellTitle("Subtotal", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
         int row=0;
         double total=0;
@@ -363,6 +364,7 @@ public class InvoiceGenerator {
         p.add(table);
         document.add(p);
 
+        document.newPage();
         table = new PdfPTable(1);
         table.setWidthPercentage(100);
         table.setSpacingBefore(10);

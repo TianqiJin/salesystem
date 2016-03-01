@@ -16,12 +16,15 @@ import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.DirectoryChooser;
+import javafx.stage.Stage;
 import javafx.util.converter.BigDecimalStringConverter;
 import model.*;
 import sun.java2d.loops.GraphicsPrimitive;
 import util.AlertBuilder;
 import util.DateUtil;
 
+import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -44,6 +47,9 @@ public class TransactionOverviewController implements OverviewController{
     private Executor executor;
     private List<Customer> customerList;
     private List<Product> productList;
+    private File selectedDirectory;
+    private Stage dialogStage;
+
     @FXML
     private TableView<Transaction> transactionTable;
     @FXML
@@ -86,6 +92,9 @@ public class TransactionOverviewController implements OverviewController{
     private TableColumn<ProductTransaction, Float> unitPriceCol;
     @FXML
     private ProgressBar progressBar;
+    @FXML
+    private Button deleteButton;
+
 
     @FXML
     private void initialize(){
@@ -239,22 +248,26 @@ public class TransactionOverviewController implements OverviewController{
                         .build()
                         .showAndWait();
             }else{
-                String info = selectedTransaction.getInfo();
-                try {
-                    Customer customer= dbExecuteCustomer.selectFromDatabase(DBQueries.SelectQueries.Customer.SELECT_SINGLE_CUSTOMER,info).get(0);
-                    InvoiceGenerator generator = new InvoiceGenerator();
-                    generator.buildInvoice(selectedTransaction,customer);
+                DirectoryChooser directoryChooser = new DirectoryChooser();
+                directoryChooser.setTitle("Select a directory");
+                selectedDirectory = directoryChooser.showDialog(dialogStage);
+                if(selectedDirectory != null){
+                    String info = selectedTransaction.getInfo();
+                    try {
+                        Customer customer= dbExecuteCustomer.selectFromDatabase(DBQueries.SelectQueries.Customer.SELECT_SINGLE_CUSTOMER,info).get(0);
+                        InvoiceGenerator generator = new InvoiceGenerator(selectedDirectory.toString());
+                        generator.buildInvoice(selectedTransaction,customer, this.saleSystem.getStaff());
 
-                } catch (Exception e) {
-                    e.printStackTrace();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    new AlertBuilder()
+                            .alertType(Alert.AlertType.INFORMATION)
+                            .alertContentText("Report generated successfully!")
+                            .build()
+                            .showAndWait();
                 }
-                new AlertBuilder()
-                        .alertType(Alert.AlertType.INFORMATION)
-                        .alertContentText("Report generated successfully!")
-                        .build()
-                        .showAndWait();
             }
-
         }
 
     }
@@ -375,9 +388,16 @@ public class TransactionOverviewController implements OverviewController{
     @Override
     public void setMainClass(SaleSystem saleSystem) {
         this.saleSystem = saleSystem;
+        if(this.saleSystem.getStaff().getPosition().equals(Staff.Position.MANAGER)){
+            deleteButton.setDisable(false);
+        }
         loadDataFromDB();
     }
 
+    @Override
+    public void setDialogStage(Stage stage){
+        this.dialogStage = stage;
+    }
 
     public void showTransactionDetail(Transaction transaction){
         if(transaction != null){

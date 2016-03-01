@@ -1,25 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.collections.*?>
+<?import java.lang.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.collections.FXCollections ?>
 
-<AnchorPane id="AnchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="Controllers.StaffEditDialogController">
+<AnchorPane id="AnchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.StaffEditDialogController">
   <children>
     <GridPane AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
       <children>
-        <Label text="StaffID" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-        <Label text="UserName" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-        <Label text="Password" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-        <Label text="FullName" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-        <Label text="Position" GridPane.columnIndex="0" GridPane.rowIndex="4" />
-        <Label text="Location" GridPane.columnIndex="0" GridPane.rowIndex="5" />
-        <TextField fx:id="staffIdField" prefWidth="200.0" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-        <TextField fx:id="userNameField" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-        <PasswordField fx:id="passwordField" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-        <TextField fx:id="fullNameField" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-        <TextField fx:id="positionField" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-        <TextField fx:id="locationField" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+        <Label text="UserName" GridPane.columnIndex="0" />
+        <Label text="Password" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+        <Label text="FullName" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+        <Label text="Position" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+        <Label text="Street" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+        <TextField fx:id="userNameField" prefWidth="200.0" GridPane.columnIndex="1" />
+        <PasswordField fx:id="passwordField" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+        <TextField fx:id="fullNameField" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            <Label text="City" GridPane.rowIndex="5" />
+            <Label text="Postal Code" GridPane.rowIndex="6" />
+            <TextField fx:id="streetField" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+            <TextField fx:id="cityField" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+            <TextField fx:id="postalCodeField" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+            <ChoiceBox fx:id="positionChoiceBox" prefHeight="25.0" prefWidth="290.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
+              <items>
+                <FXCollections fx:factory="observableArrayList">
+                  <String fx:value="SALES" />
+                  <String fx:value="MANAGER" />
+                </FXCollections>
+              </items>
+            </ChoiceBox>
       </children>
       <columnConstraints>
         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -31,7 +43,8 @@
         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
        </rowConstraints>
     </GridPane>
     <HBox prefHeight="-1.0" prefWidth="-1.0" AnchorPane.bottomAnchor="25.0" AnchorPane.leftAnchor="350.0" AnchorPane.rightAnchor="51.0">

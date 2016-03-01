@@ -11,6 +11,7 @@ import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.Stage;
 import model.Customer;
 import MainClass.SaleSystem;
 
@@ -30,6 +31,7 @@ public class CustomerOverviewController implements OverviewController{
     private ObservableList<Customer> customerList;
     private SaleSystem saleSystem;
     private Executor executor;
+    private Stage dialogStage;
 
     @FXML
     private TableView<Customer> customerTable;
@@ -224,6 +226,11 @@ public class CustomerOverviewController implements OverviewController{
     public void setMainClass(SaleSystem saleSystem) {
         this.saleSystem = saleSystem;
         loadDataFromDB();
+    }
+
+    @Override
+    public void setDialogStage(Stage stage){
+        this.dialogStage = stage;
     }
 
     public void showCustomerDetail(Customer customer){

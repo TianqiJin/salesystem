@@ -130,7 +130,9 @@ public interface ObjectDeserializer<E> {
                     .password(rs.getString("Password"))
                     .fullName(rs.getString("FullName"))
                     .position(Staff.Position.getPosition(rs.getString("Position")))
-                    .location(Staff.Location.getLocation(rs.getString("Location")))
+                    .street(rs.getString("Street"))
+                    .city(rs.getString("City"))
+                    .postalCode(rs.getString("PostalCode"))
                     .build();
             return staff;
         }
