@@ -22,6 +22,7 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 import model.*;
+import util.AlertBuilder;
 import util.AutoCompleteComboBoxListener;
 import util.ButtonCell;
 
@@ -31,6 +32,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by tjin on 1/12/2016.
@@ -38,10 +40,11 @@ import java.util.*;
 
 public class GenerateReturnTransactController {
 
-    private final static String INIT_TRANSACTION_PAYMENT_TYPE = "Return";
+    private final static String INIT_TRANSACTION_PAYMENT_TYPE = "Cash";
     private Stage dialogStage;
     private Customer customer;
     private List<Customer> customerList;
+    private List<Product> productList;
     private ObservableList<ProductTransaction> productTransactionObservableList;
     private DBExecuteProduct dbExecuteProduct;
     private DBExecuteCustomer dbExecuteCustomer;
@@ -81,12 +84,12 @@ public class GenerateReturnTransactController {
     @FXML
     private Label subTotalLabel;
     @FXML
-    private Label taxLabel;
+    private Label gstTaxLabel;
+    @FXML
+    private Label pstTaxLabel;
     @FXML
     private Label totalLabel;
 
-    @FXML
-    private TextField productIdField;
     @FXML
     private Button addItemButton;
     @FXML
@@ -96,11 +99,13 @@ public class GenerateReturnTransactController {
     @FXML
     private ComboBox customerComboBox;
     @FXML
+    private ComboBox productComboBox;
+    @FXML
     private Label balanceLabel;
     @FXML
-    private TextField storeCreditField;
+    private TextField returnAmountField;
     @FXML
-    private TextField cashField;
+    private ChoiceBox paymentTypeChoiceBox;
 
     @FXML
     private void initialize(){
@@ -143,36 +148,33 @@ public class GenerateReturnTransactController {
                     }
 
                 });
-        productIdField.textProperty().addListener(new ChangeListener<String>() {
+        productComboBox.valueProperty().addListener(((observable, oldValue, newValue) -> {
+            if(productComboBox.getSelectionModel().isEmpty()){
+                addItemButton.setDisable(true);
+            }else{
+                addItemButton.setDisable(false);
+            }
+        }));
+        paymentTypeChoiceBox.getSelectionModel().selectFirst();
+        paymentTypeChoiceBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                if(productIdField.getText().trim().isEmpty()){
-                    addItemButton.setDisable(true);
-                }
-                else{
-                    addItemButton.setDisable(false);
-                }
+                transaction.setPaymentType(newValue);
             }
         });
-
-        storeCreditField.textProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                showBalanceDetails();
-            }
-        });
-
-        cashField.textProperty().addListener(new ChangeListener<String>() {
+        returnAmountField.textProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
                 showBalanceDetails();
             }
         });
+
         showCustomerDetails(null);
         showPaymentDetails(null, null);
 
         try{
             customerList = dbExecuteCustomer.selectFromDatabase(DBQueries.SelectQueries.Customer.SELECT_ALL_CUSTOMER);
+            productList = dbExecuteProduct.selectFromDatabase(DBQueries.SelectQueries.Product.SELECT_ALL_PRODUCT);
         }catch(SQLException e){
             Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to grab data from database!\n" + e.getMessage());
             alert.setTitle("Database Error");
@@ -199,41 +201,43 @@ public class GenerateReturnTransactController {
 
             }
         });
+        List<String> tmpProductList = productList
+                .stream()
+                .map(product -> product.getProductId())
+                .collect(Collectors.toList());
+        productComboBox.setItems(FXCollections.observableArrayList(tmpProductList));
         new AutoCompleteComboBoxListener<>(customerComboBox);
+        new AutoCompleteComboBoxListener<>(productComboBox);
     }
 
     @FXML
     public void handleAddItem(){
-        List<Product> productResult = null;
-        try{
-            productResult = dbExecuteProduct.selectFromDatabase(DBQueries.SelectQueries.Product.SELECT_PRODUCTID_PROJECT,
-                    productIdField.getText().trim());
-        }catch(SQLException e){
-            Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to grab data from database!\n" + e.getMessage());
-            alert.setTitle("Database Error");
-            alert.showAndWait();
-        }
-
-        if(productResult.isEmpty()){
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.initOwner(dialogStage);
-            alert.setTitle("Invalid Product ID");
-            alert.setHeaderText(null);
-            alert.setContentText("Please input valid product ID");
-            alert.showAndWait();
-        }
-        else{
-            ProductTransaction newTransaction = new ProductTransaction.ProductTransactionBuilder()
-                    .productId(productResult.get(0).getProductId())
-                    .totalNum(productResult.get(0).getTotalNum())
-                    .unitPrice(productResult.get(0).getUnitPrice())
-                    .piecesPerBox(productResult.get(0).getPiecesPerBox())
-                    .size(productResult.get(0).getSize())
-                    .sizeNumeric(productResult.get(0).getSizeNumeric())
+        Product selectedProduct = productList
+                .stream()
+                .filter(product -> product.getProductId().equals(productComboBox.getSelectionModel().getSelectedItem()))
+                .findFirst()
+                .get();
+        List<String> productIdList = productTransactionObservableList.stream()
+                .map(ProductTransaction::getProductId)
+                .collect(Collectors.toList());
+        if(productIdList.contains(selectedProduct.getProductId())){
+            new AlertBuilder()
+                    .alertType(Alert.AlertType.ERROR)
+                    .alertContentText("Product Add Error")
+                    .alertContentText(selectedProduct.getProductId() + " has already been added!")
+                    .build()
+                    .showAndWait();
+        }else{
+            ProductTransaction newProductTransaction = new ProductTransaction.ProductTransactionBuilder()
+                    .productId(selectedProduct.getProductId())
+                    .totalNum(selectedProduct.getTotalNum())
+                    .unitPrice(selectedProduct.getUnitPrice())
+                    .piecesPerBox(selectedProduct.getPiecesPerBox())
+                    .size(selectedProduct.getSize())
+                    .sizeNumeric(selectedProduct.getSizeNumeric())
                     .build();
-            productTransactionObservableList.add(newTransaction);
+            productTransactionObservableList.add(newProductTransaction);
         }
-
     }
 
     @FXML
@@ -253,11 +257,10 @@ public class GenerateReturnTransactController {
         }
         else{
             transaction.getProductTransactionList().addAll(productTransactionObservableList);
-            if(!storeCreditField.getText().trim().isEmpty()){
-                transaction.setStoreCredit(Double.valueOf(storeCreditField.getText()));
-            }
-            if(!cashField.getText().trim().isEmpty()){
-                transaction.setPayment(Double.valueOf(cashField.getText()));
+            if(transaction.getPaymentType().equals("Store Credit")){
+                transaction.setStoreCredit(Double.valueOf(returnAmountField.getText().trim()));
+            }else{
+                transaction.setPayment(Double.valueOf(returnAmountField.getText().trim()));
             }
             transaction.setTotal(Double.valueOf(totalLabel.getText()));
             transaction.getPayinfo().add(new PaymentRecord(
@@ -281,7 +284,7 @@ public class GenerateReturnTransactController {
                     .append(overviewProductTransactionString)
                     .append("\n" + "Total: " + totalLabel.getText() + "\n")
                     .append("Returned Store Credit: " + transaction.getStoreCredit() + "\n")
-                    .append("Returned Cash: " + transaction.getPayment() + "\n")
+                    .append("Returned Money: " + transaction.getPayment() + "\n")
                     .append("Payment Type: " + transaction.getPaymentType() + "\n")
                     .append("Date: " + transaction.getDate() + "\n");
 
@@ -351,18 +354,21 @@ public class GenerateReturnTransactController {
                         new BigDecimal(iterator.next().getSubTotal()).setScale(2, BigDecimal.ROUND_HALF_EVEN)
                 );
             }
-            BigDecimal tax = new BigDecimal(saleSystem.getTaxRate()).multiply(subTotalAll).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+            BigDecimal pstTax = new BigDecimal(saleSystem.getPstRate()).multiply(subTotalAll).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+            BigDecimal gstTax = new BigDecimal(saleSystem.getGstRate()).multiply(subTotalAll).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
             BigDecimal total = subTotalAll.multiply(new BigDecimal(1.05)).setScale(2,BigDecimal.ROUND_HALF_EVEN);
             itemsCountLabel.setText(String.valueOf(transactions.size()));
             subTotalLabel.setText(subTotalAll.toString());
-            taxLabel.setText(tax.toString());
+            pstTaxLabel.setText(pstTax.toString());
+            gstTaxLabel.setText(gstTax.toString());
             totalLabel.setText(total.toString());
             showBalanceDetails();
         }
         else{
             itemsCountLabel.setText("");
             subTotalLabel.setText("");
-            taxLabel.setText("");
+            pstTaxLabel.setText("");
+            gstTaxLabel.setText("");
             totalLabel.setText("");
             balanceLabel.setText("");
         }
@@ -370,16 +376,8 @@ public class GenerateReturnTransactController {
 
     private void showBalanceDetails(){
         BigDecimal balance;
-        if(!storeCreditField.getText().trim().isEmpty() && isStoreCreditValid() && !cashField.getText().trim().isEmpty() && isCashValid()){
-            balance = new BigDecimal(storeCreditField.getText()).add(new BigDecimal(cashField.getText())).setScale(2, BigDecimal.ROUND_HALF_EVEN);
-            balance = balance.subtract(new BigDecimal(totalLabel.getText()));
-            balanceLabel.setText(balance.toString());
-        }else if(!storeCreditField.getText().trim().isEmpty() && isStoreCreditValid()){
-            balance = new BigDecimal(storeCreditField.getText()).setScale(2, BigDecimal.ROUND_HALF_EVEN);
-            balance = balance.subtract(new BigDecimal(totalLabel.getText()));
-            balanceLabel.setText(balance.toString());
-        }else if(!cashField.getText().trim().isEmpty() && isCashValid()){
-            balance = new BigDecimal(cashField.getText()).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+        if(!returnAmountField.getText().trim().isEmpty() && isReturnAmountValid()){
+            balance = new BigDecimal(returnAmountField.getText()).setScale(2, BigDecimal.ROUND_HALF_EVEN);
             balance = balance.subtract(new BigDecimal(totalLabel.getText()));
             balanceLabel.setText(balance.toString());
         }
@@ -421,17 +419,11 @@ public class GenerateReturnTransactController {
         if(customer == null){
             errorMsgBuilder.append("Customer is neither selected nor created!\n");
         }
-        if(cashField.getText().trim().isEmpty() && storeCreditField.getText().trim().isEmpty()){
-            errorMsgBuilder.append("You need to specify either to pay or use store credit!\n");
-        }
-        if(!cashField.getText().trim().isEmpty()){
-            if(!isCashValid()) {
-                errorMsgBuilder.append("Payment must be numbers!\n");
-            }
-        }
-        if(!storeCreditField.getText().trim().isEmpty()){
-            if(!isStoreCreditValid()){
-                errorMsgBuilder.append("Either Store Credit exceeds customer's limit or Store Credit must be numbers!\n");
+        if(returnAmountField.getText().trim().isEmpty()){
+            errorMsgBuilder.append("The Returned Money/Store Credit can't be empty!\n");
+        }else{
+            if(!isReturnAmountValid()){
+                errorMsgBuilder.append("The Returned Money/Store Credit must be numbers!\n");
             }
         }
         if(errorMsgBuilder.length() != 0){
@@ -440,18 +432,9 @@ public class GenerateReturnTransactController {
         return true;
     }
 
-    private boolean isStoreCreditValid(){
+    private boolean isReturnAmountValid(){
         try{
-            Double.parseDouble(storeCreditField.getText());
-        }catch(NumberFormatException e){
-            return false;
-        }
-        return true;
-    }
-
-    private boolean isCashValid(){
-        try{
-            Double.parseDouble(cashField.getText());
+            Double.parseDouble(returnAmountField.getText());
         }catch(NumberFormatException e){
             return false;
         }
@@ -469,8 +452,10 @@ public class GenerateReturnTransactController {
                 int remain = tmp.getTotalNum() + tmp.getQuantity();
                 dbExecuteProduct.updateDatabase(DBQueries.UpdateQueries.Product.UPDATE_PRODUCT_QUANTITY, remain, tmp.getProductId());
             }
-            double remainStoreCredit = customer.getStoreCredit() + Double.valueOf(storeCreditField.getText());
-            dbExecuteCustomer.updateDatabase(DBQueries.UpdateQueries.Customer.UPDATE_CUSTOMER_STORE_CREDIT, remainStoreCredit, customer.getUserName());
+            if(transaction.getPaymentType().equals("Store Credit")){
+                double remainStoreCredit = customer.getStoreCredit() + Double.valueOf(returnAmountField.getText());
+                dbExecuteCustomer.updateDatabase(DBQueries.UpdateQueries.Customer.UPDATE_CUSTOMER_STORE_CREDIT, remainStoreCredit, customer.getUserName());
+            }
             connection.commit();
         }catch(SQLException e){
             connection.rollback(); //TODO: CRITICAL BUG!!!

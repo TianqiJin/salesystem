@@ -26,6 +26,7 @@
               <columns>
                 <TableColumn fx:id="firstNameCol" editable="true" prefWidth="128.0" text="First Name" />
                 <TableColumn fx:id="lastNameCol" prefWidth="128.0" text="Last Name" />
+                        <TableColumn fx:id="phoneCol" prefWidth="75.0" text="Phone Number" />
               </columns>
             </TableView>
           </children>
@@ -60,6 +61,8 @@
                 <Label fx:id="storeCreditLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="8" />
                         <Label text="Company" GridPane.rowIndex="9" />
                         <Label fx:id="companyLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="9" />
+                        <Label text="PST Number" GridPane.rowIndex="10" />
+                        <Label fx:id="pstNumberLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="10" />
               </children>
               <columnConstraints>
                 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -75,6 +78,7 @@
                 <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                 <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                 <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                         <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
               </rowConstraints>
             </GridPane>

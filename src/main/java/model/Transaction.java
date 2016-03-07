@@ -26,6 +26,8 @@ public class Transaction {
     private List<ProductTransaction> productTransactionList;
     private DoubleProperty total;
     private List<PaymentRecord> payinfo;
+    private DoubleProperty gstTax;
+    private DoubleProperty pstTax;
 
 
     public Transaction(TransactionBuilder builder){
@@ -40,6 +42,8 @@ public class Transaction {
         this.info = new SimpleStringProperty(builder.info);
         this.total = new SimpleDoubleProperty(builder.total);
         this.payinfo = builder.payinfo;
+        this.gstTax = new SimpleDoubleProperty(builder.gstTax);
+        this.pstTax = new SimpleDoubleProperty(builder.pstTax);
     }
 
     public static class TransactionBuilder {
@@ -54,6 +58,8 @@ public class Transaction {
         private String info = null;
         private double total;
         private List<PaymentRecord> payinfo;
+        private double gstTax;
+        private double pstTax;
 
         public TransactionBuilder transactionId(int transactionId) {
             this.transactionId = transactionId;
@@ -108,6 +114,16 @@ public class Transaction {
 
         public TransactionBuilder payinfo (List<PaymentRecord> payinfo) {
             this.payinfo=payinfo;
+            return this;
+        }
+
+        public TransactionBuilder gstTax(double gstTax){
+            this.gstTax = gstTax;
+            return this;
+        }
+
+        public TransactionBuilder pstTax(double pstTax){
+            this.pstTax = pstTax;
             return this;
         }
 
@@ -229,6 +245,30 @@ public class Transaction {
 
     public void setPayinfo(List<PaymentRecord> payinfo) {
         this.payinfo = payinfo;
+    }
+
+    public double getGstTax() {
+        return gstTax.get();
+    }
+
+    public DoubleProperty gstTaxProperty() {
+        return gstTax;
+    }
+
+    public void setGstTax(double gstTax) {
+        this.gstTax.set(gstTax);
+    }
+
+    public double getPstTax() {
+        return pstTax.get();
+    }
+
+    public DoubleProperty pstTaxProperty() {
+        return pstTax;
+    }
+
+    public void setPstTax(double pstTax) {
+        this.pstTax.set(pstTax);
     }
 
     public List<String> getProductTransactionListRevised(){

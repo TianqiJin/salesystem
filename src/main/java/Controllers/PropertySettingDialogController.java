@@ -19,7 +19,9 @@ public class PropertySettingDialogController {
     @FXML
     private TextField productWarnLimitField;
     @FXML
-    private TextField taxRateField;
+    private TextField gstField;
+    @FXML
+    private TextField pstField;
     @FXML
     private Button confirmButton;
     @FXML
@@ -33,8 +35,11 @@ public class PropertySettingDialogController {
             if(!productWarnLimitField.getText().trim().isEmpty()){
                 saleSystem.setProductLimit(Integer.valueOf(productWarnLimitField.getText()));
             }
-            if(!taxRateField.getText().trim().isEmpty()){
-                saleSystem.setTaxRate(Integer.valueOf(taxRateField.getText()));
+            if(!pstField.getText().trim().isEmpty()){
+                saleSystem.setPstRate(Integer.valueOf(pstField.getText()));
+            }
+            if(!gstField.getText().trim().isEmpty()){
+                saleSystem.setGstRate(Integer.valueOf(gstField.getText()));
             }
             dialogStage.close();
         }
@@ -55,7 +60,8 @@ public class PropertySettingDialogController {
     public void setMainClass(SaleSystem saleSystem) {
         this.saleSystem = saleSystem;
         productWarnLimitField.setText(String.valueOf(this.saleSystem.getProductWarnLimit()));
-        taxRateField.setText(String.valueOf(this.saleSystem.getTaxRate()));
+        gstField.setText(String.valueOf(this.saleSystem.getGstRate()));
+        pstField.setText(String.valueOf(this.saleSystem.getPstRate()));
     }
 
     private boolean isInputValid(){
@@ -65,9 +71,14 @@ public class PropertySettingDialogController {
                 errorMsg.append("Product Warn Limit must be an integer!\n");
             }
         }
-        if(!taxRateField.getText().trim().isEmpty()){
-            if(!isTaxRateValid()){
-                errorMsg.append("Tax Rate must be an integer!\n");
+        if(!gstField.getText().trim().isEmpty()){
+            if(!isTaxRateValid(gstField.getText())){
+                errorMsg.append("GST Tax Rate must be an integer!\n");
+            }
+        }
+        if(!pstField.getText().trim().isEmpty()){
+            if(!isTaxRateValid(pstField.getText())){
+                errorMsg.append("PST Tax Rate must be an integer!\n");
             }
         }
         if(errorMsg.length() != 0){
@@ -84,13 +95,15 @@ public class PropertySettingDialogController {
         }
         return true;
     }
-    private boolean isTaxRateValid(){
+    private boolean isTaxRateValid(String tax){
         try{
-            Integer.parseInt(taxRateField.getText().trim());
+            Integer.parseInt(tax.trim());
         }catch(NumberFormatException e){
 
             return false;
         }
         return true;
     }
+
+    //TODO: Move setGSt and setPST into this class
 }

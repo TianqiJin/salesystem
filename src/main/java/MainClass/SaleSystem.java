@@ -486,12 +486,13 @@ public class SaleSystem extends Application{
     }
 
     public int getProductWarnLimit(){
-        return this.property.getProductWarnLimit();
+        return property.getProductWarnLimit();
     }
 
-    public int getTaxRate(){
-        return this.property.getTaxRate();
-    }
+    public int getPstRate(){ return property.getPstRate();}
+
+    public int getGstRate(){ return property.getGstRate();}
+
     public void setProductLimit(Integer productLimit){
         try{
             dbExecuteProperty.updateDatabase(DBQueries.UpdateQueries.Property.UPDATE_PRODUCT_WARN_LIMIT, productLimit);
@@ -504,9 +505,10 @@ public class SaleSystem extends Application{
         }
         loadPropertyFromDB();
     }
-    public void setTaxRate(Integer taxRate){
+
+    public void setPstRate(Integer pstRate){
         try{
-            dbExecuteProperty.updateDatabase(DBQueries.UpdateQueries.Property.UPDATE_TAX_RATE, taxRate);
+            dbExecuteProperty.updateDatabase(DBQueries.UpdateQueries.Property.UPDATE_PST_RATE, pstRate);
         }catch(SQLException e){
             new AlertBuilder()
                     .alertType(Alert.AlertType.ERROR)
@@ -516,4 +518,18 @@ public class SaleSystem extends Application{
         }
         loadPropertyFromDB();
     }
+
+    public void setGstRate(Integer gstRate){
+        try{
+            dbExecuteProperty.updateDatabase(DBQueries.UpdateQueries.Property.UPDATE_GST_RATE, gstRate);
+        }catch(SQLException e){
+            new AlertBuilder()
+                    .alertType(Alert.AlertType.ERROR)
+                    .alertContentText(Constant.DatabaseError.databaseUpdateError + e.toString())
+                    .build()
+                    .showAndWait();
+        }
+        loadPropertyFromDB();
+    }
+
 }

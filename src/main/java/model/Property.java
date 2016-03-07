@@ -5,11 +5,13 @@ package model;
  */
 public class Property {
     private Integer productWarnLimit;
-    private Integer taxRate;
+    private Integer gstRate;
+    private Integer pstRate;
 
-    public Property(int productWarnLimit, int taxRate){
+    public Property(int productWarnLimit, int gstRate, int pstRate){
         this.productWarnLimit = productWarnLimit;
-        this.taxRate = taxRate;
+        this.gstRate = gstRate;
+        this.pstRate = pstRate;
     }
 
     public Integer getProductWarnLimit() {
@@ -20,11 +22,19 @@ public class Property {
         this.productWarnLimit = productWarnLimit;
     }
 
-    public Integer getTaxRate() {
-        return taxRate;
+    public Integer getGstRate() {
+        return gstRate;
     }
 
-    public void setTaxRate(Integer taxRate) {
-        this.taxRate = taxRate;
+    public void setGstRate(Integer gstRate) {
+        this.gstRate = gstRate;
+    }
+
+    public Integer getPstRate() {
+        return pstRate;
+    }
+
+    public void setPstRate(Integer pstRate) {
+        this.pstRate = pstRate;
     }
 }
