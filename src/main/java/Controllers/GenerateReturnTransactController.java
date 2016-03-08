@@ -354,7 +354,12 @@ public class GenerateReturnTransactController {
                         new BigDecimal(iterator.next().getSubTotal()).setScale(2, BigDecimal.ROUND_HALF_EVEN)
                 );
             }
-            BigDecimal pstTax = new BigDecimal(saleSystem.getPstRate()).multiply(subTotalAll).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+            BigDecimal pstTax;
+            if(customer != null && customer.getPstNumber() != null){
+                pstTax = new BigDecimal("0.0");
+            }else{
+                pstTax = new BigDecimal(saleSystem.getPstRate()).multiply(subTotalAll).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+            }
             BigDecimal gstTax = new BigDecimal(saleSystem.getGstRate()).multiply(subTotalAll).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
             BigDecimal total = subTotalAll.multiply(new BigDecimal(1.05)).setScale(2,BigDecimal.ROUND_HALF_EVEN);
             itemsCountLabel.setText(String.valueOf(transactions.size()));

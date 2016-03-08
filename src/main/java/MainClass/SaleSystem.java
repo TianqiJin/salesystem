@@ -376,6 +376,32 @@ public class SaleSystem extends Application{
         }
     }
 
+    public void showInvoiceDirectoryEditDialog(Customer customer, Transaction transaction, Staff staff){
+        try{
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(SaleSystem.class.getResource("/fxml/InvoiceDirectoryEditDialog.fxml"));
+            AnchorPane page = loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.getIcons().add(new Image(SaleSystem.class.getResourceAsStream(Constant.Image.appIconPath)));
+            dialogStage.setTitle("Generate Invoice");
+            Scene scene = new Scene(page);
+            dialogStage.setScene(scene);
+            dialogStage.initOwner(primaryStage);
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+
+            InvoiceDirectoryEditDialogController controller = loader.getController();
+            controller.setCustomer(customer);
+            controller.setTransaction(transaction);
+            controller.setStaff(staff);
+            controller.setDialogStage(dialogStage);
+            dialogStage.showAndWait();
+
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
     public Transaction showGenerateCustomerTransactionDialog(){
         try{
             FXMLLoader loader = new FXMLLoader();

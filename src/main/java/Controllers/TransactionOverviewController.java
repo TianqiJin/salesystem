@@ -47,7 +47,6 @@ public class TransactionOverviewController implements OverviewController{
     private Executor executor;
     private List<Customer> customerList;
     private List<Product> productList;
-    private File selectedDirectory;
     private Stage dialogStage;
 
     @FXML
@@ -248,25 +247,12 @@ public class TransactionOverviewController implements OverviewController{
                         .build()
                         .showAndWait();
             }else{
-                DirectoryChooser directoryChooser = new DirectoryChooser();
-                directoryChooser.setTitle("Select a directory");
-                selectedDirectory = directoryChooser.showDialog(dialogStage);
-                if(selectedDirectory != null){
-                    String info = selectedTransaction.getInfo();
-                    try {
-                        Customer customer= dbExecuteCustomer.selectFromDatabase(DBQueries.SelectQueries.Customer.SELECT_SINGLE_CUSTOMER,info).get(0);
-                        InvoiceGenerator generator = new InvoiceGenerator(selectedDirectory.toString());
-                        generator.buildInvoice(selectedTransaction,customer, this.saleSystem.getStaff());
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    new AlertBuilder()
-                            .alertType(Alert.AlertType.INFORMATION)
-                            .alertContentText("Report generated successfully!")
-                            .build()
-                            .showAndWait();
-                }
+                Customer customer = customerList
+                        .stream()
+                        .filter(c -> c.getUserName().equals(selectedTransaction.getInfo()))
+                        .findFirst()
+                        .get();
+                saleSystem.showInvoiceDirectoryEditDialog(customer, selectedTransaction, this.saleSystem.getStaff());
             }
         }
 

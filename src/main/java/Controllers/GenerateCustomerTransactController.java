@@ -430,7 +430,12 @@ public class GenerateCustomerTransactController {
             }
             BigDecimal paymentDiscount = (new BigDecimal(100).subtract(new BigDecimal(this.discount))).multiply(subTotalAll).divide(new BigDecimal(100))
                     .setScale(2, BigDecimal.ROUND_HALF_EVEN);
-            BigDecimal pstTax = new BigDecimal(saleSystem.getPstRate()).multiply(subTotalAll).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+            BigDecimal pstTax;
+            if(customer != null && customer.getPstNumber() != null){
+                pstTax = new BigDecimal("0.0");
+            }else{
+                pstTax = new BigDecimal(saleSystem.getPstRate()).multiply(subTotalAll).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+            }
             BigDecimal gstTax = new BigDecimal(saleSystem.getGstRate()).multiply(subTotalAll).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
             BigDecimal total = subTotalAll.add(pstTax).add(gstTax).subtract(paymentDiscount).setScale(2, BigDecimal.ROUND_HALF_EVEN);
 

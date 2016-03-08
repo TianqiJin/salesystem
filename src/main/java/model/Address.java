@@ -13,17 +13,14 @@ package model;
  */
 public class Address {
     //TODO: Apply relational db here
-    private Integer addressId;
     private String street;
     private String city;
     private String postalCode;
-    private String province;
 
-    public Address(String street, String city, String postalCode, String province){
+    public Address(String street, String city, String postalCode){
         this.street = street;
         this.city = city;
         this.postalCode = postalCode;
-        this.province = province;
     }
 
     public String getStreet() {
@@ -50,11 +47,4 @@ public class Address {
         this.postalCode = postalCode;
     }
 
-    public String getProvince() {
-        return province;
-    }
-
-    public void setProvince(String province) {
-        this.province = province;
-    }
 }
