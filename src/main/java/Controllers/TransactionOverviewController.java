@@ -7,6 +7,7 @@ import PDF.InvoiceGenerator;
 import db.*;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleBinding;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -18,6 +19,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 import javafx.util.converter.BigDecimalStringConverter;
 import model.*;
 import sun.java2d.loops.GraphicsPrimitive;
@@ -62,6 +64,8 @@ public class TransactionOverviewController implements OverviewController{
     @FXML
     private TableColumn<Transaction, String> infoCol;
     @FXML
+    private TableColumn<Transaction, String> phoneCol;
+    @FXML
     private Label transactionIdLabel;
     @FXML
     private Label dateLabel;
@@ -105,7 +109,21 @@ public class TransactionOverviewController implements OverviewController{
         qtyCol.setCellValueFactory(new PropertyValueFactory<>("quantity"));
         unitPriceCol.setCellValueFactory(new PropertyValueFactory<>("unitPrice"));
         subTotalCol.setCellValueFactory(new PropertyValueFactory<>("subTotal"));
-
+        phoneCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Transaction, String>, ObservableValue<String>>() {
+            @Override
+            public ObservableValue<String> call(TableColumn.CellDataFeatures<Transaction, String> param) {
+                if(param.getValue().getType().equals(Transaction.TransactionType.IN)){
+                    return null;
+                }else{
+                    Customer customer = customerList.stream().filter(c -> c.getUserName().equals(param.getValue().getInfo())).findFirst().get();
+                    if(customer.getPhone() != null){
+                        return new SimpleStringProperty(customer.getPhone());
+                    }else{
+                        return null;
+                    }
+                }
+            }
+        });
         showTransactionDetail(null);
         transactionTable.getSelectionModel().selectedItemProperty().addListener(
                 new ChangeListener<Transaction>() {
@@ -330,6 +348,10 @@ public class TransactionOverviewController implements OverviewController{
                         return true;
                     }else if (transaction.getInfo().toLowerCase().contains(lowerCase)){
                         return true;
+                    }else if (!transaction.getType().equals(Transaction.TransactionType.IN) &&
+                            customerList.stream().filter(c -> c.getUserName().equals(transaction.getInfo())).findFirst().get().getPhone() != null &&
+                            customerList.stream().filter(c -> c.getUserName().equals(transaction.getInfo())).findFirst().get().getPhone().contains(lowerCase)){
+                        return true;
                     }
                     return false;
                 });
@@ -339,7 +361,7 @@ public class TransactionOverviewController implements OverviewController{
         transactionListTask.setOnFailed(event -> {
             new AlertBuilder()
                     .alertType(Alert.AlertType.ERROR)
-                    .alertContentText(Constant.DatabaseError.databaseReturnError + event.toString())
+                    .alertContentText(Constant.DatabaseError.databaseReturnError + event.getSource().exceptionProperty().getValue())
                     .alertHeaderText(Constant.DatabaseError.databaseErrorAlertTitle)
                     .build()
                     .showAndWait();

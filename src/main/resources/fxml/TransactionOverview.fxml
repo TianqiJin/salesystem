@@ -29,6 +29,7 @@
                 <TableColumn fx:id="dateCol" prefWidth="64.0" text="Date" />
                 <TableColumn fx:id="typeCol" prefWidth="64.0" text="Type" />
                 <TableColumn fx:id="infoCol" prefWidth="64.0" text="Info" />
+                        <TableColumn fx:id="phoneCol" prefWidth="75.0" text="Phone Number" />
               </columns>
             </TableView>
           </children>
