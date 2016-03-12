@@ -242,7 +242,7 @@ public class TransactionOverviewController implements OverviewController{
             if(!selectedTransaction.getType().equals(Transaction.TransactionType.OUT)){
                 new AlertBuilder()
                         .alertType(Alert.AlertType.ERROR)
-                        .alertContentText("Please OUT transaction to generate Invoice!\n")
+                        .alertContentText("You can only edit OUT transaction!\n")
                         .build()
                         .showAndWait();
             }else{
@@ -258,10 +258,10 @@ public class TransactionOverviewController implements OverviewController{
     private void handleInvoice(){
         Transaction selectedTransaction = transactionTable.getSelectionModel().getSelectedItem();
         if(selectedTransaction != null){
-            if(!selectedTransaction.getType().equals(Transaction.TransactionType.OUT)){
+            if(!selectedTransaction.getType().equals(Transaction.TransactionType.OUT) && !selectedTransaction.getType().equals(Transaction.TransactionType.RETURN)){
                 new AlertBuilder()
                         .alertType(Alert.AlertType.ERROR)
-                        .alertContentText("You can only edit OUT transaction!\n")
+                        .alertContentText("Please select OUT/RETURN transaction to generate Invoice!\n")
                         .build()
                         .showAndWait();
             }else{

@@ -9,6 +9,7 @@
 package Controllers;
 
 import MainClass.SaleSystem;
+import PDF.InvoiceGenerator;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.DirectoryChooser;
@@ -83,6 +84,16 @@ public class InvoiceDirectoryEditDialogController {
         if(deliveryInvoiceCheckbox.isSelected()){
             if(isInvoicedirectoryValid() && isFieldValid()){
                 Address address = new Address(streetField.getText().trim(), cityField.getText().trim(), postalCodeField.getText().trim());
+                try {
+                    InvoiceGenerator generator = new InvoiceGenerator(selectedDirectory.toString());
+                    generator.buildInvoice(transaction, customer, staff);
+                    if (transaction.getType()== Transaction.TransactionType.OUT){
+                        generator.buildDelivery(transaction,customer,staff,address);
+                    }
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+                dialogStage.close();
             }else{
                 new AlertBuilder()
                         .alertType(Alert.AlertType.ERROR)
@@ -95,7 +106,16 @@ public class InvoiceDirectoryEditDialogController {
 
         }else{
             if(isInvoicedirectoryValid()){
-
+                try {
+                    InvoiceGenerator generator = new InvoiceGenerator(selectedDirectory.toString());
+                    generator.buildInvoice(transaction, customer, staff);
+                    if (transaction.getType()== Transaction.TransactionType.OUT){
+                        generator.buildDelivery(transaction,customer,staff);
+                    }
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+                dialogStage.close();
             }else{
                 new AlertBuilder()
                         .alertType(Alert.AlertType.ERROR)
@@ -120,6 +140,7 @@ public class InvoiceDirectoryEditDialogController {
 //                    .alertContentText("Report generated successfully!")
 //                    .build()
 //                    .showAndWait();
+
     }
     @FXML
     public void handleCancelButton(){
