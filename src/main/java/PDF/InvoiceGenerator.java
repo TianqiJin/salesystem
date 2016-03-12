@@ -166,26 +166,6 @@ public class InvoiceGenerator {
         table.setSpacingAfter(10);
         table.addCell(getCellNoWrapwithBack("THANK YOU FOR YOUR BUSINESS!", Element.ALIGN_CENTER, addressFont, BaseColor.LIGHT_GRAY));
         document.add(table);
-        // grand totals
-//        document.add(getTotalsTable(
-//                basic.getTaxBasisTotalAmount(), basic.getTaxTotalAmount(), basic.getGrandTotalAmount(), basic.getGrandTotalAmountCurrencyID(),
-//                basic.getTaxTypeCode(), basic.getTaxApplicablePercent(),
-//                basic.getTaxBasisAmount(), basic.getTaxCalculatedAmount(), basic.getTaxCalculatedAmountCurrencyID()));
-
-        // payment info
-        //document.add(getPaymentInfo(basic.getPaymentReference(), basic.getPaymentMeansPayeeFinancialInstitutionBIC(), basic.getPaymentMeansPayeeAccountIBAN()));
-
-        // XML version
-//        InvoiceDOM dom = new InvoiceDOM(basic);
-//        PdfDictionary parameters = new PdfDictionary();
-//        parameters.put(PdfName.MODDATE, new PdfDate());
-//        PdfFileSpecification fileSpec = writer.addFileAttachment(
-//                "ZUGFeRD invoice", dom.toXML(), null,
-//                "ZUGFeRD-invoice.xml", "application/xml",
-//                AFRelationshipValue.Alternative, parameters);
-//        PdfArray array = new PdfArray();
-//        array.add(fileSpec.getReference());
-//        writer.getExtraCatalog().put(PdfName.AF, array);
 
         p = new Paragraph("[Disclaimer:]",smallText);
         p.setAlignment(Element.ALIGN_LEFT);
