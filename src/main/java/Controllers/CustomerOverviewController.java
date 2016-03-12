@@ -11,6 +11,7 @@ import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.Stage;
 import model.Customer;
 import MainClass.SaleSystem;
 
@@ -30,6 +31,7 @@ public class CustomerOverviewController implements OverviewController{
     private ObservableList<Customer> customerList;
     private SaleSystem saleSystem;
     private Executor executor;
+    private Stage dialogStage;
 
     @FXML
     private TableView<Customer> customerTable;
@@ -39,6 +41,8 @@ public class CustomerOverviewController implements OverviewController{
     private TableColumn<Customer, String> firstNameCol;
     @FXML
     private TableColumn<Customer, String> lastNameCol;
+    @FXML
+    private TableColumn<Customer, String> phoneCol;
     @FXML
     private Label firstNameLabel;
     @FXML
@@ -60,12 +64,15 @@ public class CustomerOverviewController implements OverviewController{
     @FXML
     private Label companyLabel;
     @FXML
+    private Label pstNumberLabel;
+    @FXML
     private ProgressBar progressBar;
 
     @FXML
     private void initialize(){
         firstNameCol.setCellValueFactory(new PropertyValueFactory<Customer, String>("firstName"));
         lastNameCol.setCellValueFactory(new PropertyValueFactory<Customer, String>("lastName"));
+        phoneCol.setCellValueFactory(new PropertyValueFactory<Customer, String>("phone"));
         customerTable.getSelectionModel().selectedItemProperty().addListener(
             new ChangeListener<Customer>() {
                 @Override
@@ -205,6 +212,8 @@ public class CustomerOverviewController implements OverviewController{
                         return true;
                     }else if (customer.getLastName().toLowerCase().contains(lowerCase)){
                         return true;
+                    }else if(customer.getPhone() != null && customer.getPhone().contains(lowerCase)){
+                        return true;
                     }
                     return false;
                 });
@@ -226,6 +235,11 @@ public class CustomerOverviewController implements OverviewController{
         loadDataFromDB();
     }
 
+    @Override
+    public void setDialogStage(Stage stage){
+        this.dialogStage = stage;
+    }
+
     public void showCustomerDetail(Customer customer){
         if(customer != null){
             firstNameLabel.setText(customer.getFirstName());
@@ -238,6 +252,7 @@ public class CustomerOverviewController implements OverviewController{
             emailLabel.setText(customer.getEmail());
             storeCreditLabel.setText(String.valueOf(customer.getStoreCredit()));
             companyLabel.setText(customer.getCompany());
+            pstNumberLabel.setText(customer.getPstNumber());
         }
         else{
             firstNameLabel.setText("");
@@ -250,6 +265,7 @@ public class CustomerOverviewController implements OverviewController{
             emailLabel.setText("");
             storeCreditLabel.setText("");
             companyLabel.setText("");
+            pstNumberLabel.setText("");
         }
     }
 }

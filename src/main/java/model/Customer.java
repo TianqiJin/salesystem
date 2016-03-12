@@ -21,6 +21,7 @@ public class Customer {
     private final StringProperty email;
     private final DoubleProperty storeCredit;
     private final StringProperty company;
+    private final StringProperty pstNumber;
     private String customerInfo;
     private static final Map<String, ArrayList<Integer>> discountMap;
 
@@ -44,6 +45,7 @@ public class Customer {
         this.email = new SimpleStringProperty(builder.email);
         this.storeCredit = new SimpleDoubleProperty(builder.storeCredit);
         this.company = new SimpleStringProperty(builder.company);
+        this.pstNumber = new SimpleStringProperty(builder.pstNumber);
     }
 
     public static class CustomerBuilder{
@@ -58,6 +60,7 @@ public class Customer {
         private String email;
         private double storeCredit = 0.0;
         private String company;
+        private String pstNumber;
 
         public CustomerBuilder userName(String userName){
             this.userName = userName;
@@ -101,6 +104,10 @@ public class Customer {
         }
         public CustomerBuilder company(String company){
             this.company = company;
+            return this;
+        }
+        public CustomerBuilder pstNumber(String pstNumber){
+            this.pstNumber = pstNumber;
             return this;
         }
         public Customer build(){
@@ -236,6 +243,18 @@ public class Customer {
         this.company.set(company);
     }
 
+    public String getPstNumber() {
+        return pstNumber.get();
+    }
+
+    public StringProperty pstNumberProperty() {
+        return pstNumber;
+    }
+
+    public void setPstNumber(String pstNumber) {
+        this.pstNumber.set(pstNumber);
+    }
+
     private String generateUserName(){
         SimpleDateFormat sdf = new SimpleDateFormat("HHmmss");
         String tmpUserName = getFirstName().substring(0,1) + getLastName() +
@@ -245,12 +264,12 @@ public class Customer {
 
     public Object[] getAllProperties(){
         return (new Object[]{getUserName(), getFirstName(), getLastName(), getStreet(), getPostalCode(), getCity(),
-            getPhone(), getUserClass(), getEmail(), getStoreCredit(), getCompany()});
+            getPhone(), getUserClass(), getEmail(), getStoreCredit(), getCompany(), getPstNumber()});
     }
 
     public Object[] getAllPropertiesForUpdate(){
         return (new Object[]{getFirstName(), getLastName(), getStreet(), getPostalCode(), getCity(),
-                getPhone(), getUserClass(), getEmail(), getStoreCredit(), getCompany(), getUserName()});
+                getPhone(), getUserClass(), getEmail(), getStoreCredit(), getCompany(), getPstNumber(), getUserName()});
     }
 
     public void constructCustomerInfo(){

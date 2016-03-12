@@ -18,6 +18,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.paint.Color;
+import javafx.stage.Stage;
 import javafx.util.Callback;
 import model.Product;
 import model.ProductTransaction;
@@ -43,6 +44,7 @@ public class ProductOverviewController implements OverviewController{
     private Executor executor;
     private DBExecuteProduct dbExecute;
     private DBExecuteTransaction dbExecuteTransaction;
+    private Stage dialogStage;
 
     @FXML
     private TableView<Product> productTable;
@@ -323,6 +325,11 @@ public class ProductOverviewController implements OverviewController{
             productTransactionTableView.getColumns().add(productTransactionUnitPriceCol);
             productTransactionTableView.getColumns().add(productTransactionSubtotalCol);
         }
+    }
+
+    @Override
+    public void setDialogStage(Stage stage){
+        this.dialogStage = stage;
     }
 
     private void showProductDetail(Product product){

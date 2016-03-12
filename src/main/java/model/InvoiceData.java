@@ -1,5 +1,6 @@
 package model;
 
+import Constants.Constant;
 import com.itextpdf.text.zugferd.checkers.basic.DateFormatCode;
 import com.itextpdf.text.zugferd.checkers.basic.DocumentTypeCode;
 import com.itextpdf.text.zugferd.checkers.basic.TaxIDTypeCode;
@@ -43,14 +44,12 @@ public class InvoiceData {
         profileImp.setName("INVOICE");
         profileImp.setTypeCode(DocumentTypeCode.COMMERCIAL_INVOICE);
         profileImp.setDate(invoice.getInvoiceDate(), DateFormatCode.YYYYMMDD);
-        profileImp.setSellerName("Milan Tile Sale");
-        profileImp.setSellerLineOne("XXXX Center");
-        profileImp.setSellerLineTwo("Highway 1");
-        profileImp.setSellerPostcode("9000");
-        profileImp.setSellerCityName("Vancouver");
-        profileImp.setSellerCountryID("CA");
-        //profileImp.addSellerTaxRegistration(TaxIDTypeCode.FISCAL_NUMBER, "201/113/40209");
-        //profileImp.addSellerTaxRegistration(TaxIDTypeCode.VAT, "BE123456789");
+        Staff staff = invoice.getStaff();
+        profileImp.setSellerName(Constant.Invoice.companyName);
+        profileImp.setSellerLineOne(staff.getStreet());
+        profileImp.setSellerPostcode(staff.getCity());
+        profileImp.setSellerCityName(staff.getCity());
+        profileImp.setSellerCountryID(Constant.Invoice.companyCountry);
         Customer customer = invoice.getCustomer();
         profileImp.setBuyerName(String.format("%s, %s", customer.getLastName(), customer.getFirstName()));
         profileImp.setBuyerLineOne(customer.getStreet());

@@ -6,7 +6,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane id="AnchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="300.0" prefWidth="550.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.ProductEditDialogController">
+<AnchorPane id="AnchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="300.0" prefWidth="550.0" stylesheets="@/css/theme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.ProductEditDialogController">
   <children>
     <GridPane AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="70.0">
       <children>
@@ -61,14 +61,14 @@
         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
       </rowConstraints>
     </GridPane>
-    <HBox prefHeight="-1.0" prefWidth="-1.0" AnchorPane.bottomAnchor="25.0" AnchorPane.leftAnchor="350.0" AnchorPane.rightAnchor="51.0">
+    <HBox prefHeight="-1.0" prefWidth="-1.0" AnchorPane.bottomAnchor="25.0" AnchorPane.rightAnchor="51.0">
       <children>
-        <Button mnemonicParsing="false" onAction="#handleOk" prefHeight="30.0" prefWidth="100.0" text="OK">
+        <Button mnemonicParsing="false" onAction="#handleOk" text="Confirm">
           <HBox.margin>
             <Insets right="5.0" />
           </HBox.margin>
         </Button>
-        <Button mnemonicParsing="false" onAction="#handleCancel" prefHeight="30.0" prefWidth="100.0" text="Cancel">
+        <Button mnemonicParsing="false" onAction="#handleCancel" text="Cancel">
           <HBox.margin>
             <Insets left="5.0" />
           </HBox.margin>
