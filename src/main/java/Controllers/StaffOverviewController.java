@@ -14,6 +14,7 @@ import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.Stage;
 import model.Staff;
 import util.AlertBuilder;
 
@@ -29,6 +30,7 @@ public class StaffOverviewController implements OverviewController{
     private SaleSystem saleSystem;
     private ObservableList<Staff> staffList;
     private Executor executor;
+    private Stage dialogStage;
 
     @FXML
     private TableView<Staff> staffTable;
@@ -39,15 +41,17 @@ public class StaffOverviewController implements OverviewController{
     @FXML
     private TableColumn<Staff, String> positionCol;
     @FXML
-    private TableColumn<Staff, String> locationCol;
-    @FXML
     private Label staffIdLabel;
     @FXML
     private Label nameLabel;
     @FXML
     private Label positionLabel;
     @FXML
-    private Label locationLabel;
+    private Label streetLabel;
+    @FXML
+    private Label cityLabel;
+    @FXML
+    private Label postalCodeLabel;
     @FXML
     private ProgressBar progressBar;
 
@@ -55,7 +59,6 @@ public class StaffOverviewController implements OverviewController{
     private void initialize(){
         nameCol.setCellValueFactory(new PropertyValueFactory<>("FullName"));
         positionCol.setCellValueFactory(new PropertyValueFactory<>("Position"));
-        locationCol.setCellValueFactory(new PropertyValueFactory<>("Location"));
         showStaffDetail(null);
         staffTable.getSelectionModel().selectedItemProperty().addListener(
                 new ChangeListener<Staff>() {
@@ -119,7 +122,7 @@ public class StaffOverviewController implements OverviewController{
 
     @FXML
     private void handleAddStaff(){
-        Staff newStaff = new Staff();
+        Staff newStaff = new Staff(new Staff.StaffBuilder());
         newStaff.setStaffId(dbExecute.getMaxNum(DBQueries.SelectQueries.Staff.SELECT_STAFF_MAX_NUM));
         boolean okClicked = saleSystem.showStaffEditDialog(newStaff);
         if(okClicked){
@@ -212,8 +215,6 @@ public class StaffOverviewController implements OverviewController{
                         return true;
                     }else if (staff.getPosition().name().toLowerCase().contains(lowerCase)){
                         return true;
-                    }else if (staff.getLocation().name().toLowerCase().contains(lowerCase)){
-                        return true;
                     }
                     return false;
                 });
@@ -229,19 +230,27 @@ public class StaffOverviewController implements OverviewController{
         loadDataFromDB();
     }
 
+    @Override
+    public void setDialogStage(Stage stage){
+        this.dialogStage = stage;
+    }
 
     public void showStaffDetail(Staff staff){
         if(staff != null){
             staffIdLabel.setText(String.valueOf(staff.getStaffId()));
             nameLabel.setText(staff.getFullName());
             positionLabel.setText(staff.getPosition().name());
-            locationLabel.setText(staff.getLocation().name());
+            streetLabel.setText(staff.getStreet());
+            cityLabel.setText(staff.getCity());
+            postalCodeLabel.setText(staff.getPostalCode());
         }
         else{
             staffIdLabel.setText("");
             nameLabel.setText("");
             positionLabel.setText("");
-            locationLabel.setText("");
+            streetLabel.setText("");
+            cityLabel.setText("");
+            postalCodeLabel.setText("");
         }
     }
 }

@@ -8,13 +8,12 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.collections.FXCollections ?>
 
-<AnchorPane id="AnchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.GenerateCustomerTransactController">
+<AnchorPane id="AnchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="750.0" prefWidth="900.0" stylesheets="@/css/theme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.GenerateCustomerTransactController">
   <children>
     <SplitPane dividerPositions="0.7006688963210702" focusTraversable="true" prefHeight="160.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
       <items>
         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
           <children>
-            <TextField fx:id="productIdField" layoutX="6.0" layoutY="14.0" prefWidth="200.0" promptText="Enter Product ID here" />
             <Button fx:id="addItemButton" disable="true" layoutX="214.0" layoutY="15.0" mnemonicParsing="false" onAction="#handleAddItem" text="Add Item" />
             <TableView fx:id="transactionTableView" editable="true" layoutY="48.0" prefHeight="500.0" prefWidth="200.0" tableMenuButtonVisible="false" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="50.0">
               <columnResizePolicy>
@@ -35,12 +34,13 @@
                         <Button fx:id="cancelButton" mnemonicParsing="false" onAction="#handleCancelButton" text="Cancel" />
                      </children>
                   </HBox>
+                  <ComboBox fx:id="productComboBox" editable="true" layoutX="14.0" layoutY="15.0" prefHeight="25.0" prefWidth="193.0" promptText="Select Product Here" AnchorPane.leftAnchor="5.0" />
           </children>
         </AnchorPane>
         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
           <children>
             <Accordion layoutX="-29.0" layoutY="36.0" />
-            <SplitPane dividerPositions="0.17, 0.49, 0.79" focusTraversable="true" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <SplitPane dividerPositions="0.17, 0.47, 0.79" focusTraversable="true" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
               <items>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                   <children>
@@ -99,25 +99,27 @@
                           <Label text="Items In Cart" GridPane.columnIndex="0" GridPane.rowIndex="0" />
                           <Label fx:id="itemsCountLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="0" />
                           <Label text="Sub Total" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                          <Label text="Total" GridPane.columnIndex="0" GridPane.rowIndex="4">
+                          <Label text="Total" GridPane.columnIndex="0" GridPane.rowIndex="5">
                                        <font>
                                           <Font name="System Bold" size="18.0" />
                                        </font></Label>
                           <Label fx:id="subTotalLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                          <Label fx:id="totalLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                          <Label fx:id="totalLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="5">
                                        <font>
                                           <Font name="System Bold" size="18.0" />
                                        </font></Label>
-                                    <Label text="Tax" GridPane.rowIndex="3" />
-                                    <Label fx:id="taxLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                                    <Label text="Discount" GridPane.rowIndex="2">
+                                    <Label text="GST Tax" GridPane.rowIndex="2" />
+                                    <Label fx:id="gstTaxLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                    <Label text="Discount" GridPane.rowIndex="4">
                                        <font>
                                           <Font name="System Bold" size="18.0" />
                                        </font></Label>
-                                    <Label fx:id="paymentDiscountLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                    <Label fx:id="paymentDiscountLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="4">
                                        <font>
                                           <Font name="System Bold" size="18.0" />
                                        </font></Label>
+                                    <Label text="PST Tax" GridPane.rowIndex="3" />
+                                    <Label fx:id="pstTaxLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="3" />
                         </children>
                         <columnConstraints>
                           <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -129,6 +131,7 @@
                         <rowConstraints>
                           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
@@ -160,6 +163,7 @@
                                                 <String fx:value="Cash" />
                                                 <String fx:value="Debit" />
                                                 <String fx:value="Credit" />
+                                                <String fx:value="Cheque" />
                                             </FXCollections>
                                         </items>
                                        <padding>

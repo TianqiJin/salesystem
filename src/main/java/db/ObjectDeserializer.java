@@ -30,6 +30,7 @@ public interface ObjectDeserializer<E> {
                     .email(rs.getString("Email"))
                     .storeCredit(rs.getDouble("StoreCredit"))
                     .company(rs.getString("Company"))
+                    .pstNumber(rs.getString("PstNumber"))
                     .build();
 
             return customer;
@@ -116,6 +117,8 @@ public interface ObjectDeserializer<E> {
                     .info(info)
                     .total(rs.getDouble("Total"))
                     .payinfo(listPaymentRecord)
+                    .gstTax(rs.getDouble("GstTax"))
+                    .pstTax(rs.getDouble("PstTax"))
                     .build();
             return transaction;
         }
@@ -130,7 +133,9 @@ public interface ObjectDeserializer<E> {
                     .password(rs.getString("Password"))
                     .fullName(rs.getString("FullName"))
                     .position(Staff.Position.getPosition(rs.getString("Position")))
-                    .location(Staff.Location.getLocation(rs.getString("Location")))
+                    .street(rs.getString("Street"))
+                    .city(rs.getString("City"))
+                    .postalCode(rs.getString("PostalCode"))
                     .build();
             return staff;
         }
@@ -139,7 +144,7 @@ public interface ObjectDeserializer<E> {
     public static final ObjectDeserializer<Property> PROPERTY_OBJECT_DESERIALIZER =  new ObjectDeserializer<Property>() {
         @Override
         public Property deserialize(ResultSet rs) throws SQLException {
-            Property property = new Property(rs.getInt("ProductWarnLimit"), rs.getInt("TaxRate"));
+            Property property = new Property(rs.getInt("ProductWarnLimit"), rs.getInt("GstTax"), rs.getInt("PstTax"));
             return property;
         }
     };

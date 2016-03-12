@@ -24,4 +24,8 @@ public class Constant {
         public static final String databaseDeleteError = "Unable to delete data from database!\n";
         public static final String databaseCreateError = "Unable to create data in database!\n";
     }
+    public static class Invoice{
+        public static final String companyName = "Milan Building Supply LTD.";
+        public static final String companyCountry = "Canada";
+    }
 }

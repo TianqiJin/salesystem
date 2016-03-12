@@ -7,6 +7,7 @@ import PDF.InvoiceGenerator;
 import db.*;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleBinding;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -16,12 +17,16 @@ import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.DirectoryChooser;
+import javafx.stage.Stage;
+import javafx.util.Callback;
 import javafx.util.converter.BigDecimalStringConverter;
 import model.*;
 import sun.java2d.loops.GraphicsPrimitive;
 import util.AlertBuilder;
 import util.DateUtil;
 
+import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -44,6 +49,8 @@ public class TransactionOverviewController implements OverviewController{
     private Executor executor;
     private List<Customer> customerList;
     private List<Product> productList;
+    private Stage dialogStage;
+
     @FXML
     private TableView<Transaction> transactionTable;
     @FXML
@@ -56,6 +63,8 @@ public class TransactionOverviewController implements OverviewController{
     private TableColumn<Transaction, String> typeCol;
     @FXML
     private TableColumn<Transaction, String> infoCol;
+    @FXML
+    private TableColumn<Transaction, String> phoneCol;
     @FXML
     private Label transactionIdLabel;
     @FXML
@@ -86,6 +95,9 @@ public class TransactionOverviewController implements OverviewController{
     private TableColumn<ProductTransaction, Float> unitPriceCol;
     @FXML
     private ProgressBar progressBar;
+    @FXML
+    private Button deleteButton;
+
 
     @FXML
     private void initialize(){
@@ -97,7 +109,21 @@ public class TransactionOverviewController implements OverviewController{
         qtyCol.setCellValueFactory(new PropertyValueFactory<>("quantity"));
         unitPriceCol.setCellValueFactory(new PropertyValueFactory<>("unitPrice"));
         subTotalCol.setCellValueFactory(new PropertyValueFactory<>("subTotal"));
-
+        phoneCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Transaction, String>, ObservableValue<String>>() {
+            @Override
+            public ObservableValue<String> call(TableColumn.CellDataFeatures<Transaction, String> param) {
+                if(param.getValue().getType().equals(Transaction.TransactionType.IN)){
+                    return null;
+                }else{
+                    Customer customer = customerList.stream().filter(c -> c.getUserName().equals(param.getValue().getInfo())).findFirst().get();
+                    if(customer.getPhone() != null){
+                        return new SimpleStringProperty(customer.getPhone());
+                    }else{
+                        return null;
+                    }
+                }
+            }
+        });
         showTransactionDetail(null);
         transactionTable.getSelectionModel().selectedItemProperty().addListener(
                 new ChangeListener<Transaction>() {
@@ -239,22 +265,13 @@ public class TransactionOverviewController implements OverviewController{
                         .build()
                         .showAndWait();
             }else{
-                String info = selectedTransaction.getInfo();
-                try {
-                    Customer customer= dbExecuteCustomer.selectFromDatabase(DBQueries.SelectQueries.Customer.SELECT_SINGLE_CUSTOMER,info).get(0);
-                    InvoiceGenerator generator = new InvoiceGenerator();
-                    generator.buildInvoice(selectedTransaction,customer);
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                new AlertBuilder()
-                        .alertType(Alert.AlertType.INFORMATION)
-                        .alertContentText("Report generated successfully!")
-                        .build()
-                        .showAndWait();
+                Customer customer = customerList
+                        .stream()
+                        .filter(c -> c.getUserName().equals(selectedTransaction.getInfo()))
+                        .findFirst()
+                        .get();
+                saleSystem.showInvoiceDirectoryEditDialog(customer, selectedTransaction, this.saleSystem.getStaff());
             }
-
         }
 
     }
@@ -331,6 +348,10 @@ public class TransactionOverviewController implements OverviewController{
                         return true;
                     }else if (transaction.getInfo().toLowerCase().contains(lowerCase)){
                         return true;
+                    }else if (!transaction.getType().equals(Transaction.TransactionType.IN) &&
+                            customerList.stream().filter(c -> c.getUserName().equals(transaction.getInfo())).findFirst().get().getPhone() != null &&
+                            customerList.stream().filter(c -> c.getUserName().equals(transaction.getInfo())).findFirst().get().getPhone().contains(lowerCase)){
+                        return true;
                     }
                     return false;
                 });
@@ -340,7 +361,7 @@ public class TransactionOverviewController implements OverviewController{
         transactionListTask.setOnFailed(event -> {
             new AlertBuilder()
                     .alertType(Alert.AlertType.ERROR)
-                    .alertContentText(Constant.DatabaseError.databaseReturnError + event.toString())
+                    .alertContentText(Constant.DatabaseError.databaseReturnError + event.getSource().exceptionProperty().getValue())
                     .alertHeaderText(Constant.DatabaseError.databaseErrorAlertTitle)
                     .build()
                     .showAndWait();
@@ -375,9 +396,16 @@ public class TransactionOverviewController implements OverviewController{
     @Override
     public void setMainClass(SaleSystem saleSystem) {
         this.saleSystem = saleSystem;
+        if(this.saleSystem.getStaff().getPosition().equals(Staff.Position.MANAGER)){
+            deleteButton.setDisable(false);
+        }
         loadDataFromDB();
     }
 
+    @Override
+    public void setDialogStage(Stage stage){
+        this.dialogStage = stage;
+    }
 
     public void showTransactionDetail(Transaction transaction){
         if(transaction != null){

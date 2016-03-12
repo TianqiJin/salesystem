@@ -62,7 +62,9 @@ public interface ObjectSerializer<E> {
                     transaction.getStaffId(),
                     typeJson,
                     transaction.getTotal(),
-                    payInfoWriter.toString()
+                    payInfoWriter.toString(),
+                    transaction.getGstTax(),
+                    transaction.getPstTax(),
             };
         }
     };

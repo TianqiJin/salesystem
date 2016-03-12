@@ -11,30 +11,25 @@ import org.apache.log4j.Logger;
  */
 public class Staff {
     private static Logger logger = Logger.getLogger(Staff.class);
-    private  IntegerProperty staffId;
-    private  StringProperty userName;
-    private  StringProperty password;
-    private  StringProperty fullName;
+    private IntegerProperty staffId;
+    private StringProperty userName;
+    private StringProperty password;
+    private StringProperty fullName;
     private Position position;
-    private Location location;
+    private String street;
+    private String postalCode;
+    private String city;
     private String info;
 
-    public Staff (Object ... params){
-        if (params.length==6) {
-            this.staffId = new SimpleIntegerProperty((Integer) params[0]);
-            this.userName = new SimpleStringProperty((String) params[1]);
-            this.password = new SimpleStringProperty((String) params[2]);
-            this.fullName = new SimpleStringProperty((String) params[3]);
-            this.position = (Position) params[4];
-            this.location = (Location) params[5];
-        }else{
-            this.staffId = new SimpleIntegerProperty(0);
-            this.userName = new SimpleStringProperty(null);
-            this.password = new SimpleStringProperty(null);
-            this.fullName = new SimpleStringProperty(null);
-            this.position = null;
-            this.location = null;
-        }
+    public Staff (StaffBuilder builder){
+        this.staffId = new SimpleIntegerProperty((Integer) builder.staffId);
+        this.userName = new SimpleStringProperty((String)builder.userName);
+        this.password = new SimpleStringProperty((String)builder.password);
+        this.fullName = new SimpleStringProperty((String)builder.fullName);
+        this.position = builder.position;
+        this.street = builder.street;
+        this.city = builder.city;
+        this.postalCode = builder.postalCode;
     }
 
 
@@ -58,17 +53,39 @@ public class Staff {
         this.position = position;
     }
 
-    public void setLocation(Location location) {
-        this.location = location;
+    public String getStreet() {
+        return street;
+    }
+
+    public void setStreet(String street) {
+        this.street = street;
+    }
+
+    public String getPostalCode() {
+        return postalCode;
+    }
+
+    public void setPostalCode(String postalCode) {
+        this.postalCode = postalCode;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
     }
 
     public static class StaffBuilder{
         private int staffId;
-        private String userName;
-        private String password;
-        private String fullName;
-        private Position position;
-        private Location location;
+        private String userName = null;
+        private String password = null;
+        private String fullName = null;
+        private Position position = null;
+        private String street = null;
+        private String postalCode = null;
+        private String city = null;
 
         public StaffBuilder staffId(int staffId){
             this.staffId = staffId;
@@ -90,15 +107,21 @@ public class Staff {
             this.position = position;
             return this;
         }
-        public StaffBuilder location(Location location){
-            this.location = location;
+        public StaffBuilder street(String street){
+            this.street = street;
+            return this;
+        }
+        public StaffBuilder postalCode(String postalCode){
+            this.postalCode = postalCode;
+            return this;
+        }
+        public StaffBuilder city(String city){
+            this.city = city;
             return this;
         }
         public Staff build(){
-            return new Staff(staffId,userName,password,fullName,position,location);
+            return new Staff(this);
         }
-
-
     }
 
     public int getStaffId() {
@@ -121,33 +144,14 @@ public class Staff {
         return position;
     }
 
-    public Location getLocation() {
-        return location;
-    }
-
     public Object[] getAllProperties(){
-        return (new Object[]{getUserName(), getPassword(), getFullName(), getPosition().name(), getLocation().name()});
+        return (new Object[]{getUserName(), getPassword(), getFullName(), getPosition().name(), getStreet(), getCity(), getPostalCode()});
     }
 
     public Object[] getAllPropertiesForUpdate(){
-        return (new Object[]{getUserName(), getPassword(), getFullName(), getPosition().name(), getLocation().name(),getStaffId()});
+        return (new Object[]{getUserName(), getPassword(), getFullName(), getPosition().name(), getStreet(), getCity(), getPostalCode(), getStaffId()});
     }
 
-
-
-    public enum Location{
-        EVERYWHERE("everywhere"),NOWHERE("nowhere"),SOMEWHERE("somewhere");
-        private String loc;
-        private Location(String loc){this.loc = loc;}
-        public static Location getLocation(String loc){
-            for (Location llos : Location.values()){
-                if (llos.name().equalsIgnoreCase(loc)){
-                    return llos;
-                }
-            }
-            return null;
-        }
-    }
     public enum Position{
         SALES("sales"),MANAGER("manager");
         private String pos;

@@ -44,8 +44,8 @@ public class DBQueries {
     public static class InsertQueries{
         public static class Customer{
             public final static String INSERT_INTO_CUSTOMER = "INSERT INTO Customer "
-                    +"(UserName, FirstName, LastName, Street, PostalCode, City, Phone, Class, Email, StoreCredit, Company) "
-                    +"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    +"(UserName, FirstName, LastName, Street, PostalCode, City, Phone, Class, Email, StoreCredit, Company, PstNumber) "
+                    +"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         }
         public static class Product{
             public final static String INSERT_INTO_PRODUCT = "INSERT INTO product "
@@ -54,19 +54,19 @@ public class DBQueries {
         }
         public static class Transaction{
             public final static String INSERT_INTO_TRANSACTION = "INSERT INTO transaction "
-                    +"(ProductInfo, Date, Payment, PaymentType, StoreCredit, StaffID, Type, Total, payinfo) "
-                    +"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    +"(ProductInfo, Date, Payment, PaymentType, StoreCredit, StaffID, Type, Total, payinfo, GstTax, PstTax) "
+                    +"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         }
         public static class Staff{
             public final static String INSERT_INTO_STAFF = "INSERT INTO staff "
-                    +"(UserName, Password, FullName, Position, Location) "
-                    +"VALUES (?, ?, ?, ?, ?)";
+                    +"(UserName, Password, FullName, Position, Street, City, PostalCode) "
+                    +"VALUES (?, ?, ?, ?, ?, ?, ?)";
         }
     }
     public static class UpdateQueries{
         public static class Customer{
             public final static String UPDATE_CUSTOMER = "UPDATE Customer "
-                    +"SET FirstName = ?, LastName = ?, Street = ?, PostalCode = ?, City = ?, Phone = ?, Class = ?, Email = ?, StoreCredit = ?, Company = ? "
+                    +"SET FirstName = ?, LastName = ?, Street = ?, PostalCode = ?, City = ?, Phone = ?, Class = ?, Email = ?, StoreCredit = ?, Company = ?, PstNumber = ?"
                     +"WHERE UserName = ? ";
             public final static String UPDATE_CUSTOMER_STORE_CREDIT = "UPDATE Customer "
                     +"SET StoreCredit = ? "
@@ -82,15 +82,18 @@ public class DBQueries {
         }
         public static class Staff{
             public final static String UPDATE_STAFF = "UPDATE staff "
-                    +"SET UserName = ?, Password = ?, FullName = ?, Position = ?, Location = ? "
+                    +"SET UserName = ?, Password = ?, FullName = ?, Position = ?, Street = ?, City = ?, PostalCode = ? "
                     +"WHERE StaffID = ? ";
         }
         public static class Property{
             public final static String UPDATE_PRODUCT_WARN_LIMIT = "UPDATE Property "
                     +"SET ProductWarnLimit = ?";
 
-            public final static String UPDATE_TAX_RATE = "UPDATE Property "
-                    +"SET TaxRate = ?";
+            public final static String UPDATE_GST_RATE = "UPDATE Property "
+                    +"SET GstTax = ?";
+
+            public final static String UPDATE_PST_RATE = "UPDATE Property "
+                    +"SET PstTax = ?";
         }
         public static class Transaction{
             public final static String UPDATE_TRANSACTION_OUT = "UPDATE transaction "
