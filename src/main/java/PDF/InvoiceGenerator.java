@@ -29,20 +29,32 @@ public class InvoiceGenerator {
     static Font tinyBold = new Font(Font.FontFamily.TIMES_ROMAN, 8,Font.BOLD);
     private static String destination_Invoice;
     private static String destination_Delivery;
+    private Invoice invoice;
 
     public InvoiceGenerator(String destination_Folder){
         this.destination_Invoice =
                 new File(destination_Folder, "Invoice_" + new SimpleDateFormat("yyyy-MM-dd'at'HH-mm-ss").format(new Date()) + ".pdf").getPath();
         this.destination_Delivery =
                 new File(destination_Folder, "Delivery_" + new SimpleDateFormat("yyyy-MM-dd'at'HH-mm-ss").format(new Date()) + ".pdf").getPath();
+
     }
     public void buildInvoice(Transaction transaction, Customer customer, Staff staff) throws Exception {
-        Invoice invoice = new Invoice(transaction, customer, staff);
+        invoice = new Invoice(transaction, customer, staff);
         createPdf(invoice);
-        createPdf_delivery(invoice);
+    }
+    public void buildDelivery(Transaction transaction, Customer customer, Staff staff) throws Exception{
+        invoice = new Invoice(transaction, customer, staff);
+        createPdf_delivery(invoice, null);
+
     }
 
-    public void createPdf_delivery(Invoice invoice) throws Exception {
+    public void buildDelivery(Transaction transaction, Customer customer, Staff staff, Address address) throws Exception{
+        invoice = new Invoice(transaction, customer, staff);
+        createPdf_delivery(invoice, address);
+
+    }
+
+    public void createPdf_delivery(Invoice invoice, Address address) throws Exception {
         InvoiceData invoiceData = new InvoiceData();
         BasicProfile basic = invoiceData.createBasicProfileData(invoice);
 
@@ -72,72 +84,88 @@ public class InvoiceGenerator {
                 basic.getSellerPostcode(),
                 basic.getSellerCityName());
         table.addCell(seller);
-        PdfPCell buyer = getPartyAddress("To:",
-                basic.getBuyerName(),
-                basic.getBuyerLineOne(),
-                basic.getBuyerLineTwo(),
-                basic.getBuyerCountryID(),
-                basic.getBuyerPostcode(),
-                basic.getBuyerCityName());
+        PdfPCell buyer;
+        if(address!=null){
+            buyer = getPartyAddress("To:",
+                    basic.getBuyerName(),
+                    address.getStreet(),
+                    "",
+                    "CA",
+                    address.getPostalCode(),
+                    address.getCity());
+
+        }else{
+            buyer = getPartyAddress("To:",
+                    basic.getBuyerName(),
+                    basic.getBuyerLineOne(),
+                    basic.getBuyerLineTwo(),
+                    basic.getBuyerCountryID(),
+                    basic.getBuyerPostcode(),
+                    basic.getBuyerCityName());
+
+        }
         table.addCell(buyer);
 
         document.add(table);
 
         // line items
-        table = new PdfPTable(5);
+        table = new PdfPTable(3);
         table.setWidthPercentage(100);
         table.setSpacingBefore(10);
         table.setSpacingAfter(10);
-        table.setWidths(new int[]{3, 2, 2, 2, 2});
+        table.setWidths(new int[]{3, 2, 3});
         table.addCell(getCellTitle("Item", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
         table.addCell(getCellTitle("Size", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
-        table.addCell(getCellTitle("Price", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
         table.addCell(getCellTitle("Qty(Boxes)", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
-        table.addCell(getCellTitle("Subtotal", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
         int row=0;
         double total=0;
         for (ProductTransaction product : invoice.getProducts()) {
-            total+=product.getSubTotal();
+            //total+=product.getSubTotal();
             table.addCell(getCellwithBackground(product.getProductId(), Element.ALIGN_LEFT, totalFont, row));
             table.addCell(getCellwithBackground(product.getSize(), Element.ALIGN_LEFT, totalFont, row));
-            table.addCell(getCellwithBackground(InvoiceData.format2dec(InvoiceData.round(product.getUnitPrice())), Element.ALIGN_RIGHT, totalFont, row));
-            table.addCell(getCellwithBackground(String.valueOf(product.getQuantity()/product.getSizeNumeric()), Element.ALIGN_RIGHT, totalFont, row));
-            table.addCell(getCellwithBackground(InvoiceData.format2dec(InvoiceData.round(product.getSubTotal())), Element.ALIGN_RIGHT, totalFont, row));
+            int pieces = product.getQuantity() / product.getSizeNumeric();
+            int boxes = pieces/product.getPiecesPerBox();
+            int res = pieces%product.getPiecesPerBox();
+            String displayNum = boxes+" boxes";
+            if(res!=0){
+                displayNum+=", "+res+" pieces";
+            }
+            table.addCell(getCellwithBackground(displayNum, Element.ALIGN_RIGHT, totalFont, row));
             row++;
         }
-        table.addCell(getCellHolder());
-        table.addCell(getCellHolder());
-        table.addCell(getCellHolder());
-        table.addCell(getCellNoWrap("Subtotal:", Element.ALIGN_LEFT, tinyBold));
-        table.addCell(getCellNoWrap("$CAD   " + total, Element.ALIGN_JUSTIFIED_ALL, smallText));
+//        table.addCell(getCellHolder());
+//        table.addCell(getCellHolder());
+//        table.addCell(getCellHolder());
+//        table.addCell(getCellNoWrap("Subtotal:", Element.ALIGN_LEFT, tinyBold));
+//        table.addCell(getCellNoWrap("$CAD   " + total, Element.ALIGN_JUSTIFIED_ALL, smallText));
 
-        table.addCell(getCellHolder());
-        table.addCell(getCellHolder());
-        table.addCell(getCellHolder());
-        table.addCell(getCellUnder("Taxable:", Element.ALIGN_LEFT, tinyBold));
-        table.addCell(getCellUnder("$CAD   " + (invoice.getTotal() - total), Element.ALIGN_JUSTIFIED_ALL, smallText));
+//        table.addCell(getCellHolder());
+//        table.addCell(getCellHolder());
+//        table.addCell(getCellHolder());
+//        table.addCell(getCellUnder("Taxable:", Element.ALIGN_LEFT, tinyBold));
+//        table.addCell(getCellUnder("$CAD   " + (invoice.getTotal() - total), Element.ALIGN_JUSTIFIED_ALL, smallText));
 
-        table.addCell(getCellHolder());
-        table.addCell(getCellHolder());
-        table.addCell(getCellHolder());
-        table.addCell(getCellTop("Total:", Element.ALIGN_LEFT, totalFont));
-        table.addCell(getCellTop("$CAD  " + invoice.getTotal(), Element.ALIGN_JUSTIFIED_ALL, totalFont));
+//        table.addCell(getCellHolder());
+//        table.addCell(getCellHolder());
+//        table.addCell(getCellHolder());
+//        table.addCell(getCellTop("Total:", Element.ALIGN_LEFT, totalFont));
+//        table.addCell(getCellTop("$CAD  " + invoice.getTotal(), Element.ALIGN_JUSTIFIED_ALL, totalFont));
 
-        double paid =0;
-        for (PaymentRecord paymentRecord : invoice.getPaymentRecords()){
-            paid+=paymentRecord.getPaid();
-        }
-        table.addCell(getCellHolder());
-        table.addCell(getCellHolder());
-        table.addCell(getCellHolder());
-        table.addCell(getCellUnder("Paid:", Element.ALIGN_LEFT, totalFont));
-        table.addCell(getCell("$CAD  " + paid, Element.ALIGN_JUSTIFIED_ALL, totalFont));
-
-        table.addCell(getCellHolder());
-        table.addCell(getCellHolder());
-        table.addCell(getCellHolder());
-        table.addCell(getCellTop("Total Due:", Element.ALIGN_LEFT, totalFont));
-        table.addCell(getCellTop("$CAD  " + (invoice.getTotal()-paid), Element.ALIGN_JUSTIFIED_ALL, totalFont));
+//        double paid =0;
+//        for (PaymentRecord paymentRecord : invoice.getPaymentRecords()){
+//            paid+=paymentRecord.getPaid();
+//        }
+//        table.addCell(getCellHolder());
+//        table.addCell(getCellHolder());
+//        table.addCell(getCellHolder());
+//        table.addCell(getCellUnder("Paid:", Element.ALIGN_LEFT, totalFont));
+//        table.addCell(getCell("$CAD  " + paid, Element.ALIGN_JUSTIFIED_ALL, totalFont));
+//
+//        table.addCell(getCellHolder());
+//        table.addCell(getCellHolder());
+//        table.addCell(getCellHolder());
+//        table.addCell(getCellTop("Total Due:", Element.ALIGN_LEFT, totalFont));
+//        table.addCell(getCellTop("$CAD  " + (invoice.getTotal()-paid), Element.ALIGN_JUSTIFIED_ALL, totalFont));
 
         document.add(table);
         p = new Paragraph("Payment Information:",addressFont);
@@ -167,26 +195,6 @@ public class InvoiceGenerator {
         table.setSpacingAfter(10);
         table.addCell(getCellNoWrapwithBack("THANK YOU FOR YOUR BUSINESS!", Element.ALIGN_CENTER, addressFont, BaseColor.LIGHT_GRAY));
         document.add(table);
-        // grand totals
-//        document.add(getTotalsTable(
-//                basic.getTaxBasisTotalAmount(), basic.getTaxTotalAmount(), basic.getGrandTotalAmount(), basic.getGrandTotalAmountCurrencyID(),
-//                basic.getTaxTypeCode(), basic.getTaxApplicablePercent(),
-//                basic.getTaxBasisAmount(), basic.getTaxCalculatedAmount(), basic.getTaxCalculatedAmountCurrencyID()));
-
-        // payment info
-        //document.add(getPaymentInfo(basic.getPaymentReference(), basic.getPaymentMeansPayeeFinancialInstitutionBIC(), basic.getPaymentMeansPayeeAccountIBAN()));
-
-        // XML version
-//        InvoiceDOM dom = new InvoiceDOM(basic);
-//        PdfDictionary parameters = new PdfDictionary();
-//        parameters.put(PdfName.MODDATE, new PdfDate());
-//        PdfFileSpecification fileSpec = writer.addFileAttachment(
-//                "ZUGFeRD invoice", dom.toXML(), null,
-//                "ZUGFeRD-invoice.xml", "application/xml",
-//                AFRelationshipValue.Alternative, parameters);
-//        PdfArray array = new PdfArray();
-//        array.add(fileSpec.getReference());
-//        writer.getExtraCatalog().put(PdfName.AF, array);
 
         p = new Paragraph("[Disclaimer:]",smallText);
         p.setAlignment(Element.ALIGN_LEFT);
@@ -239,14 +247,9 @@ public class InvoiceGenerator {
         Document document = new Document();
         // step 2
         PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(destination_Invoice));
-        //writer.setPdfVersion(PdfWriter.VERSION_1_7);
-        //writer.createXmpMetadata();
-        //writer.getXmpWriter().setProperty(PdfAXmpWriter.zugferdSchemaNS, PdfAXmpWriter.zugferdDocumentFileName, "ZUGFeRD-invoice.xml");
         // step 3
         document.open();
         // step 4
-//        ICC_Profile icc = ICC_Profile.getInstance(new FileInputStream(ICC));
-//        writer.setOutputIntents("Custom", "", "http://www.color.org", "sRGB IEC61966-2.1", icc);
 
         // header
         Paragraph p;
@@ -262,29 +265,45 @@ public class InvoiceGenerator {
 
         // Address seller / buyer
         PdfPTable table = new PdfPTable(2);
-        table.setWidthPercentage(100);
-        PdfPCell seller = getPartyAddress("From:",
-                basic.getSellerName(),
-                basic.getSellerLineOne(),
-                basic.getSellerLineTwo(),
-                basic.getSellerCountryID(),
-                basic.getSellerPostcode(),
-                basic.getSellerCityName());
-        //table.addCell(seller);
-        PdfPCell buyer = getPartyAddress("To:",
-                basic.getBuyerName(),
-                basic.getBuyerLineOne(),
-                basic.getBuyerLineTwo(),
-                basic.getBuyerCountryID(),
-                basic.getBuyerPostcode(),
-                basic.getBuyerCityName());
-        table.addCell(buyer);
-//        seller = getPartyTax(basic.getSellerTaxRegistrationID(),
-//                basic.getSellerTaxRegistrationSchemeID());
-        table.addCell(seller);
-//        buyer = getPartyTax(basic.getBuyerTaxRegistrationID(),
-//                basic.getBuyerTaxRegistrationSchemeID());
-        //table.addCell(buyer);
+        if (invoice.getTransaction().getType()== Transaction.TransactionType.RETURN){
+            table.setWidthPercentage(100);
+            PdfPCell buyer = getPartyAddress("From:",
+                    basic.getBuyerName(),
+                    basic.getBuyerLineOne(),
+                    basic.getBuyerLineTwo(),
+                    basic.getBuyerCountryID(),
+                    basic.getBuyerPostcode(),
+                    basic.getBuyerCityName());
+            table.addCell(buyer);
+            PdfPCell seller = getPartyAddress("To:",
+                    basic.getSellerName(),
+                    basic.getSellerLineOne(),
+                    basic.getSellerLineTwo(),
+                    basic.getSellerCountryID(),
+                    basic.getSellerPostcode(),
+                    basic.getSellerCityName());
+            table.addCell(seller);
+
+        }else if (invoice.getTransaction().getType() == Transaction.TransactionType.OUT){
+            table.setWidthPercentage(100);
+            PdfPCell seller = getPartyAddress("From:",
+                    basic.getSellerName(),
+                    basic.getSellerLineOne(),
+                    basic.getSellerLineTwo(),
+                    basic.getSellerCountryID(),
+                    basic.getSellerPostcode(),
+                    basic.getSellerCityName());
+            table.addCell(seller);
+            PdfPCell buyer = getPartyAddress("To:",
+                    basic.getBuyerName(),
+                    basic.getBuyerLineOne(),
+                    basic.getBuyerLineTwo(),
+                    basic.getBuyerCountryID(),
+                    basic.getBuyerPostcode(),
+                    basic.getBuyerCityName());
+            table.addCell(buyer);
+
+        }
         document.add(table);
 
         // line items
@@ -315,11 +334,27 @@ public class InvoiceGenerator {
         table.addCell(getCellNoWrap("Subtotal:", Element.ALIGN_LEFT, tinyBold));
         table.addCell(getCellNoWrap("$CAD   " + total, Element.ALIGN_JUSTIFIED_ALL, smallText));
 
+        double discount = invoice.getTotal()-invoice.getTransaction().getGstTax()-invoice.getTransaction().getPstTax()-total;
+        if(discount>0){
+            System.out.print("Something went wrong!!");
+        }
         table.addCell(getCellHolder());
         table.addCell(getCellHolder());
         table.addCell(getCellHolder());
-        table.addCell(getCellUnder("Taxable:", Element.ALIGN_LEFT, tinyBold));
-        table.addCell(getCellUnder("$CAD   " + (invoice.getTotal() - total), Element.ALIGN_JUSTIFIED_ALL, smallText));
+        table.addCell(getCellNoWrap("Discount:", Element.ALIGN_LEFT, tinyBold));
+        table.addCell(getCellNoWrap("$CAD   " + discount, Element.ALIGN_JUSTIFIED_ALL, smallText));
+
+        table.addCell(getCellHolder());
+        table.addCell(getCellHolder());
+        table.addCell(getCellHolder());
+        table.addCell(getCellNoWrap("GST:", Element.ALIGN_LEFT, tinyBold));
+        table.addCell(getCellNoWrap("$CAD   " + (invoice.getTransaction().getGstTax()), Element.ALIGN_JUSTIFIED_ALL, smallText));
+
+        table.addCell(getCellHolder());
+        table.addCell(getCellHolder());
+        table.addCell(getCellHolder());
+        table.addCell(getCellUnder("PST:", Element.ALIGN_LEFT, tinyBold));
+        table.addCell(getCellUnder("$CAD   " + (invoice.getTransaction().getPstTax()), Element.ALIGN_JUSTIFIED_ALL, smallText));
 
         table.addCell(getCellHolder());
         table.addCell(getCellHolder());
