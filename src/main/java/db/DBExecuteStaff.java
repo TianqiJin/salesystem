@@ -15,6 +15,7 @@ public class DBExecuteStaff extends DBExecute<Staff>{
     private static List<Staff> selectResult;
 
     public static boolean[] verification (String user, String pswd){
+        DBConnect.getConnection();
         boolean[] result = {false,false};
         try {
             ResultSet rs = DBConnect.excuteAndReturn(DBQueries.SearchQueries.Staff.AUTHENTICATION, user);
@@ -32,11 +33,13 @@ public class DBExecuteStaff extends DBExecute<Staff>{
 
     @Override
     public List selectFromDatabase(String query, Object... params) throws SQLException{
+        DBConnect.getConnection();
         selectResult = DBConnect.executeQuery(query, ObjectDeserializer.STAFF_OBJECT_DESERIALIZER, params);
         return selectResult;
     }
 
     public int getMaxNum(String query){
+        DBConnect.getConnection();
         try {
             selectResult = DBConnect.executeQuery(query, ObjectDeserializer.STAFF_OBJECT_DESERIALIZER);
             if (selectResult != null) {

@@ -36,7 +36,24 @@ public class DBConnect {
     }
 
     public static Connection getConnection() {
-        return connection;
+        if(connection != null) {
+            return connection;
+        }else{
+            int max_retry=3;
+            int count=0;
+            while(true) {
+                try {
+                    connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+                    break;
+                } catch (SQLException e) {
+                    if (++count == max_retry) {
+                        e.printStackTrace();
+                        break;
+                    }
+                }
+            }
+            return connection;
+        }
     }
 
 

@@ -13,6 +13,7 @@ public class DBExecuteProductTransaction extends DBExecute<ProductTransaction>{
     private static List<ProductTransaction> selectResult;
 
     public List<ProductTransaction> selectFromDatabase(String query, Object... params) throws SQLException{
+        DBConnect.getConnection();
         selectResult = DBConnect.executeQuery(query, ObjectDeserializer.PRODUCT_TRANSACTION_OBJECT_DESERIALIZER, params);
         return selectResult;
     }

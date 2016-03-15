@@ -16,6 +16,7 @@ public class DBExecuteCustomer extends DBExecute<Customer>{
 
     //TODO: Create Thread For Each DB Execute
     public List<Customer> selectFromDatabase(String query, Object... params) throws SQLException {
+        DBConnect.getConnection();
         selectResult = DBConnect.executeQuery(query, ObjectDeserializer.CUSTOMER_OBJECT_DESERIALIZER, params);
         return selectResult;
     }

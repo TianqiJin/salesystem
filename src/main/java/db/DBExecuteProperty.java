@@ -14,11 +14,13 @@ public class DBExecuteProperty extends DBExecute<Property>{
     private static List<Property> selectResult;
 
     public List<Property> selectFromDatabase(String query, Object... params) throws SQLException{
+        DBConnect.getConnection();
         selectResult = DBConnect.executeQuery(query, ObjectDeserializer.PROPERTY_OBJECT_DESERIALIZER, params);
         return selectResult;
     }
 
     public Property selectFirstFromDatabase(String query, Object... params)throws  SQLException{
+        DBConnect.getConnection();
         List<Property> result = selectFromDatabase(query, params);
         if(result != null){
             return result.get(0);
