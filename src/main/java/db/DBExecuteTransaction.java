@@ -15,6 +15,7 @@ public class DBExecuteTransaction extends DBExecute<Transaction> {
 
     @Override
     public List selectFromDatabase(String query, Object... params) throws SQLException{
+        DBConnect.getConnection();
         selectResult = DBConnect.executeQuery(query, ObjectDeserializer.TRANSACTION_OBJECT_DESERIALIZER, params);
         return  selectResult;
     }
