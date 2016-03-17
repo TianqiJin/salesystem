@@ -3,7 +3,6 @@ package Controllers;
 
 import Constants.Constant;
 import MainClass.SaleSystem;
-import PDF.InvoiceGenerator;
 import db.*;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleBinding;
@@ -17,22 +16,14 @@ import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
-import javafx.util.converter.BigDecimalStringConverter;
 import model.*;
-import sun.java2d.loops.GraphicsPrimitive;
 import util.AlertBuilder;
 import util.DateUtil;
-
-import java.io.File;
-import java.io.IOException;
-import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Callable;
@@ -160,10 +151,22 @@ public class TransactionOverviewController implements OverviewController{
 
     @FXML
     private void handleReturnTransaction(){
-        Transaction newTransaction = saleSystem.showGenerateReturnTransactionDialog();
-        if(newTransaction != null){
-            transactionList.add(newTransaction);
-            loadDataFromDB();
+        Transaction selectedTransaction = transactionTable.getSelectionModel().getSelectedItem();
+        if(selectedTransaction != null){
+            if(!selectedTransaction.getType().equals(Transaction.TransactionType.OUT)){
+                new AlertBuilder()
+                        .alertType(Alert.AlertType.ERROR)
+                        .alertContentText("You can only create RETURN transaction from OUT transaction!\n")
+                        .build()
+                        .showAndWait();
+            }else{
+                Transaction newTransaction = saleSystem.showGenerateReturnTransactionDialog(selectedTransaction);
+                if(newTransaction != null){
+                    transactionList.add(newTransaction);
+                }
+                loadDataFromDB();
+            }
+
         }
     }
 
@@ -372,7 +375,7 @@ public class TransactionOverviewController implements OverviewController{
         customerListTask.setOnFailed(event -> {
             new AlertBuilder()
                     .alertType(Alert.AlertType.ERROR)
-                    .alertContentText(Constant.DatabaseError.databaseReturnError + event.toString())
+                    .alertContentText(Constant.DatabaseError.databaseReturnError + event.getSource().exceptionProperty().getValue())
                     .alertHeaderText(Constant.DatabaseError.databaseErrorAlertTitle)
                     .build()
                     .showAndWait();
@@ -383,7 +386,7 @@ public class TransactionOverviewController implements OverviewController{
         productListTask.setOnFailed(event -> {
             new AlertBuilder()
                     .alertType(Alert.AlertType.ERROR)
-                    .alertContentText(Constant.DatabaseError.databaseReturnError + event.toString())
+                    .alertContentText(Constant.DatabaseError.databaseReturnError + event.getSource().exceptionProperty().getValue())
                     .alertHeaderText(Constant.DatabaseError.databaseErrorAlertTitle)
                     .build()
                     .showAndWait();
@@ -411,8 +414,6 @@ public class TransactionOverviewController implements OverviewController{
         if(transaction != null){
             transactionIdLabel.setText(String.valueOf(transaction.getTransactionId()));
             dateLabel.setText(DateUtil.format(transaction.getDate()));
-            totalLabel.setText(String.valueOf(transaction.getTotal()));
-            paymentLabel.setText(String.valueOf(transaction.getPayment()));
             paymentTypeLabel.setText(transaction.getPaymentType());
             storeCreditLabel.setText(String.valueOf(transaction.getStoreCredit()));
             staffLabel.setText(String.valueOf(transaction.getStaffId()));
@@ -422,9 +423,13 @@ public class TransactionOverviewController implements OverviewController{
                     && transaction.getType().equals(Transaction.TransactionType.IN)){
                 unitPriceCol.setVisible(false);
                 subTotalCol.setVisible(false);
+                totalLabel.setText("Only Manager Can View This Info");
+                paymentLabel.setText("Only Manager Can View This Info");
             }else{
                 unitPriceCol.setVisible(true);
                 subTotalCol.setVisible(true);
+                totalLabel.setText(String.valueOf(transaction.getTotal()));
+                paymentLabel.setText(String.valueOf(transaction.getPayment()));
             }
             transactionDetaiTableView.setItems(
                     FXCollections.observableArrayList(transaction.getProductTransactionList()));
@@ -440,5 +445,10 @@ public class TransactionOverviewController implements OverviewController{
             typeLabel.setText("");
             infoLabel.setText("");
         }
+    }
+
+    private void refreshTable(){
+        transactionTable.getColumns().get(0).setVisible(false);
+        transactionTable.getColumns().get(0).setVisible(true);
     }
 }

@@ -268,7 +268,7 @@ public class ProductOverviewController implements OverviewController{
             executor.execute(productListTask);
         });
         transactionListTask.setOnFailed(event -> {
-            Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to grab data from database!\n" + event.toString());
+            Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to grab data from database!\n" + event.getSource().exceptionProperty().getValue());
             alert.setTitle("Database Error");
             alert.showAndWait();
         });
@@ -296,7 +296,7 @@ public class ProductOverviewController implements OverviewController{
             });
         });
         productListTask.setOnFailed(event -> {
-            Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to grab data from database!\n" + event.toString());
+            Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to grab data from database!\n" + event.getSource().exceptionProperty().getValue());
             alert.setTitle("Database Error");
             alert.showAndWait();
         });

@@ -123,7 +123,9 @@ public class SaleSystem extends Application{
                 new AlertBuilder()
                         .alertType(Alert.AlertType.INFORMATION)
                         .alertContentText(Constant.CopyRight.copyRightConntent)
-                        .build().showAndWait();
+                        .alertTitle("About")
+                        .build()
+                        .showAndWait();
             }
         });
         logOutMenuItem.setOnAction(new EventHandler<ActionEvent>() {
@@ -457,7 +459,7 @@ public class SaleSystem extends Application{
         return null;
     }
 
-    public Transaction showGenerateReturnTransactionDialog(){
+    public Transaction showGenerateReturnTransactionDialog(Transaction selectedTransaction){
         try{
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(SaleSystem.class.getResource("/fxml/GenerateReturnTransactions.fxml"));
@@ -474,6 +476,7 @@ public class SaleSystem extends Application{
             GenerateReturnTransactController controller = loader.getController();
             controller.setMainClass(SaleSystem.this);
             controller.setDialogStage(dialogStage);
+            controller.setSelectedTransaction(selectedTransaction);
             dialogStage.showAndWait();
             if(controller.isConfirmedClicked()){
                 return controller.returnNewTrasaction();

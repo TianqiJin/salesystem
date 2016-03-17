@@ -9,8 +9,10 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableObjectValue;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -70,6 +72,8 @@ public class GenerateCustomerTransactController {
     @FXML
     private TableColumn<ProductTransaction, Integer> qtyCol;
     @FXML
+    private TableColumn<ProductTransaction, Integer> discountCol;
+    @FXML
     private TableColumn<ProductTransaction, BigDecimal> subTotalCol;
     @FXML
     private TableColumn deleteCol;
@@ -115,8 +119,6 @@ public class GenerateCustomerTransactController {
     @FXML
     private ChoiceBox<String> paymentTypeChoiceBox;
     @FXML
-    private ChoiceBox<Integer> discountChoiceBox;
-    @FXML
     private TextField storeCreditField;
     @FXML
     private CheckBox storeCreditCheckBox;
@@ -146,6 +148,35 @@ public class GenerateCustomerTransactController {
                 showPaymentDetails(productTransactionObservableList, customer);
             }
         });
+        discountCol.setCellValueFactory(new PropertyValueFactory<>("discount"));
+        discountCol.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<Integer>(){
+            @Override
+            public Integer fromString(String string) {
+                return Integer.valueOf(string);
+            }
+            public String toString(Integer integer){
+                return String.valueOf(integer);
+            }
+        }));
+        discountCol.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ProductTransaction, Integer>>() {
+            @Override
+            public void handle(TableColumn.CellEditEvent<ProductTransaction, Integer> event) {
+                if(event.getNewValue() < returnDiscount()){
+                    new AlertBuilder().alertTitle("Discount Error")
+                            .alertType(Alert.AlertType.ERROR)
+                            .alertContentText("User Class is " + customer.getUserClass() + ", but the given discount is " + event.getNewValue())
+                            .build()
+                            .showAndWait();
+                    refreshTable();
+                }else{
+                    (event.getTableView().getItems().get(event.getTablePosition().getRow()))
+                            .setDiscount(event.getNewValue());
+                    showPaymentDetails(productTransactionObservableList, customer);
+                }
+
+            }
+        });
+
         subTotalCol.setCellValueFactory(new PropertyValueFactory<>("subTotal"));
         deleteCol.setCellValueFactory(
                 new Callback<TableColumn.CellDataFeatures<ProductTransaction, Boolean>,
@@ -164,14 +195,6 @@ public class GenerateCustomerTransactController {
                     }
 
                 });
-
-        productComboBox.valueProperty().addListener(((observable, oldValue, newValue) -> {
-            if(productComboBox.getSelectionModel().isEmpty()){
-                addItemButton.setDisable(true);
-            }else{
-                addItemButton.setDisable(false);
-            }
-        }));
 
         paymentField.textProperty().addListener(new ChangeListener<String>() {
             @Override
@@ -193,15 +216,6 @@ public class GenerateCustomerTransactController {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
                 transaction.setPaymentType(newValue);
-            }
-        });
-        discountChoiceBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Integer>() {
-            @Override
-            public void changed(ObservableValue<? extends Integer> observable, Integer oldValue, Integer newValue) {
-                if(newValue != null){
-                    discount = newValue;
-                    showPaymentDetails(productTransactionObservableList, customer);
-                }
             }
         });
 
@@ -345,6 +359,7 @@ public class GenerateCustomerTransactController {
                         .append("Total Num: " + tmp.getTotalNum() + "\n")
                         .append("Quantity: " + tmp.getQuantity() + "\n")
                         .append("Unit Price: " + tmp.getUnitPrice() + "\n")
+                        .append("Discount (%): " + tmp.getDiscount() + "\n")
                         .append("Sub Total: " + tmp.getSubTotal() + "\n")
                         .append("\n");
             }
@@ -399,19 +414,17 @@ public class GenerateCustomerTransactController {
     * */
     private void showCustomerDetails(Customer customer){
         if(customer != null){
+            addItemButton.setDisable(false);
             transaction.setInfo(customer.getUserName());
             firstNameLabel.setText(customer.getFirstName());
             lastNameLabel.setText(customer.getLastName());
-            discountChoiceBox.setDisable(false);
-            discountChoiceBox.getItems().setAll(Customer.getDiscountMap().get(customer.getUserClass()));
-            discountChoiceBox.getSelectionModel().selectFirst();
             storeCreditLabel.setText(String.valueOf(customer.getStoreCredit()));
             discountLabel.setText(customer.getUserClass());
         }
         else{
+            addItemButton.setDisable(true);
             firstNameLabel.setText("");
             lastNameLabel.setText("");
-            discountChoiceBox.setDisable(true);
             storeCreditLabel.setText("");
             discountLabel.setText("");
         }
@@ -422,25 +435,27 @@ public class GenerateCustomerTransactController {
     private void showPaymentDetails(ObservableList<ProductTransaction> productTransactions, Customer customer){
         if(productTransactions != null ){
             Iterator<ProductTransaction> iterator = productTransactions.iterator();
-            BigDecimal subTotalAll = new BigDecimal(0.00).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+            BigDecimal subTotalAfterDiscount = new BigDecimal(0.00).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+            BigDecimal subTotalBeforediscount = new BigDecimal(0.00).setScale(2, BigDecimal.ROUND_HALF_EVEN);
             while(iterator.hasNext()){
-                subTotalAll = subTotalAll.add(
-                        new BigDecimal(iterator.next().getSubTotal()).setScale(2, BigDecimal.ROUND_HALF_EVEN)
+                ProductTransaction tmp = iterator.next();
+                subTotalAfterDiscount = subTotalAfterDiscount.add(
+                        new BigDecimal(tmp.getSubTotal()).setScale(2, BigDecimal.ROUND_HALF_EVEN)
                 );
+                subTotalBeforediscount = subTotalBeforediscount.add(new BigDecimal(tmp.getUnitPrice()*tmp.getQuantity()).setScale(2, BigDecimal.ROUND_HALF_EVEN));
             }
-            BigDecimal paymentDiscount = (new BigDecimal(100).subtract(new BigDecimal(this.discount))).multiply(subTotalAll).divide(new BigDecimal(100))
-                    .setScale(2, BigDecimal.ROUND_HALF_EVEN);
+            BigDecimal paymentDiscount = subTotalBeforediscount.subtract(subTotalAfterDiscount).setScale(2, BigDecimal.ROUND_HALF_EVEN);
             BigDecimal pstTax;
             if(customer != null && customer.getPstNumber() != null){
                 pstTax = new BigDecimal("0.0");
             }else{
-                pstTax = new BigDecimal(saleSystem.getPstRate()).multiply(subTotalAll).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+                pstTax = new BigDecimal(saleSystem.getPstRate()).multiply(subTotalAfterDiscount).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
             }
-            BigDecimal gstTax = new BigDecimal(saleSystem.getGstRate()).multiply(subTotalAll).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
-            BigDecimal total = subTotalAll.add(pstTax).add(gstTax).subtract(paymentDiscount).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+            BigDecimal gstTax = new BigDecimal(saleSystem.getGstRate()).multiply(subTotalAfterDiscount).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+            BigDecimal total = subTotalAfterDiscount.add(pstTax).add(gstTax).setScale(2, BigDecimal.ROUND_HALF_EVEN);
 
             itemsCountLabel.setText(String.valueOf(productTransactions.size()));
-            subTotalLabel.setText(subTotalAll.toString());
+            subTotalLabel.setText(subTotalAfterDiscount.toString());
             paymentDiscountLabel.setText(paymentDiscount.toString());
             pstTaxLabel.setText(pstTax.toString());
             gstTaxLabel.setText(gstTax.toString());
@@ -564,12 +579,13 @@ public class GenerateCustomerTransactController {
         return true;
     }
 
-    private ArrayList<Integer> returnDiscount(){
+    private Integer returnDiscount(){
         if(this.customer != null){
             return Customer.getDiscountMap().get(customer.getUserClass());
         }
         return null;
     }
+
     private void commitTransactionToDatabase() throws SQLException, IOException {
         Connection connection = DBConnect.getConnection();
         try{
@@ -602,5 +618,10 @@ public class GenerateCustomerTransactController {
 
     public boolean isConfirmedClicked(){
         return this.confirmedClicked;
+    }
+
+    private void refreshTable(){
+        transactionTableView.getColumns().get(0).setVisible(false);
+        transactionTableView.getColumns().get(0).setVisible(true);
     }
 }

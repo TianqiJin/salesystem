@@ -91,6 +91,7 @@ public interface ObjectDeserializer<E> {
                             .size(tmpNode.path("size").asText())
                             .sizeNumeric(tmpNode.path("sizeNumeric").asInt())
                             .quantity(tmpNode.path("quantity").asInt())
+                            .discount(tmpNode.path("discount").asInt())
                             .subTotal(new BigDecimal(String.valueOf(tmpNode.path("subTotal").asDouble())).setScale(2, BigDecimal.ROUND_HALF_EVEN).floatValue())
                             .build()
                     );

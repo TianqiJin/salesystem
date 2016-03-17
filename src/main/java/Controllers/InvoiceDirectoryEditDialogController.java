@@ -109,9 +109,6 @@ public class InvoiceDirectoryEditDialogController {
                 try {
                     InvoiceGenerator generator = new InvoiceGenerator(selectedDirectory.toString());
                     generator.buildInvoice(transaction, customer, staff);
-                    if (transaction.getType()== Transaction.TransactionType.OUT){
-                        generator.buildDelivery(transaction,customer,staff);
-                    }
                 }catch (Exception e){
                     e.printStackTrace();
                 }
@@ -126,21 +123,6 @@ public class InvoiceDirectoryEditDialogController {
                         .showAndWait();
             }
         }
-
-        //            try {
-//                Customer customer= dbExecuteCustomer.selectFromDatabase(DBQueries.SelectQueries.Customer.SELECT_SINGLE_CUSTOMER,info).get(0);
-//                InvoiceGenerator generator = new InvoiceGenerator(selectedDirectory.toString());
-//                generator.buildInvoice(selectedTransaction,customer, this.saleSystem.getStaff());
-//
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//            new AlertBuilder()
-//                    .alertType(Alert.AlertType.INFORMATION)
-//                    .alertContentText("Report generated successfully!")
-//                    .build()
-//                    .showAndWait();
-
     }
     @FXML
     public void handleCancelButton(){
@@ -155,6 +137,10 @@ public class InvoiceDirectoryEditDialogController {
     }
     public void setTransaction(Transaction transaction){
         this.transaction = transaction;
+        if(this.transaction.getType().equals(Transaction.TransactionType.RETURN)){
+            deliveryInvoiceCheckbox.setSelected(false);
+            deliveryInvoiceCheckbox.setDisable(true);
+        }
     }
     public void setStaff(Staff staff){
         this.staff = staff;
