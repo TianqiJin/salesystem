@@ -76,6 +76,8 @@ public class GenerateCustomerTransactController {
     @FXML
     private TableColumn<ProductTransaction, BigDecimal> subTotalCol;
     @FXML
+    private TableColumn<ProductTransaction, Integer> sizeCol;
+    @FXML
     private TableColumn deleteCol;
 
     @FXML
@@ -131,6 +133,7 @@ public class GenerateCustomerTransactController {
         stockCol.setCellValueFactory(new PropertyValueFactory<>("totalNum"));
         unitPriceCol.setCellValueFactory(new PropertyValueFactory<>("unitPrice"));
         qtyCol.setCellValueFactory(new PropertyValueFactory<>("quantity"));
+        sizeCol.setCellValueFactory(new PropertyValueFactory<>("sizeNumeric"));
         qtyCol.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<Integer>(){
             @Override
             public Integer fromString(String string) {
@@ -143,9 +146,18 @@ public class GenerateCustomerTransactController {
         qtyCol.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ProductTransaction, Integer>>() {
             @Override
             public void handle(TableColumn.CellEditEvent<ProductTransaction, Integer> event) {
-                (event.getTableView().getItems().get(event.getTablePosition().getRow()))
-                        .setQuantity(event.getNewValue());
-                showPaymentDetails(productTransactionObservableList, customer);
+                if(event.getNewValue() % event.getTableView().getItems().get(event.getTablePosition().getRow()).getSizeNumeric() != 0){
+                    new AlertBuilder().alertTitle("Purchase Quantity Error")
+                            .alertType(Alert.AlertType.ERROR)
+                            .alertContentText("User has to buy the whole piece of tile.")
+                            .build()
+                            .showAndWait();
+                    refreshTable();
+                }else{
+                    (event.getTableView().getItems().get(event.getTablePosition().getRow()))
+                            .setQuantity(event.getNewValue());
+                    showPaymentDetails(productTransactionObservableList, customer);
+                }
             }
         });
         discountCol.setCellValueFactory(new PropertyValueFactory<>("discount"));

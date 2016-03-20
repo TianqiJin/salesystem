@@ -3,6 +3,7 @@ package db;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import model.*;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -12,7 +13,7 @@ import java.util.*;
 
 
 public interface ObjectDeserializer<E> {
-
+    static Logger logger= Logger.getLogger(ObjectDeserializer.class);
     public abstract E deserialize(ResultSet rs) throws SQLException;
 
     public static final ObjectDeserializer<Customer> CUSTOMER_OBJECT_DESERIALIZER =  new ObjectDeserializer<Customer>() {
@@ -104,6 +105,7 @@ public interface ObjectDeserializer<E> {
                             tmpNode.path("paymentType").asText()));
                 }
             } catch (IOException e) {
+                logger.error(e.getMessage());
                 e.printStackTrace();
             }
             Transaction transaction = new Transaction.TransactionBuilder()

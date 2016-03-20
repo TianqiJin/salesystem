@@ -26,6 +26,7 @@ public class DBExecuteStaff extends DBExecute<Staff>{
                 }
             }
         } catch (SQLException e) {
+            logger.error(e.getMessage());
             e.printStackTrace();
         }
         return result;

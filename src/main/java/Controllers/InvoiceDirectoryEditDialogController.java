@@ -18,6 +18,7 @@ import model.Address;
 import model.Customer;
 import model.Staff;
 import model.Transaction;
+import org.apache.log4j.Logger;
 import util.AlertBuilder;
 
 import java.io.File;
@@ -26,6 +27,7 @@ import java.io.File;
  * Created by tjin on 3/7/2016.
  */
 public class InvoiceDirectoryEditDialogController {
+    private static Logger logger= Logger.getLogger(InvoiceDirectoryEditDialogController.class);
     private Customer customer;
     private Stage dialogStage;
     private File selectedDirectory;
@@ -91,7 +93,7 @@ public class InvoiceDirectoryEditDialogController {
                         generator.buildDelivery(transaction,customer,staff,address);
                     }
                 }catch (Exception e){
-                    e.printStackTrace();
+                    logger.error(e.getMessage());
                 }
                 dialogStage.close();
             }else{
@@ -110,7 +112,7 @@ public class InvoiceDirectoryEditDialogController {
                     InvoiceGenerator generator = new InvoiceGenerator(selectedDirectory.toString());
                     generator.buildInvoice(transaction, customer, staff);
                 }catch (Exception e){
-                    e.printStackTrace();
+                    logger.error(e.getMessage());
                 }
                 dialogStage.close();
             }else{

@@ -24,6 +24,7 @@ import model.Product;
 import model.ProductTransaction;
 import model.Staff;
 import model.Transaction;
+import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -38,6 +39,7 @@ import java.util.stream.Collectors;
 
 public class ProductOverviewController implements OverviewController{
 
+    private static Logger logger= Logger.getLogger(ProductOverviewController.class);
     private SaleSystem saleSystem;
     private ObservableList<Product> productList;
     private List<Transaction> transactionList;
@@ -156,6 +158,7 @@ public class ProductOverviewController implements OverviewController{
                     dbExecute.deleteDatabase(DBQueries.DeleteQueries.Product.DELETE_FROM_PRODUCT,
                             productTable.getItems().get(selectedIndex).getProductId());
                 }catch(SQLException e){
+                    logger.error(e.getMessage());
                     e.printStackTrace();
                     flag = false;
                     Alert alert = new Alert(Alert.AlertType.ERROR, "Error when deleting product: "+tempID+" "+temptotalNum+"pieces");

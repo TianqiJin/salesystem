@@ -70,6 +70,8 @@ public class GenerateReturnTransactController {
     @FXML
     private TableColumn<ProductTransaction, Integer> qtyCol;
     @FXML
+    private TableColumn<ProductTransaction, Integer> sizeCol;
+    @FXML
     private TableColumn<ProductTransaction, Integer> discountCol;
     @FXML
     private TableColumn<ProductTransaction, BigDecimal> subTotalCol;
@@ -112,6 +114,7 @@ public class GenerateReturnTransactController {
         productIdCol.setCellValueFactory(new PropertyValueFactory<>("productId"));
         unitPriceCol.setCellValueFactory(new PropertyValueFactory<>("unitPrice"));
         stockCol.setCellValueFactory(new PropertyValueFactory<>("totalNum"));
+        sizeCol.setCellValueFactory(new PropertyValueFactory<>("sizeNumeric"));
         qtyCol.setCellValueFactory(new PropertyValueFactory<>("quantity"));
         qtyCol.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<Integer>(){
             @Override
@@ -125,9 +128,18 @@ public class GenerateReturnTransactController {
         qtyCol.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ProductTransaction, Integer>>() {
             @Override
             public void handle(TableColumn.CellEditEvent<ProductTransaction, Integer> event) {
-                (event.getTableView().getItems().get(event.getTablePosition().getRow()))
-                        .setQuantity(event.getNewValue());
-                showPaymentDetails(productTransactionObservableList, customer);
+                if(event.getNewValue() % event.getTableView().getItems().get(event.getTablePosition().getRow()).getSizeNumeric() != 0){
+                    new AlertBuilder().alertTitle("Purchase Quantity Error")
+                            .alertType(Alert.AlertType.ERROR)
+                            .alertContentText("User has to buy the whole piece of tile.")
+                            .build()
+                            .showAndWait();
+                    refreshTable();
+                }else{
+                    (event.getTableView().getItems().get(event.getTablePosition().getRow()))
+                            .setQuantity(event.getNewValue());
+                    showPaymentDetails(productTransactionObservableList, customer);
+                }
             }
         });
         discountCol.setCellValueFactory(new PropertyValueFactory<>("discount"));
@@ -486,6 +498,11 @@ public class GenerateReturnTransactController {
 
     public boolean isConfirmedClicked(){
         return this.confirmedClicked;
+    }
+
+    private void refreshTable(){
+        transactionTableView.getColumns().get(0).setVisible(false);
+        transactionTableView.getColumns().get(0).setVisible(true);
     }
 }
 
