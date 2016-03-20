@@ -3,6 +3,7 @@ package model;
 import com.sun.scenario.effect.FloatMap;
 import com.sun.scenario.effect.Flood;
 import javafx.beans.property.*;
+import org.apache.log4j.Logger;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -13,6 +14,8 @@ import java.math.BigDecimal;
  * Created by tjin on 12/13/2015.
  */
 public abstract class ProductBase {
+
+    private static Logger logger= Logger.getLogger(ProductBase.class);
     private StringProperty productId;
     private IntegerProperty totalNum;
     private FloatProperty unitPrice;
@@ -102,6 +105,7 @@ public abstract class ProductBase {
         try {
             this.sizeNumeric = new SimpleIntegerProperty(Integer.valueOf(engine.eval(size).toString()));
         } catch (ScriptException e) {
+            logger.error(e.getMessage());
             e.printStackTrace();
         }
     }

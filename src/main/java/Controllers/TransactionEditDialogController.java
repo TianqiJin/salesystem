@@ -61,6 +61,8 @@ public class TransactionEditDialogController {
     @FXML
     private TableColumn<ProductTransaction, Integer> qtyCol;
     @FXML
+    private TableColumn<ProductTransaction, Integer> discountCol;
+    @FXML
     private TableColumn<ProductTransaction, BigDecimal> subTotalCol;
 
     @FXML
@@ -78,6 +80,10 @@ public class TransactionEditDialogController {
     private Label totalLabel;
     @FXML
     private Label residualLabel;
+    @FXML
+    private Label pstLabel;
+    @FXML
+    private Label gstLabel;
 
     @FXML
     private TextField paymentField;
@@ -101,6 +107,7 @@ public class TransactionEditDialogController {
         productIdCol.setCellValueFactory(new PropertyValueFactory<>("productId"));
         unitPriceCol.setCellValueFactory(new PropertyValueFactory<>("unitPrice"));
         qtyCol.setCellValueFactory(new PropertyValueFactory<>("quantity"));
+        discountCol.setCellValueFactory(new PropertyValueFactory<>("discount"));
         subTotalCol.setCellValueFactory(new PropertyValueFactory<>("subTotal"));
         paymentField.textProperty().addListener(new ChangeListener<String>() {
             @Override
@@ -266,6 +273,8 @@ public class TransactionEditDialogController {
             itemsCountLabel.setText(String.valueOf(transaction.getProductTransactionList().size()));
             totalLabel.setText(String.valueOf(transaction.getTotal()));
             residualLabel.setText(residual.toString());
+            pstLabel.setText(String.valueOf(transaction.getPstTax()));
+            gstLabel.setText(String.valueOf(transaction.getGstTax()));
             showBalanceDetails();
         }
         else{
@@ -377,7 +386,7 @@ public class TransactionEditDialogController {
         return true;
     }
 
-    private ArrayList<Integer> returnDiscount(){
+    private Integer returnDiscount(){
         if(this.customer != null){
             return Customer.getDiscountMap().get(customer.getUserClass());
         }

@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import model.*;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -25,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface ObjectSerializer<E> {
-
+    static Logger logger= Logger.getLogger(ObjectSerializer.class);
     public abstract Object[] serialize(E input) throws SQLException, IOException;
 
     public static final ObjectSerializer<Transaction> TRANSACTION_OBJECT_SERIALIZER = new ObjectSerializer<Transaction>() {
@@ -51,6 +52,7 @@ public interface ObjectSerializer<E> {
                 jsonGenerator.close();
                 typeJson = typeWriter.toString();
             } catch (IOException e) {
+                logger.error(e.getMessage());
                 e.printStackTrace();
             }
             return new Object[]{

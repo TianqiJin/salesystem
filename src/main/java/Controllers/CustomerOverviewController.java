@@ -14,6 +14,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 import model.Customer;
 import MainClass.SaleSystem;
+import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -27,6 +28,7 @@ import java.util.concurrent.Executors;
  */
 public class CustomerOverviewController implements OverviewController{
 
+    private static Logger logger= Logger.getLogger(CustomerOverviewController.class);
     private DBExecuteCustomer dbExecute;
     private ObservableList<Customer> customerList;
     private SaleSystem saleSystem;
@@ -102,7 +104,7 @@ public class CustomerOverviewController implements OverviewController{
                     dbExecute.deleteDatabase(DBQueries.DeleteQueries.Customer.DELETE_FROM_CUSTOMER,
                             customerTable.getItems().get(selectedIndex).getUserName());
                 } catch (SQLException e) {
-                    e.printStackTrace();
+                    logger.error(e.getMessage());
                     flag = false;
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Delete Customer Error");
@@ -136,7 +138,7 @@ public class CustomerOverviewController implements OverviewController{
                 dbExecute.insertIntoDatabase(DBQueries.InsertQueries.Customer.INSERT_INTO_CUSTOMER,
                         newCustomer.getAllProperties());
             }catch(SQLException e){
-                e.printStackTrace();
+                logger.error(e.getMessage());
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Unable To Add New Customer");
                 alert.setHeaderText(null);

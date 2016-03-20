@@ -16,6 +16,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 import model.Staff;
+import org.apache.log4j.Logger;
 import util.AlertBuilder;
 
 import java.sql.SQLException;
@@ -27,6 +28,7 @@ import java.util.concurrent.Executors;
 
 public class StaffOverviewController implements OverviewController{
 
+    private static Logger logger= Logger.getLogger(StaffOverviewController.class);
     private SaleSystem saleSystem;
     private ObservableList<Staff> staffList;
     private Executor executor;
@@ -89,6 +91,7 @@ public class StaffOverviewController implements OverviewController{
                     dbExecute.deleteDatabase(DBQueries.DeleteQueries.Staff.DELETE_FROM_STAFF,
                             staffTable.getItems().get(selectedIndex).getUserName());
                 }catch(SQLException e){
+                    logger.error(e.getMessage());
                     e.printStackTrace();
                     flag = false;
                     new AlertBuilder()

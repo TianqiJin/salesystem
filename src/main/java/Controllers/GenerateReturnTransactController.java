@@ -11,6 +11,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -31,7 +32,10 @@ import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 /**
@@ -43,7 +47,6 @@ public class GenerateReturnTransactController {
     private final static String INIT_TRANSACTION_PAYMENT_TYPE = "Cash";
     private Stage dialogStage;
     private Customer customer;
-    private List<Customer> customerList;
     private List<Product> productList;
     private ObservableList<ProductTransaction> productTransactionObservableList;
     private DBExecuteProduct dbExecuteProduct;
@@ -54,17 +57,22 @@ public class GenerateReturnTransactController {
     private StringBuffer errorMsgBuilder;
     private boolean confirmedClicked;
     private BooleanBinding confirmButtonBinding;
+    private Executor executor;
 
     @FXML
     private TableView<ProductTransaction> transactionTableView;
     @FXML
     private TableColumn<ProductTransaction, Integer> productIdCol;
     @FXML
-    private TableColumn<ProductTransaction, Number> stockCol;
+    private TableColumn<ProductTransaction, Integer> stockCol;
     @FXML
     private TableColumn<ProductTransaction, BigDecimal> unitPriceCol;
     @FXML
     private TableColumn<ProductTransaction, Integer> qtyCol;
+    @FXML
+    private TableColumn<ProductTransaction, Integer> sizeCol;
+    @FXML
+    private TableColumn<ProductTransaction, Integer> discountCol;
     @FXML
     private TableColumn<ProductTransaction, BigDecimal> subTotalCol;
     @FXML
@@ -91,15 +99,9 @@ public class GenerateReturnTransactController {
     private Label totalLabel;
 
     @FXML
-    private Button addItemButton;
-    @FXML
     private Button confirmButton;
     @FXML
     private Button cancelButton;
-    @FXML
-    private ComboBox customerComboBox;
-    @FXML
-    private ComboBox productComboBox;
     @FXML
     private Label balanceLabel;
     @FXML
@@ -110,8 +112,9 @@ public class GenerateReturnTransactController {
     @FXML
     private void initialize(){
         productIdCol.setCellValueFactory(new PropertyValueFactory<>("productId"));
-        stockCol.setCellValueFactory(new PropertyValueFactory<>("totalNum"));
         unitPriceCol.setCellValueFactory(new PropertyValueFactory<>("unitPrice"));
+        stockCol.setCellValueFactory(new PropertyValueFactory<>("totalNum"));
+        sizeCol.setCellValueFactory(new PropertyValueFactory<>("sizeNumeric"));
         qtyCol.setCellValueFactory(new PropertyValueFactory<>("quantity"));
         qtyCol.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<Integer>(){
             @Override
@@ -125,11 +128,21 @@ public class GenerateReturnTransactController {
         qtyCol.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ProductTransaction, Integer>>() {
             @Override
             public void handle(TableColumn.CellEditEvent<ProductTransaction, Integer> event) {
-                (event.getTableView().getItems().get(event.getTablePosition().getRow()))
-                        .setQuantity(event.getNewValue());
-                showPaymentDetails(productTransactionObservableList, customer);
+                if(event.getNewValue() % event.getTableView().getItems().get(event.getTablePosition().getRow()).getSizeNumeric() != 0){
+                    new AlertBuilder().alertTitle("Purchase Quantity Error")
+                            .alertType(Alert.AlertType.ERROR)
+                            .alertContentText("User has to buy the whole piece of tile.")
+                            .build()
+                            .showAndWait();
+                    refreshTable();
+                }else{
+                    (event.getTableView().getItems().get(event.getTablePosition().getRow()))
+                            .setQuantity(event.getNewValue());
+                    showPaymentDetails(productTransactionObservableList, customer);
+                }
             }
         });
+        discountCol.setCellValueFactory(new PropertyValueFactory<>("discount"));
         subTotalCol.setCellValueFactory(new PropertyValueFactory<>("subTotal"));
         deleteCol.setCellValueFactory(
                 new Callback<TableColumn.CellDataFeatures<ProductTransaction, Boolean>,
@@ -148,13 +161,6 @@ public class GenerateReturnTransactController {
                     }
 
                 });
-        productComboBox.valueProperty().addListener(((observable, oldValue, newValue) -> {
-            if(productComboBox.getSelectionModel().isEmpty()){
-                addItemButton.setDisable(true);
-            }else{
-                addItemButton.setDisable(false);
-            }
-        }));
         paymentTypeChoiceBox.getSelectionModel().selectFirst();
         paymentTypeChoiceBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
             @Override
@@ -172,72 +178,11 @@ public class GenerateReturnTransactController {
         showCustomerDetails(null);
         showPaymentDetails(null, null);
 
-        try{
-            customerList = dbExecuteCustomer.selectFromDatabase(DBQueries.SelectQueries.Customer.SELECT_ALL_CUSTOMER);
-            productList = dbExecuteProduct.selectFromDatabase(DBQueries.SelectQueries.Product.SELECT_ALL_PRODUCT);
-        }catch(SQLException e){
-            Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to grab data from database!\n" + e.getMessage());
-            alert.setTitle("Database Error");
-            alert.showAndWait();
-        }
-
-        List<String> tmpCustomerList = new ArrayList<>();
-        for(Customer customer: customerList){
-            customer.constructCustomerInfo();
-            tmpCustomerList.add(customer.getCustomerInfo());
-        }
-
-        customerComboBox.setItems(FXCollections.observableArrayList(tmpCustomerList));
-        customerComboBox.valueProperty().addListener(new ChangeListener() {
-            @Override
-            public void changed(ObservableValue observable, Object oldValue, Object newValue) {
-                for(Customer tmpCustomer: customerList){
-                    if(tmpCustomer.getCustomerInfo().equals(newValue)){
-                        customer = tmpCustomer;
-                        showCustomerDetails(customer);
-                        break;
-                    }
-                }
-
-            }
+        executor = Executors.newCachedThreadPool(r -> {
+            Thread t = new Thread(r);
+            t.setDaemon(true);
+            return t;
         });
-        List<String> tmpProductList = productList
-                .stream()
-                .map(product -> product.getProductId())
-                .collect(Collectors.toList());
-        productComboBox.setItems(FXCollections.observableArrayList(tmpProductList));
-        new AutoCompleteComboBoxListener<>(customerComboBox);
-        new AutoCompleteComboBoxListener<>(productComboBox);
-    }
-
-    @FXML
-    public void handleAddItem(){
-        Product selectedProduct = productList
-                .stream()
-                .filter(product -> product.getProductId().equals(productComboBox.getSelectionModel().getSelectedItem()))
-                .findFirst()
-                .get();
-        List<String> productIdList = productTransactionObservableList.stream()
-                .map(ProductTransaction::getProductId)
-                .collect(Collectors.toList());
-        if(productIdList.contains(selectedProduct.getProductId())){
-            new AlertBuilder()
-                    .alertType(Alert.AlertType.ERROR)
-                    .alertContentText("Product Add Error")
-                    .alertContentText(selectedProduct.getProductId() + " has already been added!")
-                    .build()
-                    .showAndWait();
-        }else{
-            ProductTransaction newProductTransaction = new ProductTransaction.ProductTransactionBuilder()
-                    .productId(selectedProduct.getProductId())
-                    .totalNum(selectedProduct.getTotalNum())
-                    .unitPrice(selectedProduct.getUnitPrice())
-                    .piecesPerBox(selectedProduct.getPiecesPerBox())
-                    .size(selectedProduct.getSize())
-                    .sizeNumeric(selectedProduct.getSizeNumeric())
-                    .build();
-            productTransactionObservableList.add(newProductTransaction);
-        }
     }
 
     @FXML
@@ -273,7 +218,6 @@ public class GenerateReturnTransactController {
             for(ProductTransaction tmp: transaction.getProductTransactionList()){
                 overviewProductTransactionString
                         .append("Product ID: " + tmp.getProductId() + "\n")
-                        .append("Total Num: " + tmp.getTotalNum() + "\n")
                         .append("Returned Quantity: " + tmp.getQuantity() + "\n")
                         .append("Unit Price: " + tmp.getUnitPrice() + "\n")
                         .append("Sub Total: " + tmp.getSubTotal() + "\n")
@@ -345,25 +289,31 @@ public class GenerateReturnTransactController {
     /**
      * Show payment details grid pane
      */
-    private void showPaymentDetails(ObservableList<ProductTransaction> transactions, Customer customer){
-        if(transaction != null ){
-            Iterator<ProductTransaction> iterator = transactions.iterator();
-            BigDecimal subTotalAll = new BigDecimal(0.00).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+    private void showPaymentDetails(ObservableList<ProductTransaction> productTransactions, Customer customer){
+        if(productTransactions != null ){
+            Iterator<ProductTransaction> iterator = productTransactions.iterator();
+            BigDecimal subTotalAfterDiscount = new BigDecimal(0.00).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+            BigDecimal subTotalBeforediscount = new BigDecimal(0.00).setScale(2, BigDecimal.ROUND_HALF_EVEN);
             while(iterator.hasNext()){
-                subTotalAll = subTotalAll.add(
-                        new BigDecimal(iterator.next().getSubTotal()).setScale(2, BigDecimal.ROUND_HALF_EVEN)
+                ProductTransaction tmp = iterator.next();
+                subTotalAfterDiscount = subTotalAfterDiscount.add(
+                        new BigDecimal(tmp.getSubTotal()).setScale(2, BigDecimal.ROUND_HALF_EVEN)
                 );
+                subTotalBeforediscount = subTotalBeforediscount.add(new BigDecimal(tmp.getUnitPrice()*tmp.getQuantity()).setScale(2, BigDecimal.ROUND_HALF_EVEN));
             }
+            BigDecimal paymentDiscount = subTotalBeforediscount.subtract(subTotalAfterDiscount).setScale(2, BigDecimal.ROUND_HALF_EVEN);
             BigDecimal pstTax;
             if(customer != null && customer.getPstNumber() != null){
                 pstTax = new BigDecimal("0.0");
             }else{
-                pstTax = new BigDecimal(saleSystem.getPstRate()).multiply(subTotalAll).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+                pstTax = new BigDecimal(saleSystem.getPstRate()).multiply(subTotalAfterDiscount).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
             }
-            BigDecimal gstTax = new BigDecimal(saleSystem.getGstRate()).multiply(subTotalAll).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
-            BigDecimal total = subTotalAll.multiply(new BigDecimal(1.05)).setScale(2,BigDecimal.ROUND_HALF_EVEN);
-            itemsCountLabel.setText(String.valueOf(transactions.size()));
-            subTotalLabel.setText(subTotalAll.toString());
+            BigDecimal gstTax = new BigDecimal(saleSystem.getGstRate()).multiply(subTotalAfterDiscount).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+            BigDecimal total = subTotalAfterDiscount.add(pstTax).add(gstTax).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+
+            itemsCountLabel.setText(String.valueOf(productTransactions.size()));
+            subTotalLabel.setText(subTotalAfterDiscount.toString());
+//            paymentDiscountLabel.setText(paymentDiscount.toString());
             pstTaxLabel.setText(pstTax.toString());
             gstTaxLabel.setText(gstTax.toString());
             totalLabel.setText(total.toString());
@@ -393,31 +343,103 @@ public class GenerateReturnTransactController {
     /*
     * Initilize the main class for this class
     * */
-    public void setMainClass(SaleSystem saleSystem){
+    public void setMainClass(SaleSystem saleSystem) {
         this.saleSystem = saleSystem;
-        transaction = new Transaction.TransactionBuilder()
-                .productInfoList(new ArrayList<ProductTransaction>())
-                .staffId(saleSystem.getStaff().getStaffId())
-                .date(new SimpleDateFormat("yyyy-MM-dd").format(new Date()))
-                .type(Transaction.TransactionType.RETURN)
-                .paymentType(INIT_TRANSACTION_PAYMENT_TYPE)
-                .storeCredit(0)
-                .payment(0)
-                .payinfo(new ArrayList<>())
-                .build();
-        productTransactionObservableList = FXCollections.observableArrayList(transaction.getProductTransactionList());
-        transactionTableView.setItems(productTransactionObservableList);
-        productTransactionObservableList.addListener(new ListChangeListener<ProductTransaction>() {
+    }
+
+    public void setSelectedTransaction(Transaction selectedTransaction){
+        this.transaction = selectedTransaction;
+        Task<Customer> customerTask = new Task<Customer>() {
             @Override
-            public void onChanged(Change<? extends ProductTransaction> c) {
-                while(c.next()){
-                    if( c.wasAdded() || c.wasRemoved()){
-                        showPaymentDetails(productTransactionObservableList, customer);
+            protected Customer call() throws Exception {
+                Customer tmpCustomer = null;
+                for(int i = 0; i < 1; i++){
+                    tmpCustomer = dbExecuteCustomer.selectFromDatabase(DBQueries.SelectQueries.Customer.SELECT_SINGLE_CUSTOMER, selectedTransaction.getInfo()).get(0);
+                    updateProgress(i+1, 1);
+                }
+                return  tmpCustomer;
+            }
+        };
+        Task<List<Product>> productListTask = new Task<List<Product>>() {
+            @Override
+            protected List<Product> call() throws Exception {
+                List<Product> tmpProductList = new ArrayList<>();
+                for(int i = 0; i < 1; i++){
+                    tmpProductList = dbExecuteProduct.selectFromDatabase(DBQueries.SelectQueries.Product.SELECT_ALL_PRODUCT);
+                    updateProgress(i+1, 1);
+                }
+                return  tmpProductList;
+            }
+        };
+
+        productListTask.setOnSucceeded(event -> {
+            this.productList = productListTask.getValue();
+            transaction.getProductTransactionList().forEach(productTransaction -> {
+                Product tmp = productList.stream()
+                        .filter(product -> product.getProductId().equals(productTransaction.getProductId()))
+                        .findFirst()
+                        .get();
+                if(tmp == null){
+                    new AlertBuilder()
+                            .alertTitle("Product Error!")
+                            .alertType(Alert.AlertType.ERROR)
+                            .alertContentText("Product - " + productTransaction.getProductId() + " does not exist!")
+                            .build()
+                            .showAndWait();
+                    dialogStage.close();
+                }else{
+                    productTransaction.setTotalNum(tmp.getTotalNum());
+                }
+            });
+            this.productTransactionObservableList = FXCollections.observableArrayList(this.transaction.getProductTransactionList());
+            this.productTransactionObservableList.addListener(new ListChangeListener<ProductTransaction>() {
+                @Override
+                public void onChanged(Change<? extends ProductTransaction> c) {
+                    while (c.next()) {
+                        if (c.wasAdded() || c.wasRemoved()) {
+                            showPaymentDetails(productTransactionObservableList, customer);
+                        }
                     }
                 }
-            }
+            });
+            transactionTableView.setItems(this.productTransactionObservableList);
+            System.out.println(productTransactionObservableList.get(0).getTotalNum());
+            this.transaction.setType(Transaction.TransactionType.RETURN);
+            this.transaction.setPayment(0.0);
+            this.transaction.setStoreCredit(0.0);
+            this.transaction.setDate(LocalDate.parse(new SimpleDateFormat("yyyy-MM-dd").format(new Date())));
+            this.transaction.getPayinfo().clear();
+            this.transaction.getProductTransactionList().clear();
+            System.out.println(productTransactionObservableList.get(0).getTotalNum());
+            executor.execute(customerTask);
         });
+
+        productListTask.setOnFailed(event -> {
+            new AlertBuilder()
+                    .alertType(Alert.AlertType.ERROR)
+                    .alertContentText(Constant.DatabaseError.databaseReturnError + event.getSource().exceptionProperty().getValue())
+                    .alertHeaderText(Constant.DatabaseError.databaseErrorAlertTitle)
+                    .build()
+                    .showAndWait();
+        });
+
+        customerTask.setOnSucceeded(event -> {
+            this.customer = customerTask.getValue();
+            showCustomerDetails(this.customer);
+            showPaymentDetails(this.productTransactionObservableList, this.customer);
+        });
+
+        customerTask.setOnFailed(event -> {
+            new AlertBuilder()
+                    .alertType(Alert.AlertType.ERROR)
+                    .alertContentText(Constant.DatabaseError.databaseReturnError + event.getSource().exceptionProperty().getValue())
+                    .alertHeaderText(Constant.DatabaseError.databaseErrorAlertTitle)
+                    .build()
+                    .showAndWait();
+        });
+        executor.execute(productListTask);
     }
+
 
     private boolean isTransactionValid(){
         errorMsgBuilder = new StringBuffer();
@@ -463,7 +485,7 @@ public class GenerateReturnTransactController {
             }
             connection.commit();
         }catch(SQLException e){
-            connection.rollback(); //TODO: CRITICAL BUG!!!
+            connection.rollback();
             Alert alert = new Alert(Alert.AlertType.ERROR, e.getMessage());
             alert.showAndWait();
         }
@@ -476,6 +498,11 @@ public class GenerateReturnTransactController {
 
     public boolean isConfirmedClicked(){
         return this.confirmedClicked;
+    }
+
+    private void refreshTable(){
+        transactionTableView.getColumns().get(0).setVisible(false);
+        transactionTableView.getColumns().get(0).setVisible(true);
     }
 }
 

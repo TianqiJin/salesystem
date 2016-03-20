@@ -18,6 +18,7 @@ import model.Address;
 import model.Customer;
 import model.Staff;
 import model.Transaction;
+import org.apache.log4j.Logger;
 import util.AlertBuilder;
 
 import java.io.File;
@@ -26,6 +27,7 @@ import java.io.File;
  * Created by tjin on 3/7/2016.
  */
 public class InvoiceDirectoryEditDialogController {
+    private static Logger logger= Logger.getLogger(InvoiceDirectoryEditDialogController.class);
     private Customer customer;
     private Stage dialogStage;
     private File selectedDirectory;
@@ -91,7 +93,7 @@ public class InvoiceDirectoryEditDialogController {
                         generator.buildDelivery(transaction,customer,staff,address);
                     }
                 }catch (Exception e){
-                    e.printStackTrace();
+                    logger.error(e.getMessage());
                 }
                 dialogStage.close();
             }else{
@@ -109,11 +111,8 @@ public class InvoiceDirectoryEditDialogController {
                 try {
                     InvoiceGenerator generator = new InvoiceGenerator(selectedDirectory.toString());
                     generator.buildInvoice(transaction, customer, staff);
-                    if (transaction.getType()== Transaction.TransactionType.OUT){
-                        generator.buildDelivery(transaction,customer,staff);
-                    }
                 }catch (Exception e){
-                    e.printStackTrace();
+                    logger.error(e.getMessage());
                 }
                 dialogStage.close();
             }else{
@@ -126,21 +125,6 @@ public class InvoiceDirectoryEditDialogController {
                         .showAndWait();
             }
         }
-
-        //            try {
-//                Customer customer= dbExecuteCustomer.selectFromDatabase(DBQueries.SelectQueries.Customer.SELECT_SINGLE_CUSTOMER,info).get(0);
-//                InvoiceGenerator generator = new InvoiceGenerator(selectedDirectory.toString());
-//                generator.buildInvoice(selectedTransaction,customer, this.saleSystem.getStaff());
-//
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//            new AlertBuilder()
-//                    .alertType(Alert.AlertType.INFORMATION)
-//                    .alertContentText("Report generated successfully!")
-//                    .build()
-//                    .showAndWait();
-
     }
     @FXML
     public void handleCancelButton(){
@@ -155,6 +139,10 @@ public class InvoiceDirectoryEditDialogController {
     }
     public void setTransaction(Transaction transaction){
         this.transaction = transaction;
+        if(this.transaction.getType().equals(Transaction.TransactionType.RETURN)){
+            deliveryInvoiceCheckbox.setSelected(false);
+            deliveryInvoiceCheckbox.setDisable(true);
+        }
     }
     public void setStaff(Staff staff){
         this.staff = staff;

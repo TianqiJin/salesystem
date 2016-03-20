@@ -21,13 +21,14 @@ import java.util.Arrays;
 public class ProductTransaction extends ProductBase{
     private IntegerProperty quantity;
     private FloatProperty subTotal;
+    private IntegerProperty discount;
 
     public ProductTransaction(ProductTransactionBuilder builder){
         super(builder.productId, builder.totalNum, builder.unitPrice, builder.piecesPerBox, builder.size, builder.sizeNumeric);
         this.quantity = new SimpleIntegerProperty(builder.quantity);
+        this.discount = new SimpleIntegerProperty(builder.discount);
         this.subTotal = new SimpleFloatProperty(builder.subTotal);
-        this.subTotal.bind(quantity.multiply(unitPriceProperty()));
-
+        this.subTotal.bind(quantity.multiply(unitPriceProperty()).multiply(discountProperty()).divide(100));
     }
 
     public static class ProductTransactionBuilder{
@@ -38,6 +39,7 @@ public class ProductTransaction extends ProductBase{
         private String size = null;
         private int sizeNumeric = 0;
         private int quantity = 0;
+        private int discount = 100;
         private float subTotal = 0;
 
         public ProductTransactionBuilder productId(String productId){
@@ -72,6 +74,10 @@ public class ProductTransaction extends ProductBase{
             this.subTotal = subTotal;
             return this;
         }
+        public ProductTransactionBuilder discount(int discount){
+            this.discount = discount;
+            return this;
+        }
         public ProductTransaction build(){
             return new ProductTransaction(this);
         }
@@ -101,12 +107,25 @@ public class ProductTransaction extends ProductBase{
         this.subTotal.set(subTotal);
     }
 
+    public int getDiscount() {
+        return discount.get();
+    }
+
+    public IntegerProperty discountProperty() {
+        return discount;
+    }
+
+    public void setDiscount(int discount) {
+        this.discount.set(discount);
+    }
+
     public String toString(){
         StringBuffer tmpString = new StringBuffer();
         tmpString
                 .append("Product ID: " + this.getProductId() + " ")
                 .append("Unit Price: " + this.getUnitPrice() + " ")
                 .append("Quantity: " + this.getQuantity() + " ")
+                .append("Discount: " + new BigDecimal(this.getSubTotal()*this.getDiscount()/100).toString() + " ")
                 .append("Sub Total: " + this.getSubTotal() + "\n");
         return tmpString.toString();
     }

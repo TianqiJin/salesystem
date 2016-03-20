@@ -5,14 +5,18 @@ import javafx.beans.property.*;
 import org.apache.log4j.Logger;
 import util.DateUtil;
 
+import java.io.*;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by jiawei.liu on 12/2/15.
  */
-public class Transaction {
+public class Transaction{
     private static Logger logger = Logger.getLogger(Transaction.class);
 
     private IntegerProperty transactionId;
@@ -305,5 +309,22 @@ public class Transaction {
             }
             return null;
         }
+    }
+
+    public static Transaction returntransactionClone(Transaction transaction) {
+        return new TransactionBuilder()
+                .productInfoList(transaction.getProductTransactionList().stream().collect(Collectors.toList()))
+                .payinfo(new ArrayList<>())
+                .pstTax(transaction.getPstTax())
+                .gstTax(transaction.getGstTax())
+                .staffId(transaction.getStaffId())
+                .total(transaction.getTotal())
+                .payment(0)
+                .storeCredit(0)
+                .date(new SimpleDateFormat("yyyy-MM-dd").format(new Date()))
+                .info(transaction.getInfo())
+                .type(TransactionType.RETURN)
+                .paymentType(transaction.getPaymentType())
+                .build();
     }
 }

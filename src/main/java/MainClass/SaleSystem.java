@@ -2,8 +2,6 @@ package MainClass;
 
 import Constants.Constant;
 import Controllers.*;
-import com.sun.deploy.ui.ProgressDialog;
-import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
 import db.DBExecuteProperty;
 import db.DBQueries;
 import javafx.application.Application;
@@ -73,6 +71,7 @@ public class SaleSystem extends Application{
         if (state!=0){
             loadPropertyFromDB();
             showMainLayOut(primaryStage);
+            executor.execute(refreshDB());
         }
     }
 
@@ -123,7 +122,9 @@ public class SaleSystem extends Application{
                 new AlertBuilder()
                         .alertType(Alert.AlertType.INFORMATION)
                         .alertContentText(Constant.CopyRight.copyRightConntent)
-                        .build().showAndWait();
+                        .alertTitle("About")
+                        .build()
+                        .showAndWait();
             }
         });
         logOutMenuItem.setOnAction(new EventHandler<ActionEvent>() {
@@ -218,6 +219,7 @@ public class SaleSystem extends Application{
             dialogStage.showAndWait();
             return controller.isOKClicked();
         }catch(IOException e){
+            logger.error(e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -243,6 +245,7 @@ public class SaleSystem extends Application{
             dialogStage.showAndWait();
             return controller.isConfirmedClicked();
         }catch (IOException e){
+            logger.error(e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -270,6 +273,7 @@ public class SaleSystem extends Application{
             dialogStage.showAndWait();
             return controller.isOKClicked();
         }catch(IOException e){
+            logger.error(e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -297,6 +301,7 @@ public class SaleSystem extends Application{
             dialogStage.showAndWait();
             return controller.isOKClicked();
         }catch(IOException e){
+            logger.error(e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -324,6 +329,7 @@ public class SaleSystem extends Application{
             this.staff = controller.returnStaff();
 
         }catch(IOException e){
+            logger.error(e.getMessage());
             e.printStackTrace();
         }
     }
@@ -348,6 +354,7 @@ public class SaleSystem extends Application{
             dialogStage.showAndWait();
 
         }catch(IOException e){
+            logger.error(e.getMessage());
             e.printStackTrace();
         }
     }
@@ -372,6 +379,7 @@ public class SaleSystem extends Application{
             dialogStage.showAndWait();
 
         }catch(IOException e){
+            logger.error(e.getMessage());
             e.printStackTrace();
         }
     }
@@ -398,6 +406,7 @@ public class SaleSystem extends Application{
             dialogStage.showAndWait();
 
         }catch(IOException e){
+            logger.error(e.getMessage());
             e.printStackTrace();
         }
     }
@@ -424,6 +433,7 @@ public class SaleSystem extends Application{
                 return controller.returnNewTrasaction();
             }
         }catch(IOException e){
+            logger.error(e.getMessage());
             e.printStackTrace();
         }
         return null;
@@ -452,12 +462,13 @@ public class SaleSystem extends Application{
                 return controller.returnNewTrasaction();
             }
         }catch(IOException e){
+            logger.error(e.getMessage());
             e.printStackTrace();
         }
         return null;
     }
 
-    public Transaction showGenerateReturnTransactionDialog(){
+    public Transaction showGenerateReturnTransactionDialog(Transaction selectedTransaction){
         try{
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(SaleSystem.class.getResource("/fxml/GenerateReturnTransactions.fxml"));
@@ -474,11 +485,13 @@ public class SaleSystem extends Application{
             GenerateReturnTransactController controller = loader.getController();
             controller.setMainClass(SaleSystem.this);
             controller.setDialogStage(dialogStage);
+            controller.setSelectedTransaction(selectedTransaction);
             dialogStage.showAndWait();
             if(controller.isConfirmedClicked()){
                 return controller.returnNewTrasaction();
             }
         }catch(IOException e){
+            logger.error(e.getMessage());
             e.printStackTrace();
         }
         return null;
@@ -556,6 +569,23 @@ public class SaleSystem extends Application{
                     .showAndWait();
         }
         loadPropertyFromDB();
+    }
+
+    private Task<Void> refreshDB(){
+        Task<Void> refreshDB = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                int count = 0;
+                while(true){
+                    logger.info("Refresh DB at " + count + " minute");
+                    dbExecuteProperty
+                            .selectFirstFromDatabase(DBQueries.SelectQueries.Property.SELECT_ALL_PROPERTY);
+                    Thread.sleep(60*1000*7);
+                    count += 7;
+                }
+            }
+        };
+        return refreshDB;
     }
 
 }
