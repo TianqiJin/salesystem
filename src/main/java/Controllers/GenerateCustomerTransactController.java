@@ -17,6 +17,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -38,6 +39,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 /**
@@ -45,6 +48,7 @@ import java.util.stream.Collectors;
  */
 public class GenerateCustomerTransactController {
 
+    public static Logger logger= Logger.getLogger(GenerateCustomerTransactController.class);
     private final static String INIT_TRANSACTION_PAYMENT_TYPE = "Cash";
     private Stage dialogStage;
     private Customer customer;
@@ -60,6 +64,7 @@ public class GenerateCustomerTransactController {
     private boolean confirmedClicked;
     private BooleanBinding confimButtonBinding;
     private int discount;
+    private Executor executor;
 
     @FXML
     private TableView<ProductTransaction> transactionTableView;
@@ -274,6 +279,11 @@ public class GenerateCustomerTransactController {
                 }
             }
         });
+        executor = Executors.newCachedThreadPool(r -> {
+            Thread t = new Thread(r);
+            t.setDaemon(true);
+            return t;
+        });
     }
 
     @FXML
@@ -397,7 +407,6 @@ public class GenerateCustomerTransactController {
             if(result.isPresent() && result.get() == ButtonType.OK){
                 commitTransactionToDatabase();
                 confirmedClicked = true;
-                dialogStage.close();
             }else{
                 transaction.getProductTransactionList().clear();
                 transaction.getPayinfo().clear();
@@ -598,32 +607,6 @@ public class GenerateCustomerTransactController {
         return null;
     }
 
-    private void commitTransactionToDatabase() throws SQLException, IOException {
-        Connection connection = DBConnect.getConnection();
-        try{
-            connection.setAutoCommit(false);
-            Object[] objects = ObjectSerializer.TRANSACTION_OBJECT_SERIALIZER.serialize(transaction);
-            dbExecuteTransaction.insertIntoDatabase(DBQueries.InsertQueries.Transaction.INSERT_INTO_TRANSACTION,
-                    objects);
-            for(ProductTransaction tmp : transaction.getProductTransactionList()){
-                int remain = tmp.getTotalNum() - tmp.getQuantity();
-                dbExecuteProduct.updateDatabase(DBQueries.UpdateQueries.Product.UPDATE_PRODUCT_QUANTITY,
-                    remain, tmp.getProductId());
-            }
-            if(storeCreditCheckBox.isSelected()){
-                double remainStoreCredit = customer.getStoreCredit() - Double.valueOf(storeCreditField.getText());
-                dbExecuteCustomer.updateDatabase(DBQueries.UpdateQueries.Customer.UPDATE_CUSTOMER_STORE_CREDIT,
-                    remainStoreCredit, customer.getUserName());
-            }
-            connection.commit();
-        }catch(SQLException e){
-            connection.rollback();
-            Alert alert = new Alert(Alert.AlertType.ERROR, "Unable to store transaction to database!");
-            alert.showAndWait();
-        }
-        connection.setAutoCommit(true);
-    }
-
     public Transaction returnNewTrasaction(){
         return this.transaction;
     }
@@ -636,4 +619,92 @@ public class GenerateCustomerTransactController {
         transactionTableView.getColumns().get(0).setVisible(false);
         transactionTableView.getColumns().get(0).setVisible(true);
     }
+
+    private void commitTransactionToDatabase()  throws SQLException, IOException{
+        Task<Customer> customerTask = new Task<Customer>() {
+            @Override
+            protected Customer call() throws Exception {
+                return dbExecuteCustomer.selectFromDatabase(DBQueries.SelectQueries.Customer.SELECT_SINGLE_CUSTOMER, customer.getUserName()).get(0);
+            }
+        };
+        Task<List<Product>> productListTask = new Task<List<Product>>() {
+            @Override
+            protected List<Product> call() throws Exception {
+                return dbExecuteProduct.selectFromDatabase(DBQueries.SelectQueries.Product.SELECT_ALL_PRODUCT);
+            }
+        };
+        Task<Void> commitTask = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                Connection connection = DBConnect.getConnection();
+                try{
+                    connection.setAutoCommit(false);
+                    Object[] objects = new Object[0];
+                    try {
+                        objects = ObjectSerializer.TRANSACTION_OBJECT_SERIALIZER.serialize(transaction);
+                    } catch (IOException e) {
+                        logger.error(e.getMessage());
+                        e.printStackTrace();
+                    }
+                    dbExecuteTransaction.insertIntoDatabase(DBQueries.InsertQueries.Transaction.INSERT_INTO_TRANSACTION,
+                            objects);
+                    for(ProductTransaction tmp : transaction.getProductTransactionList()){
+                        int remain = tmp.getTotalNum() - tmp.getQuantity();
+                        dbExecuteProduct.updateDatabase(DBQueries.UpdateQueries.Product.UPDATE_PRODUCT_QUANTITY,
+                                remain, tmp.getProductId());
+                    }
+                    if(storeCreditCheckBox.isSelected()){
+                        double remainStoreCredit = customer.getStoreCredit() - Double.valueOf(storeCreditField.getText());
+                        dbExecuteCustomer.updateDatabase(DBQueries.UpdateQueries.Customer.UPDATE_CUSTOMER_STORE_CREDIT,
+                                remainStoreCredit, customer.getUserName());
+                    }
+                    connection.commit();
+                }catch(SQLException e){
+                    try {
+                        connection.rollback();
+                    } catch (SQLException e1) {
+                        logger.error(e1.getMessage());
+                        e1.printStackTrace();
+                    }
+                    Alert alert = new Alert(Alert.AlertType.ERROR, "Unable to store transaction to database!");
+                    alert.showAndWait();
+                }
+                try {
+                    connection.setAutoCommit(true);
+                } catch (SQLException e) {
+                    logger.error(e.getMessage());
+                    e.printStackTrace();
+                }
+                return null;
+            }
+        };
+        productListTask.setOnSucceeded(event -> {
+            transaction.getProductTransactionList().forEach(productTransaction -> {
+                Product tmp = productListTask.getValue().stream()
+                        .filter(product -> product.getProductId().equals(productTransaction.getProductId()))
+                        .findFirst()
+                        .get();
+                if (tmp == null) {
+                    new AlertBuilder()
+                            .alertTitle("Product Error!")
+                            .alertType(Alert.AlertType.ERROR)
+                            .alertContentText("Product - " + productTransaction.getProductId() + " does not exist!")
+                            .build()
+                            .showAndWait();
+                    dialogStage.close();
+                } else {
+                    productTransaction.setTotalNum(tmp.getTotalNum());
+                }
+            });
+            executor.execute(customerTask);
+        });
+        customerTask.setOnSucceeded(event -> {
+            customer.setStoreCredit(customerTask.getValue().getStoreCredit());
+            executor.execute(commitTask);
+        });
+        commitTask.setOnFailed(event -> dialogStage.close());
+        commitTask.setOnSucceeded(event -> dialogStage.close());
+        executor.execute(productListTask);
+    }
+
 }
