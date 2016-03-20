@@ -12,6 +12,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -22,6 +23,7 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 import model.*;
+import org.apache.log4j.Logger;
 import util.AlertBuilder;
 import util.AutoCompleteComboBoxListener;
 import util.ButtonCell;
@@ -34,11 +36,14 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 /**
  * Created by tjin on 1/25/2016.
  */
 public class TransactionEditDialogController {
+    public static Logger logger= Logger.getLogger(TransactionEditDialogController.class);
     private final static String INIT_TRANSACTION_PAYMENT_TYPE = "Cash";
     private Stage dialogStage;
     private Customer customer;
@@ -51,6 +56,7 @@ public class TransactionEditDialogController {
     private StringBuffer errorMsgBuilder;
     private boolean confirmedClicked;
     private BooleanBinding confimButtonBinding;
+    private Executor executor;
 
     @FXML
     private TableView<ProductTransaction> transactionTableView;
@@ -140,6 +146,11 @@ public class TransactionEditDialogController {
                 }
             }
         });
+        executor = Executors.newCachedThreadPool(r -> {
+            Thread t = new Thread(r);
+            t.setDaemon(true);
+            return t;
+        });
     }
 
 
@@ -216,7 +227,6 @@ public class TransactionEditDialogController {
             if(result.isPresent() && result.get() == ButtonType.OK){
                 commitTransactionToDatabase();
                 confirmedClicked = true;
-                dialogStage.close();
             }else{
                 transaction.getPayinfo().clear();
                 transaction.getPayinfo().addAll(originalPayInfo);
@@ -393,28 +403,48 @@ public class TransactionEditDialogController {
         return null;
     }
     private void commitTransactionToDatabase() throws SQLException, IOException {
-        Connection connection = DBConnect.getConnection();
-        try{
-            connection.setAutoCommit(false);
-            Object[] objects = ObjectSerializer.TRANSACTION_OBJECT_SERIALIZER_UPDATE.serialize(transaction);
-            dbExecuteTransaction.updateDatabase(DBQueries.UpdateQueries.Transaction.UPDATE_TRANSACTION_OUT, objects);
-            if(storeCreditCheckBox.isSelected()){
-                double remainStoreCredit = customer.getStoreCredit() - Double.valueOf(storeCreditField.getText());
-                dbExecuteCustomer.updateDatabase(DBQueries.UpdateQueries.Customer.UPDATE_CUSTOMER_STORE_CREDIT,
-                        remainStoreCredit, customer.getUserName());
+        Task<Customer> customerTask = new Task<Customer>() {
+            @Override
+            protected Customer call() throws Exception {
+                return dbExecuteCustomer.selectFromDatabase(DBQueries.SelectQueries.Customer.SELECT_SINGLE_CUSTOMER, customer.getUserName()).get(0);
             }
-            connection.commit();
-        }catch(SQLException e){
-            connection.rollback();
-            new AlertBuilder()
-                    .alertType(Alert.AlertType.ERROR)
-                    .alertContentText(Constant.DatabaseError.databaseUpdateError + e.getMessage())
-                    .alertTitle(Constant.DatabaseError.databaseErrorAlertTitle)
-                    .build()
-                    .showAndWait();
-        }
-        connection.setAutoCommit(true);
+        };
+        Task<Void> commitTask = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                Connection connection = DBConnect.getConnection();
+                try{
+                    connection.setAutoCommit(false);
+                    Object[] objects = ObjectSerializer.TRANSACTION_OBJECT_SERIALIZER_UPDATE.serialize(transaction);
+                    dbExecuteTransaction.updateDatabase(DBQueries.UpdateQueries.Transaction.UPDATE_TRANSACTION_OUT, objects);
+                    if(storeCreditCheckBox.isSelected()){
+                        double remainStoreCredit = customer.getStoreCredit() - Double.valueOf(storeCreditField.getText());
+                        dbExecuteCustomer.updateDatabase(DBQueries.UpdateQueries.Customer.UPDATE_CUSTOMER_STORE_CREDIT,
+                                remainStoreCredit, customer.getUserName());
+                    }
+                    connection.commit();
+                }catch(SQLException e){
+                    connection.rollback();
+                    new AlertBuilder()
+                            .alertType(Alert.AlertType.ERROR)
+                            .alertContentText(Constant.DatabaseError.databaseUpdateError + e.getMessage())
+                            .alertTitle(Constant.DatabaseError.databaseErrorAlertTitle)
+                            .build()
+                            .showAndWait();
+                }
+                connection.setAutoCommit(true);
+                return null;
+            }
+        };
+        customerTask.setOnSucceeded(event -> {
+            customer.setStoreCredit(customerTask.getValue().getStoreCredit());
+            executor.execute(commitTask);
+        });
+        commitTask.setOnFailed(event -> dialogStage.close());
+        commitTask.setOnSucceeded(event -> dialogStage.close());
+        executor.execute(customerTask);
     }
+
     public Transaction returnNewTrasaction(){
         return this.transaction;
     }

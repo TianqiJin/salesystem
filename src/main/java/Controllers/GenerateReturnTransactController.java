@@ -23,6 +23,7 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 import model.*;
+import org.apache.log4j.Logger;
 import util.AlertBuilder;
 import util.AutoCompleteComboBoxListener;
 import util.ButtonCell;
@@ -44,6 +45,7 @@ import java.util.stream.Collectors;
 
 public class GenerateReturnTransactController {
 
+    public static Logger logger= Logger.getLogger(GenerateReturnTransactController.class);
     private final static String INIT_TRANSACTION_PAYMENT_TYPE = "Cash";
     private Stage dialogStage;
     private Customer customer;
@@ -245,7 +247,6 @@ public class GenerateReturnTransactController {
             if(result.isPresent() && result.get() == ButtonType.OK){
                 commitTransactionToDatabase();
                 confirmedClicked = true;
-                dialogStage.close();
             }else{
                 transaction.getProductTransactionList().clear();
                 transaction.getPayinfo().clear();
@@ -352,23 +353,13 @@ public class GenerateReturnTransactController {
         Task<Customer> customerTask = new Task<Customer>() {
             @Override
             protected Customer call() throws Exception {
-                Customer tmpCustomer = null;
-                for(int i = 0; i < 1; i++){
-                    tmpCustomer = dbExecuteCustomer.selectFromDatabase(DBQueries.SelectQueries.Customer.SELECT_SINGLE_CUSTOMER, selectedTransaction.getInfo()).get(0);
-                    updateProgress(i+1, 1);
-                }
-                return  tmpCustomer;
+                return dbExecuteCustomer.selectFromDatabase(DBQueries.SelectQueries.Customer.SELECT_SINGLE_CUSTOMER, selectedTransaction.getInfo()).get(0);
             }
         };
         Task<List<Product>> productListTask = new Task<List<Product>>() {
             @Override
             protected List<Product> call() throws Exception {
-                List<Product> tmpProductList = new ArrayList<>();
-                for(int i = 0; i < 1; i++){
-                    tmpProductList = dbExecuteProduct.selectFromDatabase(DBQueries.SelectQueries.Product.SELECT_ALL_PRODUCT);
-                    updateProgress(i+1, 1);
-                }
-                return  tmpProductList;
+                return dbExecuteProduct.selectFromDatabase(DBQueries.SelectQueries.Product.SELECT_ALL_PRODUCT);
             }
         };
 
@@ -469,27 +460,88 @@ public class GenerateReturnTransactController {
     }
 
     private void commitTransactionToDatabase() throws SQLException, IOException {
-        Connection connection = DBConnect.getConnection();
-        try{
-            connection.setAutoCommit(false);
-            Object[] objects = ObjectSerializer.TRANSACTION_OBJECT_SERIALIZER.serialize(transaction);
-            dbExecuteTransaction.insertIntoDatabase(DBQueries.InsertQueries.Transaction.INSERT_INTO_TRANSACTION,
-                objects);
-            for(ProductTransaction tmp : transaction.getProductTransactionList()){
-                int remain = tmp.getTotalNum() + tmp.getQuantity();
-                dbExecuteProduct.updateDatabase(DBQueries.UpdateQueries.Product.UPDATE_PRODUCT_QUANTITY, remain, tmp.getProductId());
+        Task<Customer> customerTask = new Task<Customer>() {
+            @Override
+            protected Customer call() throws Exception {
+              return dbExecuteCustomer.selectFromDatabase(DBQueries.SelectQueries.Customer.SELECT_SINGLE_CUSTOMER, customer.getUserName()).get(0);
             }
-            if(transaction.getPaymentType().equals("Store Credit")){
-                double remainStoreCredit = customer.getStoreCredit() + Double.valueOf(returnAmountField.getText());
-                dbExecuteCustomer.updateDatabase(DBQueries.UpdateQueries.Customer.UPDATE_CUSTOMER_STORE_CREDIT, remainStoreCredit, customer.getUserName());
+        };
+        Task<List<Product>> productListTask = new Task<List<Product>>() {
+            @Override
+            protected List<Product> call() throws Exception {
+                return dbExecuteProduct.selectFromDatabase(DBQueries.SelectQueries.Product.SELECT_ALL_PRODUCT);
             }
-            connection.commit();
-        }catch(SQLException e){
-            connection.rollback();
-            Alert alert = new Alert(Alert.AlertType.ERROR, e.getMessage());
-            alert.showAndWait();
-        }
-        connection.setAutoCommit(true);
+        };
+        Task<Void> commitTask = new Task<Void>(){
+            @Override
+            protected Void call() throws Exception {
+                Connection connection = DBConnect.getConnection();
+                try{
+                    connection.setAutoCommit(false);
+                    Object[] objects = new Object[0];
+                    try {
+                        objects = ObjectSerializer.TRANSACTION_OBJECT_SERIALIZER.serialize(transaction);
+                    } catch (IOException e) {
+                        logger.error(e.getMessage());
+                        e.printStackTrace();
+                    }
+                    dbExecuteTransaction.insertIntoDatabase(DBQueries.InsertQueries.Transaction.INSERT_INTO_TRANSACTION,
+                            objects);
+                    for(ProductTransaction tmp : transaction.getProductTransactionList()){
+                        int remain = tmp.getTotalNum() + tmp.getQuantity();
+                        dbExecuteProduct.updateDatabase(DBQueries.UpdateQueries.Product.UPDATE_PRODUCT_QUANTITY, remain, tmp.getProductId());
+                    }
+                    if(transaction.getPaymentType().equals("Store Credit")){
+                        double remainStoreCredit = customer.getStoreCredit() + Double.valueOf(returnAmountField.getText());
+                        dbExecuteCustomer.updateDatabase(DBQueries.UpdateQueries.Customer.UPDATE_CUSTOMER_STORE_CREDIT, remainStoreCredit, customer.getUserName());
+                    }
+                    connection.commit();
+                }catch(SQLException e){
+                    try {
+                        connection.rollback();
+                    } catch (SQLException e1) {
+                        logger.error(e1.getMessage());
+                        e1.printStackTrace();
+                    }
+                    Alert alert = new Alert(Alert.AlertType.ERROR, e.getMessage());
+                    alert.showAndWait();
+                }
+                try {
+                    connection.setAutoCommit(true);
+                } catch (SQLException e) {
+                    logger.error(e.getMessage());
+                    e.printStackTrace();
+                }
+                return null;
+            }
+        };
+        productListTask.setOnSucceeded(event -> {
+            transaction.getProductTransactionList().forEach(productTransaction -> {
+                Product tmp = productListTask.getValue().stream()
+                        .filter(product -> product.getProductId().equals(productTransaction.getProductId()))
+                        .findFirst()
+                        .get();
+                if (tmp == null) {
+                    new AlertBuilder()
+                            .alertTitle("Product Error!")
+                            .alertType(Alert.AlertType.ERROR)
+                            .alertContentText("Product - " + productTransaction.getProductId() + " does not exist!")
+                            .build()
+                            .showAndWait();
+                    dialogStage.close();
+                } else {
+                    productTransaction.setTotalNum(tmp.getTotalNum());
+                }
+            });
+            executor.execute(customerTask);
+        });
+        customerTask.setOnSucceeded(event->{
+            customer.setStoreCredit(customerTask.getValue().getStoreCredit());
+            executor.execute(commitTask);
+        });
+        commitTask.setOnSucceeded(event-> dialogStage.close());
+        commitTask.setOnFailed(event -> dialogStage.close());
+        executor.execute(productListTask);
     }
 
     public Transaction returnNewTrasaction(){
