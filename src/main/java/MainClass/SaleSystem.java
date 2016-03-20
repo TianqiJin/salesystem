@@ -411,7 +411,7 @@ public class SaleSystem extends Application{
         }
     }
 
-    public Transaction showGenerateCustomerTransactionDialog(){
+    public ContainerClass showGenerateCustomerTransactionDialog(){
         try{
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(SaleSystem.class.getResource("/fxml/GenerateCustomerTransaction.fxml"));
@@ -430,7 +430,7 @@ public class SaleSystem extends Application{
             controller.setDialogStage(dialogStage);
             dialogStage.showAndWait();
             if(controller.isConfirmedClicked()){
-                return controller.returnNewTrasaction();
+                return controller.returnContainer();
             }
         }catch(IOException e){
             logger.error(e.getMessage());
