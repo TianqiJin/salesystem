@@ -336,6 +336,7 @@ public class GenerateCustomerTransactController {
             }finally{
                 if(flag){
                     customer = newCustomer;
+                    customerList.add(customer);
                     showCustomerDetails(customer);
                 }
             }
@@ -609,6 +610,14 @@ public class GenerateCustomerTransactController {
 
     public Transaction returnNewTrasaction(){
         return this.transaction;
+    }
+
+   public List<Customer> returnCustomerList(){
+       return this.customerList;
+   }
+
+    public ContainerClass returnContainer(){
+        return new ContainerClass(transaction, customerList);
     }
 
     public boolean isConfirmedClicked(){
