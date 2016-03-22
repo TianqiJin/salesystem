@@ -11,6 +11,7 @@ import util.DateUtil;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -118,9 +119,9 @@ public class PDFGenerator {
                 totalReturn += transaction.getTotal();
             }
         }
-        table.addCell(String.valueOf(totalOut));
-        table.addCell(String.valueOf(totalIn));
-        table.addCell(String.valueOf(totalReturn));
+        table.addCell(new BigDecimal(totalOut).setScale(2, BigDecimal.ROUND_HALF_EVEN).toString());
+        table.addCell(new BigDecimal(totalIn).setScale(2, BigDecimal.ROUND_HALF_EVEN).toString());
+        table.addCell(new BigDecimal(totalReturn).setScale(2, BigDecimal.ROUND_HALF_EVEN).toString());
         return table;
     }
 
