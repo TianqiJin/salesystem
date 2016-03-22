@@ -646,44 +646,27 @@ public class GenerateCustomerTransactController {
             @Override
             protected Void call() throws Exception {
                 Connection connection = DBConnect.getConnection();
-                try{
-                    connection.setAutoCommit(false);
-                    Object[] objects = new Object[0];
-                    try {
-                        objects = ObjectSerializer.TRANSACTION_OBJECT_SERIALIZER.serialize(transaction);
-                    } catch (IOException e) {
-                        logger.error(e.getMessage());
-                        e.printStackTrace();
-                    }
-                    dbExecuteTransaction.insertIntoDatabase(DBQueries.InsertQueries.Transaction.INSERT_INTO_TRANSACTION,
-                            objects);
-                    for(ProductTransaction tmp : transaction.getProductTransactionList()){
-                        int remain = tmp.getTotalNum() - tmp.getQuantity();
-                        dbExecuteProduct.updateDatabase(DBQueries.UpdateQueries.Product.UPDATE_PRODUCT_QUANTITY,
-                                remain, tmp.getProductId());
-                    }
-                    if(storeCreditCheckBox.isSelected()){
-                        double remainStoreCredit = customer.getStoreCredit() - Double.valueOf(storeCreditField.getText());
-                        dbExecuteCustomer.updateDatabase(DBQueries.UpdateQueries.Customer.UPDATE_CUSTOMER_STORE_CREDIT,
-                                remainStoreCredit, customer.getUserName());
-                    }
-                    connection.commit();
-                }catch(SQLException e){
-                    try {
-                        connection.rollback();
-                    } catch (SQLException e1) {
-                        logger.error(e1.getMessage());
-                        e1.printStackTrace();
-                    }
-                    Alert alert = new Alert(Alert.AlertType.ERROR, "Unable to store transaction to database!");
-                    alert.showAndWait();
-                }
+                connection.setAutoCommit(false);
+                Object[] objects = new Object[0];
                 try {
-                    connection.setAutoCommit(true);
-                } catch (SQLException e) {
+                    objects = ObjectSerializer.TRANSACTION_OBJECT_SERIALIZER.serialize(transaction);
+                } catch (IOException e) {
                     logger.error(e.getMessage());
                     e.printStackTrace();
                 }
+                dbExecuteTransaction.insertIntoDatabase(DBQueries.InsertQueries.Transaction.INSERT_INTO_TRANSACTION,
+                        objects);
+                for(ProductTransaction tmp : transaction.getProductTransactionList()){
+                    int remain = tmp.getTotalNum() - tmp.getQuantity();
+                    dbExecuteProduct.updateDatabase(DBQueries.UpdateQueries.Product.UPDATE_PRODUCT_QUANTITY,
+                            remain, tmp.getProductId());
+                }
+                if(storeCreditCheckBox.isSelected()){
+                    double remainStoreCredit = customer.getStoreCredit() - Double.valueOf(storeCreditField.getText());
+                    dbExecuteCustomer.updateDatabase(DBQueries.UpdateQueries.Customer.UPDATE_CUSTOMER_STORE_CREDIT,
+                            remainStoreCredit, customer.getUserName());
+                }
+                connection.commit();
                 return null;
             }
         };
@@ -711,8 +694,34 @@ public class GenerateCustomerTransactController {
             customer.setStoreCredit(customerTask.getValue().getStoreCredit());
             executor.execute(commitTask);
         });
-        commitTask.setOnFailed(event -> dialogStage.close());
-        commitTask.setOnSucceeded(event -> dialogStage.close());
+        commitTask.setOnFailed(event -> {
+            Connection connection = DBConnect.getConnection();
+            try {
+                connection.rollback();
+                connection.setAutoCommit(true);
+                new AlertBuilder()
+                        .alertType(Alert.AlertType.ERROR)
+                        .alertTitle("Database Insert Error")
+                        .alertContentText("Unable to insert transaction into Database!\n" +
+                                event.getSource().exceptionProperty().getValue())
+                        .build()
+                        .showAndWait();
+            } catch (SQLException e) {
+                logger.error(e.getMessage());
+                e.printStackTrace();
+            }
+            dialogStage.close();
+        });
+        commitTask.setOnSucceeded(event -> {
+            Connection connection = DBConnect.getConnection();
+            try {
+                connection.setAutoCommit(true);
+            } catch (SQLException e) {
+                logger.error(e.getMessage());
+                e.printStackTrace();
+            }
+            dialogStage.close();
+        });
         executor.execute(productListTask);
     }
 
