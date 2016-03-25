@@ -28,7 +28,7 @@ public class ProductTransaction extends ProductBase{
         this.quantity = new SimpleIntegerProperty(builder.quantity);
         this.discount = new SimpleIntegerProperty(builder.discount);
         this.subTotal = new SimpleFloatProperty(builder.subTotal);
-        this.subTotal.bind(quantity.multiply(unitPriceProperty()).multiply(discountProperty()).divide(100));
+        this.subTotal.bind(quantity.multiply(unitPriceProperty()).subtract(quantity.multiply(unitPriceProperty()).multiply(discountProperty()).divide(100)));
     }
 
     public static class ProductTransactionBuilder{
@@ -39,7 +39,7 @@ public class ProductTransaction extends ProductBase{
         private String size = null;
         private int sizeNumeric = 0;
         private int quantity = 0;
-        private int discount = 100;
+        private int discount = 0;
         private float subTotal = 0;
 
         public ProductTransactionBuilder productId(String productId){

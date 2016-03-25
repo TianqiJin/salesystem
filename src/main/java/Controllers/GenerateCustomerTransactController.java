@@ -178,7 +178,7 @@ public class GenerateCustomerTransactController {
         discountCol.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ProductTransaction, Integer>>() {
             @Override
             public void handle(TableColumn.CellEditEvent<ProductTransaction, Integer> event) {
-                if(event.getNewValue() < returnDiscount()){
+                if(event.getNewValue() > returnDiscount()){
                     new AlertBuilder().alertTitle("Discount Error")
                             .alertType(Alert.AlertType.ERROR)
                             .alertContentText("User Class is " + customer.getUserClass() + ", but the given discount is " + event.getNewValue())

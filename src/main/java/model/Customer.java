@@ -27,9 +27,9 @@ public class Customer {
 
     static{
         Map<String, Integer> tmpDiscountMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        tmpDiscountMap.put("A", 60);
-        tmpDiscountMap.put("B", 70);
-        tmpDiscountMap.put("C", 80);
+        tmpDiscountMap.put("A", 40);
+        tmpDiscountMap.put("B", 30);
+        tmpDiscountMap.put("C", 20);
         discountMap = Collections.unmodifiableMap(tmpDiscountMap);
     }
 
