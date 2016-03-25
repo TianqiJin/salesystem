@@ -318,7 +318,7 @@ public class InvoiceGenerator {
         int row=0;
         double total=0;
         for (ProductTransaction product : invoice.getProducts()) {
-            total+=product.getSubTotal();
+            total+=product.getUnitPrice()*product.getQuantity();
             table.addCell(getCellwithBackground(product.getProductId(), Element.ALIGN_LEFT, totalFont, row));
             table.addCell(getCellwithBackground(product.getSize(), Element.ALIGN_LEFT, totalFont, row));
             table.addCell(getCellwithBackground(InvoiceData.format2dec(InvoiceData.round(product.getUnitPrice())), Element.ALIGN_RIGHT, totalFont, row));
