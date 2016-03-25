@@ -25,7 +25,7 @@
         <TextField fx:id="cityField" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
         <TextField fx:id="postalCodeField" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
         <TextField fx:id="emailField" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
-        <TextField fx:id="classField" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+        <ComboBox fx:id="classField" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
         <TextField fx:id="storeCreditField" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="8" />
             <Label text="Company" GridPane.rowIndex="9" />
             <TextField fx:id="companyField" GridPane.columnIndex="1" GridPane.rowIndex="9" />

@@ -1,7 +1,10 @@
 package Controllers;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import model.Customer;
@@ -24,7 +27,7 @@ public class CustomerEditDialogController {
     @FXML
     private TextField cityField;
     @FXML
-    private TextField classField;
+    private ComboBox classField;
     @FXML
     private TextField emailField;
     @FXML
@@ -38,6 +41,12 @@ public class CustomerEditDialogController {
     private Customer customer;
     private String errorMsg;
     private boolean okClicked;
+
+    private ObservableList<String> options = FXCollections.observableArrayList(
+                    "A",
+                    "B",
+                    "C"
+            );
 
     @FXML
     private void initialize(){}
@@ -57,7 +66,8 @@ public class CustomerEditDialogController {
         postalCodeField.setText(customer.getPostalCode());
         cityField.setText(customer.getCity());
         phoneField.setText(customer.getPhone());
-        classField.setText(customer.getUserClass());
+        classField.setItems(options);
+        classField.setValue(customer.getUserClass());
         emailField.setText(customer.getEmail());
         storeCreditField.setText(String.valueOf(customer.getStoreCredit()));
         companyField.setText(customer.getCompany());
@@ -71,7 +81,7 @@ public class CustomerEditDialogController {
             customer.setPostalCode(postalCodeField.getText());
             customer.setPhone(phoneField.getText());
             customer.setStreet(streetField.getText());
-            customer.setUserClass(classField.getText());
+            customer.setUserClass(String.valueOf(classField.getValue()));
             customer.setEmail(emailField.getText());
             customer.setStoreCredit(Double.valueOf(storeCreditField.getText()));
             customer.setCompany(companyField.getText());
