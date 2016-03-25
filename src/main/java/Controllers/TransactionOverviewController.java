@@ -19,6 +19,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import model.*;
+import org.apache.log4j.Logger;
 import util.AlertBuilder;
 import util.DateUtil;
 import java.sql.Connection;
@@ -32,6 +33,7 @@ import java.util.concurrent.Executors;
 
 public class TransactionOverviewController implements OverviewController{
 
+    public static Logger logger= Logger.getLogger(TransactionOverviewController.class);
     private SaleSystem saleSystem;
     private ObservableList<Transaction> transactionList;
     private DBExecuteTransaction dbExecuteTransaction;
@@ -182,6 +184,8 @@ public class TransactionOverviewController implements OverviewController{
             if(result.isPresent() && result.get() == ButtonType.OK){
                 try{
                     connection.setAutoCommit(false);
+                    productList = dbExecuteProduct.selectFromDatabase(DBQueries.SelectQueries.Product.SELECT_ALL_PRODUCT);
+                    customerList = dbExecuteCustomer.selectFromDatabase(DBQueries.SelectQueries.Customer.SELECT_ALL_CUSTOMER);
                     Transaction deleteTransaction = transactionTable.getItems().get(selectIndex);
                     for(ProductTransaction tmp : deleteTransaction.getProductTransactionList()){
                         int quantity;
@@ -221,8 +225,9 @@ public class TransactionOverviewController implements OverviewController{
                     dbExecuteTransaction.deleteDatabase(DBQueries.DeleteQueries.Transaction.DELETE_FROM_TRANSACTION, deleteTransaction.getTransactionId());
                     connection.commit();
                 }catch (SQLException e){
+                    logger.error(e.getMessage());
                     connection.rollback();
-                    Alert alert = new Alert(Alert.AlertType.ERROR, "Unable to store transaction to database!");
+                    Alert alert = new Alert(Alert.AlertType.ERROR, "Unable to store transaction to database!\n" + e.getMessage());
                     alert.showAndWait();
                 }
                 finally {
@@ -253,7 +258,7 @@ public class TransactionOverviewController implements OverviewController{
             }else{
                 boolean okClicked = saleSystem.showTransactionEditDialog(selectedTransaction);
                 if(okClicked){
-                    showTransactionDetail(selectedTransaction);
+                    loadDataFromDB();
                 }
             }
 
@@ -447,10 +452,5 @@ public class TransactionOverviewController implements OverviewController{
             typeLabel.setText("");
             infoLabel.setText("");
         }
-    }
-
-    private void refreshTable(){
-        transactionTable.getColumns().get(0).setVisible(false);
-        transactionTable.getColumns().get(0).setVisible(true);
     }
 }

@@ -413,7 +413,7 @@ public class TransactionEditDialogController {
             @Override
             protected Void call() throws Exception {
                 Connection connection = DBConnect.getConnection();
-                try{
+
                     connection.setAutoCommit(false);
                     Object[] objects = ObjectSerializer.TRANSACTION_OBJECT_SERIALIZER_UPDATE.serialize(transaction);
                     dbExecuteTransaction.updateDatabase(DBQueries.UpdateQueries.Transaction.UPDATE_TRANSACTION_OUT, objects);
@@ -423,16 +423,8 @@ public class TransactionEditDialogController {
                                 remainStoreCredit, customer.getUserName());
                     }
                     connection.commit();
-                }catch(SQLException e){
-                    connection.rollback();
-                    new AlertBuilder()
-                            .alertType(Alert.AlertType.ERROR)
-                            .alertContentText(Constant.DatabaseError.databaseUpdateError + e.getMessage())
-                            .alertTitle(Constant.DatabaseError.databaseErrorAlertTitle)
-                            .build()
-                            .showAndWait();
-                }
-                connection.setAutoCommit(true);
+
+
                 return null;
             }
         };
@@ -440,8 +432,33 @@ public class TransactionEditDialogController {
             customer.setStoreCredit(customerTask.getValue().getStoreCredit());
             executor.execute(commitTask);
         });
-        commitTask.setOnFailed(event -> dialogStage.close());
-        commitTask.setOnSucceeded(event -> dialogStage.close());
+        commitTask.setOnFailed(event ->{
+            Connection connection = DBConnect.getConnection();
+            try {
+                connection.rollback();
+                connection.setAutoCommit(true);
+                new AlertBuilder()
+                        .alertType(Alert.AlertType.ERROR)
+                        .alertContentText(Constant.DatabaseError.databaseUpdateError + event.getSource().exceptionProperty().getValue())
+                        .alertTitle(Constant.DatabaseError.databaseErrorAlertTitle)
+                        .build()
+                        .showAndWait();
+            } catch (SQLException e) {
+                logger.error(e.getMessage());
+                e.printStackTrace();
+            }
+            dialogStage.close();
+        });
+        commitTask.setOnSucceeded(event ->{
+            Connection connection = DBConnect.getConnection();
+            try {
+                connection.setAutoCommit(true);
+            } catch (SQLException e) {
+                logger.error(e.getMessage());
+                e.printStackTrace();
+            }
+            dialogStage.close();
+        });
         executor.execute(customerTask);
     }
 

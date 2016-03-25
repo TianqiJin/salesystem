@@ -164,6 +164,7 @@
                                                             <String fx:value="Cash" />
                                                             <String fx:value="Debit" />
                                                             <String fx:value="Credit" />
+                                                            <String fx:value="Cheque" />
                                                         </FXCollections>
                                                     </items>
                                                    <padding>

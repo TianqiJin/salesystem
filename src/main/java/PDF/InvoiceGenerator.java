@@ -170,18 +170,16 @@ public class InvoiceGenerator {
         document.add(table);
         p = new Paragraph("Payment Information:",addressFont);
         p.setAlignment(Element.ALIGN_LEFT);
-        table = new PdfPTable(3);
+        table = new PdfPTable(2);
         table.setWidthPercentage(50);
         table.setHorizontalAlignment(0);
         table.setSpacingBefore(10);
-        table.setWidths(new int[]{3, 3, 3});
+        table.setWidths(new int[]{5,5});
         table.addCell(getCellTitle("Date", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
-        table.addCell(getCellTitle("Amount", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
         table.addCell(getCellTitle("Type", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
         row = 0;
         for (PaymentRecord paymentRecord : invoice.getPaymentRecords()){
             table.addCell(getCellwithBackground(paymentRecord.getDate(), Element.ALIGN_LEFT, totalFont, row));
-            table.addCell(getCellwithBackground(InvoiceData.format2dec(InvoiceData.round(paymentRecord.getPaid())), Element.ALIGN_RIGHT, totalFont, row));
             table.addCell(getCellwithBackground(paymentRecord.getPaymentType(), Element.ALIGN_LEFT, totalFont, row));
             row++;
         }

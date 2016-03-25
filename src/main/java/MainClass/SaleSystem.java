@@ -580,8 +580,8 @@ public class SaleSystem extends Application{
                     logger.info("Refresh DB at " + count + " minute");
                     dbExecuteProperty
                             .selectFirstFromDatabase(DBQueries.SelectQueries.Property.SELECT_ALL_PROPERTY);
-                    Thread.sleep(60*1000*7);
-                    count += 7;
+                    Thread.sleep(60*1000*5);
+                    count += 5;
                 }
             }
         };
