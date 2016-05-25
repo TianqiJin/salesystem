@@ -188,8 +188,8 @@ public class TransactionOverviewController implements OverviewController{
                     customerList = dbExecuteCustomer.selectFromDatabase(DBQueries.SelectQueries.Customer.SELECT_ALL_CUSTOMER);
                     Transaction deleteTransaction = transactionTable.getItems().get(selectIndex);
                     for(ProductTransaction tmp : deleteTransaction.getProductTransactionList()){
-                        int quantity;
-                        int currentQuality = productList
+                        float quantity;
+                        float currentQuality = productList
                                 .stream()
                                 .filter(product -> product.getProductId().equals(tmp.getProductId()))
                                 .findFirst()

@@ -19,34 +19,37 @@ import java.util.Arrays;
  * Created by tjin on 12/12/2015.
  */
 public class ProductTransaction extends ProductBase{
-    private IntegerProperty quantity;
+    private FloatProperty quantity;
     private FloatProperty subTotal;
     private IntegerProperty discount;
+    private BoxNum boxNum;
 
     public ProductTransaction(ProductTransactionBuilder builder){
         super(builder.productId, builder.totalNum, builder.unitPrice, builder.piecesPerBox, builder.size, builder.sizeNumeric);
-        this.quantity = new SimpleIntegerProperty(builder.quantity);
+        this.quantity = new SimpleFloatProperty(builder.quantity);
         this.discount = new SimpleIntegerProperty(builder.discount);
         this.subTotal = new SimpleFloatProperty(builder.subTotal);
         this.subTotal.bind(quantity.multiply(unitPriceProperty()).subtract(quantity.multiply(unitPriceProperty()).multiply(discountProperty()).divide(100)));
+        this.boxNum = builder.boxNum;
     }
 
     public static class ProductTransactionBuilder{
         private String productId;
-        private int totalNum = 0;
+        private float totalNum = 0;
         private float unitPrice = 0;
         private int piecesPerBox = 0;
         private String size = null;
-        private int sizeNumeric = 0;
-        private int quantity = 0;
+        private float sizeNumeric = 0;
+        private float quantity = 0;
         private int discount = 0;
         private float subTotal = 0;
+        private BoxNum boxNum;
 
         public ProductTransactionBuilder productId(String productId){
             this.productId = productId;
             return this;
         }
-        public ProductTransactionBuilder totalNum(int totalNum){
+        public ProductTransactionBuilder totalNum(float totalNum){
             this.totalNum = totalNum;
             return this;
         }
@@ -58,7 +61,7 @@ public class ProductTransaction extends ProductBase{
             this.size = size;
             return this;
         }
-        public ProductTransactionBuilder sizeNumeric(int sizeNumeric){
+        public ProductTransactionBuilder sizeNumeric(float sizeNumeric){
             this.sizeNumeric = sizeNumeric;
             return this;
         }
@@ -66,7 +69,7 @@ public class ProductTransaction extends ProductBase{
             this.piecesPerBox = piecesPerBox;
             return this;
         }
-        public ProductTransactionBuilder quantity(int quantity){
+        public ProductTransactionBuilder quantity(float quantity){
             this.quantity = quantity;
             return this;
         }
@@ -78,20 +81,24 @@ public class ProductTransaction extends ProductBase{
             this.discount = discount;
             return this;
         }
+        public ProductTransactionBuilder boxNum(BoxNum boxNum){
+            this.boxNum = boxNum;
+            return this;
+        }
         public ProductTransaction build(){
             return new ProductTransaction(this);
         }
     }
 
-    public int getQuantity() {
+    public float getQuantity() {
         return quantity.get();
     }
 
-    public IntegerProperty quantityProperty() {
+    public FloatProperty quantityProperty() {
         return quantity;
     }
 
-    public void setQuantity(int quantity) {
+    public void setQuantity(float quantity) {
         this.quantity.set(quantity);
     }
 
@@ -117,6 +124,14 @@ public class ProductTransaction extends ProductBase{
 
     public void setDiscount(int discount) {
         this.discount.set(discount);
+    }
+
+    public BoxNum getBoxNum() {
+        return boxNum;
+    }
+
+    public void setBoxNum(BoxNum boxNum) {
+        this.boxNum = boxNum;
     }
 
     public String toString(){

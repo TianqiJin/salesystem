@@ -4,6 +4,7 @@ import model.Product;
 import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -15,6 +16,7 @@ public class DBExecuteProduct extends DBExecute<Product>{
 
     public List<Product> selectFromDatabase(String query, Object... params) throws SQLException{
         DBConnect.getConnection();
+        logger.info(query + Arrays.toString(params));
         selectResult = DBConnect.executeQuery(query, ObjectDeserializer.PRODUCT_OBJECT_DESERIALIZER, params);
         return selectResult;
     }

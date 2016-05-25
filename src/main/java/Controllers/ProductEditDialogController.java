@@ -109,14 +109,14 @@ public class ProductEditDialogController {
             errorMsg += "ProductID should not be empty! \n";
         }
         try{
-            Integer.parseInt(lengthField.getText());
+            Double.parseDouble(lengthField.getText());
         }catch (NumberFormatException e){
-            errorMsg += "Product Length must be integer!";
+            errorMsg += "Product Length must be number!";
         }
         try{
-            Integer.parseInt(widthField.getText());
+            Double.parseDouble(widthField.getText());
         }catch (NumberFormatException e){
-            errorMsg += "Product Width must be integer!";
+            errorMsg += "Product Width must be number!";
         }
         if(errorMsg.length() == 0){
             return true;

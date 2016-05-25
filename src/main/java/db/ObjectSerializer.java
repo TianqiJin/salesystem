@@ -40,7 +40,6 @@ public interface ObjectSerializer<E> {
             mapper.writeValue(payInfoWriter, transaction.getPayinfo());
             JsonFactory jsonfactory = new JsonFactory();
             String typeJson = null;
-            String payinfo = null;
             try {
                 JsonGenerator jsonGenerator = jsonfactory.createJsonGenerator(typeWriter);
                 jsonGenerator.writeStartObject();
@@ -55,6 +54,7 @@ public interface ObjectSerializer<E> {
                 logger.error(e.getMessage());
                 e.printStackTrace();
             }
+            System.out.println(productInfoWriter.toString());
             return new Object[]{
                     productInfoWriter.toString(),
                     transaction.getDate(),

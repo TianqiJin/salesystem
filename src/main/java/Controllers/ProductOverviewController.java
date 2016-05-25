@@ -5,9 +5,7 @@ import MainClass.SaleSystem;
 import db.DBExecuteProduct;
 import db.DBExecuteTransaction;
 import db.DBQueries;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.ReadOnlyIntegerWrapper;
-import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.*;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -55,7 +53,7 @@ public class ProductOverviewController implements OverviewController{
     @FXML
     private TableColumn<Product, String> productIdCol;
     @FXML
-    private TableColumn<Product, Integer> totalNumCol;
+    private TableColumn<Product, Float> totalNumCol;
     @FXML
     private TableColumn<Product, String> sizeCol;
     @FXML
@@ -90,14 +88,14 @@ public class ProductOverviewController implements OverviewController{
     @FXML
     private void initialize(){
         productIdCol.setCellValueFactory(new PropertyValueFactory<Product, String>("ProductId"));
-        totalNumCol.setCellValueFactory(new PropertyValueFactory<Product, Integer>("totalNum"));
+        totalNumCol.setCellValueFactory(new PropertyValueFactory<Product, Float>("totalNum"));
         sizeCol.setCellValueFactory(new PropertyValueFactory<Product, String>("size"));
-        totalNumCol.setCellFactory(new Callback<TableColumn<Product, Integer>, TableCell<Product, Integer>>() {
+        totalNumCol.setCellFactory(new Callback<TableColumn<Product, Float>, TableCell<Product, Float>>() {
             @Override
-            public TableCell<Product, Integer> call(TableColumn<Product, Integer> param) {
-                return new TableCell<Product, Integer>(){
+            public TableCell<Product, Float> call(TableColumn<Product, Float> param) {
+                return new TableCell<Product, Float>(){
                     @Override
-                    public void updateItem(Integer item, boolean empty){
+                    public void updateItem(Float item, boolean empty){
                         super.updateItem(item, empty);
                         if(item == null || empty){
                             setText(null);
@@ -121,10 +119,7 @@ public class ProductOverviewController implements OverviewController{
         productTransactionQuantityCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Transaction, Number>, ObservableValue<Number>>() {
             @Override
             public ObservableValue<Number> call(TableColumn.CellDataFeatures<Transaction, Number> param) {
-                return new SimpleIntegerProperty(
-                        param.getValue().getProductTransactionList().get(0).getQuantity()/
-                        param.getValue().getProductTransactionList().get(0).getSizeNumeric()/
-                        param.getValue().getProductTransactionList().get(0).getPiecesPerBox());
+                return new SimpleIntegerProperty(param.getValue().getProductTransactionList().get(0).getBoxNum().getBox());
             }
         });
 
@@ -149,7 +144,7 @@ public class ProductOverviewController implements OverviewController{
         int selectedIndex = productTable.getSelectionModel().getSelectedIndex();
         if(selectedIndex >= 0){
             String tempID = productTable.getItems().get(selectedIndex).getProductId();
-            int temptotalNum = productTable.getItems().get(selectedIndex).getTotalNum();
+            float temptotalNum = productTable.getItems().get(selectedIndex).getTotalNum();
             Alert alertConfirm = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete this product?");
             Optional<ButtonType> result =  alertConfirm.showAndWait();
             boolean flag = true;

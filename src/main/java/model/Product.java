@@ -27,18 +27,18 @@ public class Product extends ProductBase{
 
     public static class ProductBuilder{
         private String productId;
-        private int totalNum;
+        private float totalNum;
         private float unitPrice;
         private String texture = null;
         private String size = null;
         private int piecesPerBox;
-        private int sizeNumeric;
+        private float sizeNumeric;
 
         public ProductBuilder productId(String productId){
             this.productId = productId;
             return this;
         }
-        public ProductBuilder totalNum(int totalNum){
+        public ProductBuilder totalNum(float totalNum){
             this.totalNum = totalNum;
             return this;
         }
@@ -54,7 +54,7 @@ public class Product extends ProductBase{
             this.size = size;
             return this;
         }
-        public ProductBuilder sizeNumeric(int sizeNumeric){
+        public ProductBuilder sizeNumeric(float sizeNumeric){
             this.sizeNumeric = sizeNumeric;
             return this;
         }

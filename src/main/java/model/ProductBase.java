@@ -17,27 +17,27 @@ public abstract class ProductBase {
 
     private static Logger logger= Logger.getLogger(ProductBase.class);
     private StringProperty productId;
-    private IntegerProperty totalNum;
+    private FloatProperty totalNum;
     private FloatProperty unitPrice;
     private IntegerProperty piecesPerBox;
     private StringProperty size;
-    private IntegerProperty sizeNumeric;
+    private FloatProperty sizeNumeric;
 
     public ProductBase(Object... params){
         if (params[0]!=null) {
             this.productId = new SimpleStringProperty((String) params[0]);
-            this.totalNum = new SimpleIntegerProperty((Integer) params[1]);
+            this.totalNum = new SimpleFloatProperty((Float) params[1]);
             this.unitPrice = new SimpleFloatProperty((Float) params[2]);
             this.piecesPerBox = new SimpleIntegerProperty((Integer) params[3]);
             this.size = new SimpleStringProperty((String) params[4]);
-            this.sizeNumeric = new SimpleIntegerProperty((Integer) params[5]);
+            this.sizeNumeric = new SimpleFloatProperty((Float) params[5]);
         }else{
             this.productId = new SimpleStringProperty(null);
-            this.totalNum = new SimpleIntegerProperty(0) ;
+            this.totalNum = new SimpleFloatProperty(0) ;
             this.unitPrice = new SimpleFloatProperty(0);
             this.piecesPerBox = new SimpleIntegerProperty(0);
             this.size = new SimpleStringProperty(null);
-            this.sizeNumeric = new SimpleIntegerProperty(0);
+            this.sizeNumeric = new SimpleFloatProperty(0);
         }
     }
 
@@ -61,11 +61,11 @@ public abstract class ProductBase {
         this.unitPrice.set(unitPrice);
     }
 
-    public int getTotalNum() {
+    public float getTotalNum() {
         return totalNum.get();
     }
 
-    public void setTotalNum(int totalNum) {
+    public void setTotalNum(float totalNum) {
         this.totalNum.set(totalNum);
     }
 
@@ -74,7 +74,7 @@ public abstract class ProductBase {
         return productId;
     }
 
-    public IntegerProperty totalNumProperty() {
+    public FloatProperty totalNumProperty() {
         return totalNum;
     }
 
@@ -103,18 +103,18 @@ public abstract class ProductBase {
         ScriptEngineManager mgr = new ScriptEngineManager();
         ScriptEngine engine = mgr.getEngineByName("JavaScript");
         try {
-            this.sizeNumeric = new SimpleIntegerProperty(Integer.valueOf(engine.eval(size).toString()));
+            this.sizeNumeric = new SimpleFloatProperty(Float.valueOf(engine.eval(size).toString()));
         } catch (ScriptException e) {
             logger.error(e.getMessage());
             e.printStackTrace();
         }
     }
 
-    public int getSizeNumeric() {
+    public float getSizeNumeric() {
         return sizeNumeric.get();
     }
 
-    public IntegerProperty sizeNumericProperty() {
+    public FloatProperty sizeNumericProperty() {
         return sizeNumeric;
     }
 }

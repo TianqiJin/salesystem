@@ -487,7 +487,7 @@ public class GenerateReturnTransactController {
                 dbExecuteTransaction.insertIntoDatabase(DBQueries.InsertQueries.Transaction.INSERT_INTO_TRANSACTION,
                         objects);
                 for(ProductTransaction tmp : transaction.getProductTransactionList()){
-                    int remain = tmp.getTotalNum() + tmp.getQuantity();
+                    float remain = tmp.getTotalNum() + tmp.getQuantity();
                     dbExecuteProduct.updateDatabase(DBQueries.UpdateQueries.Product.UPDATE_PRODUCT_QUANTITY, remain, tmp.getProductId());
                 }
                 if(transaction.getPaymentType().equals("Store Credit")){

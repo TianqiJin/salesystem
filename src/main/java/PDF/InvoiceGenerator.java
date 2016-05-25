@@ -123,9 +123,9 @@ public class InvoiceGenerator {
             //total+=product.getSubTotal();
             table.addCell(getCellwithBackground(product.getProductId(), Element.ALIGN_LEFT, totalFont, row));
             table.addCell(getCellwithBackground(product.getSize(), Element.ALIGN_LEFT, totalFont, row));
-            int pieces = product.getQuantity() / product.getSizeNumeric();
-            int boxes = pieces/product.getPiecesPerBox();
-            int res = pieces%product.getPiecesPerBox();
+            float pieces = product.getQuantity() / product.getSizeNumeric();
+            float boxes = pieces/product.getPiecesPerBox();
+            float res = pieces%product.getPiecesPerBox();
             String displayNum = boxes+" boxes";
             if(res!=0){
                 displayNum+=", "+res+" pieces";
