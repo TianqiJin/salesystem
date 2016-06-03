@@ -83,7 +83,7 @@ public interface ObjectDeserializer<E> {
                 JsonNode rootProductInfo = mapper.readValue(rs.getString("ProductInfo"), JsonNode.class);
 
                 for(JsonNode tmpNode: rootProductInfo){
-                    JsonNode rootBox =  rootProductInfo.findPath("boxNum");
+                    JsonNode rootBox =  tmpNode.findValue("boxNum");
                     list.add(new ProductTransaction.ProductTransactionBuilder()
                             .productId(tmpNode.path("productId").asText())
                             .totalNum(new BigDecimal(String.valueOf(tmpNode.path("totalNum").asDouble())).setScale(2, BigDecimal.ROUND_HALF_EVEN).floatValue())

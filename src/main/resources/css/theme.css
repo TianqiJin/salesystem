@@ -19,11 +19,15 @@
 	-fx-font-weight: bold;
 }
 .button {
-	-fx-padding: 5 25 5 25;
+	-fx-padding: 3 25 3 25;
 	-fx-border-width: 2;
 	-fx-background-radius: 0;
 }
 .progress-bar > .bar {
 	-fx-background-insets: 1 1 2 1;
 	-fx-padding: 0.20em;
+}
+.text-field-table-cell:filled {
+	-fx-background-color:sandybrown;
+	-fx-border-color: cornsilk;
 }

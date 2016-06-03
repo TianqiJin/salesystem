@@ -19,7 +19,6 @@ import java.util.Date;
 public class InvoiceGenerator {
     private static Logger logger = Logger.getLogger(InvoiceGenerator.class);
     static Font catFont = new Font(Font.FontFamily.TIMES_ROMAN, 20);
-    //static Font redFont = new Font(Font.FontFamily.TIMES_ROMAN, 12,BaseColor.RED);
     static Font subFont = new Font(Font.FontFamily.TIMES_ROMAN, 18);
     static Font smallBold = new Font(Font.FontFamily.TIMES_ROMAN, 14,Font.BOLD);
     static Font tableTitle = new Font(Font.FontFamily.COURIER, 12, Font.BOLD,BaseColor.WHITE);
@@ -118,14 +117,11 @@ public class InvoiceGenerator {
         table.addCell(getCellTitle("Size", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
         table.addCell(getCellTitle("Qty(Boxes)", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
         int row=0;
-        double total=0;
         for (ProductTransaction product : invoice.getProducts()) {
-            //total+=product.getSubTotal();
             table.addCell(getCellwithBackground(product.getProductId(), Element.ALIGN_LEFT, totalFont, row));
             table.addCell(getCellwithBackground(product.getSize(), Element.ALIGN_LEFT, totalFont, row));
-            float pieces = product.getQuantity() / product.getSizeNumeric();
-            float boxes = pieces/product.getPiecesPerBox();
-            float res = pieces%product.getPiecesPerBox();
+            int boxes = product.getBoxNum().getBox();
+            int res = product.getBoxNum().getResidualTile();
             String displayNum = boxes+" boxes";
             if(res!=0){
                 displayNum+=", "+res+" pieces";
@@ -133,39 +129,6 @@ public class InvoiceGenerator {
             table.addCell(getCellwithBackground(displayNum, Element.ALIGN_RIGHT, totalFont, row));
             row++;
         }
-//        table.addCell(getCellHolder());
-//        table.addCell(getCellHolder());
-//        table.addCell(getCellHolder());
-//        table.addCell(getCellNoWrap("Subtotal:", Element.ALIGN_LEFT, tinyBold));
-//        table.addCell(getCellNoWrap("$CAD   " + total, Element.ALIGN_JUSTIFIED_ALL, smallText));
-
-//        table.addCell(getCellHolder());
-//        table.addCell(getCellHolder());
-//        table.addCell(getCellHolder());
-//        table.addCell(getCellUnder("Taxable:", Element.ALIGN_LEFT, tinyBold));
-//        table.addCell(getCellUnder("$CAD   " + (invoice.getTotal() - total), Element.ALIGN_JUSTIFIED_ALL, smallText));
-
-//        table.addCell(getCellHolder());
-//        table.addCell(getCellHolder());
-//        table.addCell(getCellHolder());
-//        table.addCell(getCellTop("Total:", Element.ALIGN_LEFT, totalFont));
-//        table.addCell(getCellTop("$CAD  " + invoice.getTotal(), Element.ALIGN_JUSTIFIED_ALL, totalFont));
-
-//        double paid =0;
-//        for (PaymentRecord paymentRecord : invoice.getPaymentRecords()){
-//            paid+=paymentRecord.getPaid();
-//        }
-//        table.addCell(getCellHolder());
-//        table.addCell(getCellHolder());
-//        table.addCell(getCellHolder());
-//        table.addCell(getCellUnder("Paid:", Element.ALIGN_LEFT, totalFont));
-//        table.addCell(getCell("$CAD  " + paid, Element.ALIGN_JUSTIFIED_ALL, totalFont));
-//
-//        table.addCell(getCellHolder());
-//        table.addCell(getCellHolder());
-//        table.addCell(getCellHolder());
-//        table.addCell(getCellTop("Total Due:", Element.ALIGN_LEFT, totalFont));
-//        table.addCell(getCellTop("$CAD  " + (invoice.getTotal()-paid), Element.ALIGN_JUSTIFIED_ALL, totalFont));
 
         document.add(table);
         p = new Paragraph("Payment Information:",addressFont);

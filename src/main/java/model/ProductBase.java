@@ -9,6 +9,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * Created by tjin on 12/13/2015.
@@ -103,7 +104,7 @@ public abstract class ProductBase {
         ScriptEngineManager mgr = new ScriptEngineManager();
         ScriptEngine engine = mgr.getEngineByName("JavaScript");
         try {
-            this.sizeNumeric = new SimpleFloatProperty(Float.valueOf(engine.eval(size).toString()));
+            this.sizeNumeric = new SimpleFloatProperty(new BigDecimal(engine.eval(size).toString()).setScale(2, RoundingMode.HALF_EVEN).floatValue());
         } catch (ScriptException e) {
             logger.error(e.getMessage());
             e.printStackTrace();

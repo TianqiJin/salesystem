@@ -198,11 +198,11 @@ public class TransactionEditDialogController {
             StringBuffer overviewProductTransactionString = new StringBuffer();
             for(ProductTransaction tmp: transaction.getProductTransactionList()){
                 overviewProductTransactionString
-                        .append("Product ID: " + tmp.getProductId() + " ")
-                        .append("Total Num: " + tmp.getTotalNum() + " ")
-                        .append("Quantity: " + tmp.getQuantity() + " ")
-                        .append("Unit Price: " + tmp.getUnitPrice() + " ")
-                        .append("Sub Total: " + tmp.getSubTotal() + " ")
+                        .append("Product ID: " + tmp.getProductId() + "\n")
+                        .append("Total Num: " + tmp.getTotalNum() + "\n")
+                        .append("Quantity: " + tmp.getQuantity() + "\n")
+                        .append("Unit Price: " + tmp.getUnitPrice() + "\n")
+                        .append("Sub Total: " + tmp.getSubTotal() + "\n")
                         .append("\n");
             }
             overviewTransactionString
@@ -351,9 +351,6 @@ public class TransactionEditDialogController {
                 }
             }
         }
-        if(!isProductQuantityValid()){
-            errorMsgBuilder.append("Some product's quantity exceeds the stock quota!\n");
-        }
         if(errorMsgBuilder.length() != 0){
             return false;
         }
@@ -387,14 +384,6 @@ public class TransactionEditDialogController {
         return true;
     }
 
-    private boolean isProductQuantityValid(){
-        for(ProductTransaction tmp : transaction.getProductTransactionList()){
-            if(tmp.getTotalNum() - tmp.getQuantity() < 0){
-                return false;
-            }
-        }
-        return true;
-    }
 
     private Integer returnDiscount(){
         if(this.customer != null){

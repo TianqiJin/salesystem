@@ -70,7 +70,7 @@ public class GenerateReturnTransactController {
     @FXML
     private TableColumn<ProductTransaction, BigDecimal> unitPriceCol;
     @FXML
-    private TableColumn<ProductTransaction, Integer> qtyCol;
+    private TableColumn<ProductTransaction, Float> qtyCol;
     @FXML
     private TableColumn<ProductTransaction, Integer> sizeCol;
     @FXML
@@ -118,30 +118,23 @@ public class GenerateReturnTransactController {
         stockCol.setCellValueFactory(new PropertyValueFactory<>("totalNum"));
         sizeCol.setCellValueFactory(new PropertyValueFactory<>("sizeNumeric"));
         qtyCol.setCellValueFactory(new PropertyValueFactory<>("quantity"));
-        qtyCol.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<Integer>(){
+        qtyCol.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<Float>() {
             @Override
-            public Integer fromString(String string) {
-                return Integer.valueOf(string);
+            public String toString(Float object) {
+                return String.valueOf(object);
             }
-            public String toString(Integer integer){
-                return String.valueOf(integer);
+
+            @Override
+            public Float fromString(String string) {
+                return Float.valueOf(string);
             }
         }));
-        qtyCol.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ProductTransaction, Integer>>() {
+        qtyCol.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ProductTransaction, Float>>() {
             @Override
-            public void handle(TableColumn.CellEditEvent<ProductTransaction, Integer> event) {
-                if(event.getNewValue() % event.getTableView().getItems().get(event.getTablePosition().getRow()).getSizeNumeric() != 0){
-                    new AlertBuilder().alertTitle("Purchase Quantity Error")
-                            .alertType(Alert.AlertType.ERROR)
-                            .alertContentText("User has to buy the whole piece of tile.")
-                            .build()
-                            .showAndWait();
-                    refreshTable();
-                }else{
-                    (event.getTableView().getItems().get(event.getTablePosition().getRow()))
-                            .setQuantity(event.getNewValue());
-                    showPaymentDetails(productTransactionObservableList, customer);
-                }
+            public void handle(TableColumn.CellEditEvent<ProductTransaction, Float> event) {
+                (event.getTableView().getItems().get(event.getTablePosition().getRow()))
+                        .setQuantity(event.getNewValue());
+                showPaymentDetails(productTransactionObservableList, customer);
             }
         });
         discountCol.setCellValueFactory(new PropertyValueFactory<>("discount"));

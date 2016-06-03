@@ -136,11 +136,13 @@ public class TransactionOverviewController implements OverviewController{
     @FXML
     private void handleAddTransaction(){
         ContainerClass containerClass = saleSystem.showGenerateCustomerTransactionDialog();
-        Transaction newTransaction = containerClass.getTransaction();
-        if(newTransaction != null){
-            transactionList.add(newTransaction);
-            customerList=containerClass.getCustomers();
-            loadDataFromDB();
+        if(containerClass != null){
+            Transaction newTransaction = containerClass.getTransaction();
+            if(newTransaction != null){
+                transactionList.add(newTransaction);
+                customerList=containerClass.getCustomers();
+                loadDataFromDB();
+            }
         }
     }
 
