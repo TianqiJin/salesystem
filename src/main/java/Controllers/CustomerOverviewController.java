@@ -160,6 +160,7 @@ public class CustomerOverviewController implements OverviewController{
                     dbExecute.updateDatabase(DBQueries.UpdateQueries.Customer.UPDATE_CUSTOMER,
                             selectedCustomer.getAllPropertiesForUpdate());
                 }catch(SQLException e){
+                    logger.error(e.getMessage());
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Unable To Edit New Customer");
                     alert.setHeaderText(null);

@@ -536,6 +536,7 @@ public class SaleSystem extends Application{
         try{
             dbExecuteProperty.updateDatabase(DBQueries.UpdateQueries.Property.UPDATE_PRODUCT_WARN_LIMIT, productLimit);
         }catch(SQLException e){
+            logger.error(e.getMessage());
             new AlertBuilder()
                     .alertType(Alert.AlertType.ERROR)
                     .alertContentText(Constant.DatabaseError.databaseUpdateError + e.toString())
@@ -549,6 +550,7 @@ public class SaleSystem extends Application{
         try{
             dbExecuteProperty.updateDatabase(DBQueries.UpdateQueries.Property.UPDATE_PST_RATE, pstRate);
         }catch(SQLException e){
+            logger.error(e.getMessage());
             new AlertBuilder()
                     .alertType(Alert.AlertType.ERROR)
                     .alertContentText(Constant.DatabaseError.databaseUpdateError + e.toString())
@@ -562,6 +564,7 @@ public class SaleSystem extends Application{
         try{
             dbExecuteProperty.updateDatabase(DBQueries.UpdateQueries.Property.UPDATE_GST_RATE, gstRate);
         }catch(SQLException e){
+            logger.error(e.getMessage());
             new AlertBuilder()
                     .alertType(Alert.AlertType.ERROR)
                     .alertContentText(Constant.DatabaseError.databaseUpdateError + e.toString())

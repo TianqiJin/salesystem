@@ -133,6 +133,7 @@ public class StaffOverviewController implements OverviewController{
                 dbExecute.insertIntoDatabase(DBQueries.InsertQueries.Staff.INSERT_INTO_STAFF,
                         newStaff.getAllProperties());
             }catch(SQLException e){
+                logger.error(e.getMessage());
                 new AlertBuilder()
                         .alertType(Alert.AlertType.ERROR)
                         .alertTitle(Constant.DatabaseError.databaseErrorAlertTitle)
@@ -155,6 +156,7 @@ public class StaffOverviewController implements OverviewController{
                     dbExecute.updateDatabase(DBQueries.UpdateQueries.Staff.UPDATE_STAFF,
                             selectedStaff.getAllPropertiesForUpdate());
                 }catch(SQLException e){
+                    logger.error(e.getMessage());
                     new AlertBuilder()
                             .alertType(Alert.AlertType.ERROR)
                             .alertTitle(Constant.DatabaseError.databaseErrorAlertTitle)

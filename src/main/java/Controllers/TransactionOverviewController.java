@@ -253,6 +253,7 @@ public class TransactionOverviewController implements OverviewController{
         if(selectedTransaction != null){
             if(!selectedTransaction.getType().equals(Transaction.TransactionType.OUT)){
                 new AlertBuilder()
+                        .alertTitle("Edit Transaction Error")
                         .alertType(Alert.AlertType.ERROR)
                         .alertContentText("You can only edit OUT transaction!\n")
                         .build()
@@ -274,6 +275,7 @@ public class TransactionOverviewController implements OverviewController{
                 new AlertBuilder()
                         .alertType(Alert.AlertType.ERROR)
                         .alertContentText("Please select OUT/RETURN transaction to generate Invoice!\n")
+                        .alertTitle("Invoice Generation Error")
                         .build()
                         .showAndWait();
             }else{

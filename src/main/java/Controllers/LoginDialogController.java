@@ -12,6 +12,7 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import model.Staff;
+import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -20,6 +21,7 @@ import java.util.List;
  * Created by tjin on 12/8/2015.
  */
 public class LoginDialogController {
+    private static Logger logger= Logger.getLogger(LoginDialogController.class);
     private Stage dialogStage;
     private int state;
     private static List<Staff> returnedStaff;
@@ -69,6 +71,7 @@ public class LoginDialogController {
                 returnedStaff = dbExecute.selectFromDatabase(DBQueries.SelectQueries.Staff.SELECT_USERNAME_STAFF,
                         userName);
             }catch(SQLException e){
+                logger.error(e.getMessage());
                 Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to grab data from database!\n" + e.getMessage());
                 alert.setTitle("Database Error");
                 alert.showAndWait();

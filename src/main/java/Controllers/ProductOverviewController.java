@@ -191,6 +191,7 @@ public class ProductOverviewController implements OverviewController{
                 dbExecute.insertIntoDatabase(DBQueries.InsertQueries.Product.INSERT_INTO_PRODUCT,
                         newProduct.getAllProperties());
             }catch(SQLException e){
+                logger.error(e.getMessage());
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Unable To Add New Product.\n" + e.getMessage());
                 alert.setHeaderText(null);
@@ -212,6 +213,7 @@ public class ProductOverviewController implements OverviewController{
                     dbExecute.updateDatabase(DBQueries.UpdateQueries.Product.UPDATE_PRODUCT,
                             selectedProduct.getAllPropertiesForUpdate());
                 }catch(SQLException e){
+                    logger.error(e.getMessage());
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Unable To Edit Product");
                     alert.setHeaderText(null);

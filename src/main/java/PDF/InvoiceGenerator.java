@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -238,11 +239,11 @@ public class InvoiceGenerator {
             table.addCell(buyer);
             PdfPCell seller = getPartyAddress("To:",
                     basic.getSellerName(),
-                    basic.getSellerLineOne(),
-                    basic.getSellerLineTwo(),
-                    basic.getSellerCountryID(),
-                    basic.getSellerPostcode(),
-                    basic.getSellerCityName());
+                    "N/A",
+                    "N/A",
+                    "N/A",
+                    "N/A",
+                    "N/A");
             table.addCell(seller);
 
         }else if (invoice.getTransaction().getType() == Transaction.TransactionType.OUT){
@@ -257,11 +258,11 @@ public class InvoiceGenerator {
             table.addCell(seller);
             PdfPCell buyer = getPartyAddress("To:",
                     basic.getBuyerName(),
-                    basic.getBuyerLineOne(),
-                    basic.getBuyerLineTwo(),
-                    basic.getBuyerCountryID(),
-                    basic.getBuyerPostcode(),
-                    basic.getBuyerCityName());
+                    "N/A",
+                    "N/A",
+                    "N/A",
+                    "N/A",
+                    "N/A");
             table.addCell(buyer);
 
         }
@@ -293,7 +294,7 @@ public class InvoiceGenerator {
         table.addCell(getCellHolder());
         table.addCell(getCellHolder());
         table.addCell(getCellNoWrap("Subtotal:", Element.ALIGN_LEFT, tinyBold));
-        table.addCell(getCellNoWrap("$CAD   " + total, Element.ALIGN_JUSTIFIED_ALL, smallText));
+        table.addCell(getCellNoWrap("$CAD   " + new BigDecimal(total).setScale(2, BigDecimal.ROUND_HALF_EVEN), Element.ALIGN_JUSTIFIED_ALL, smallText));
 
         double discount = invoice.getTotal()-invoice.getTransaction().getGstTax()-invoice.getTransaction().getPstTax()-total;
         if(discount>0){
@@ -303,7 +304,7 @@ public class InvoiceGenerator {
         table.addCell(getCellHolder());
         table.addCell(getCellHolder());
         table.addCell(getCellNoWrap("Discount:", Element.ALIGN_LEFT, tinyBold));
-        table.addCell(getCellNoWrap("$CAD   " + discount, Element.ALIGN_JUSTIFIED_ALL, smallText));
+        table.addCell(getCellNoWrap("$CAD   " + new BigDecimal(discount).setScale(2, BigDecimal.ROUND_HALF_EVEN), Element.ALIGN_JUSTIFIED_ALL, smallText));
 
         table.addCell(getCellHolder());
         table.addCell(getCellHolder());
@@ -337,7 +338,7 @@ public class InvoiceGenerator {
         table.addCell(getCellHolder());
         table.addCell(getCellHolder());
         table.addCell(getCellTop("Total Due:", Element.ALIGN_LEFT, totalFont));
-        table.addCell(getCellTop("$CAD  " + (invoice.getTotal()-paid), Element.ALIGN_JUSTIFIED_ALL, totalFont));
+        table.addCell(getCellTop("$CAD  " + new BigDecimal((invoice.getTotal()-paid)).setScale(2, BigDecimal.ROUND_HALF_EVEN), Element.ALIGN_JUSTIFIED_ALL, totalFont));
 
         document.add(table);
         p = new Paragraph("Payment Information:",addressFont);
@@ -367,26 +368,6 @@ public class InvoiceGenerator {
         table.setSpacingAfter(10);
         table.addCell(getCellNoWrapwithBack("THANK YOU FOR YOUR BUSINESS!", Element.ALIGN_CENTER, addressFont, BaseColor.LIGHT_GRAY));
         document.add(table);
-        // grand totals
-//        document.add(getTotalsTable(
-//                basic.getTaxBasisTotalAmount(), basic.getTaxTotalAmount(), basic.getGrandTotalAmount(), basic.getGrandTotalAmountCurrencyID(),
-//                basic.getTaxTypeCode(), basic.getTaxApplicablePercent(),
-//                basic.getTaxBasisAmount(), basic.getTaxCalculatedAmount(), basic.getTaxCalculatedAmountCurrencyID()));
-
-        // payment info
-        //document.add(getPaymentInfo(basic.getPaymentReference(), basic.getPaymentMeansPayeeFinancialInstitutionBIC(), basic.getPaymentMeansPayeeAccountIBAN()));
-
-        // XML version
-//        InvoiceDOM dom = new InvoiceDOM(basic);
-//        PdfDictionary parameters = new PdfDictionary();
-//        parameters.put(PdfName.MODDATE, new PdfDate());
-//        PdfFileSpecification fileSpec = writer.addFileAttachment(
-//                "ZUGFeRD invoice", dom.toXML(), null,
-//                "ZUGFeRD-invoice.xml", "application/xml",
-//                AFRelationshipValue.Alternative, parameters);
-//        PdfArray array = new PdfArray();
-//        array.add(fileSpec.getReference());
-//        writer.getExtraCatalog().put(PdfName.AF, array);
 
         p = new Paragraph("[Disclaimer:]",smallText);
         p.setAlignment(Element.ALIGN_LEFT);
