@@ -354,17 +354,17 @@ public class TransactionOverviewController implements OverviewController{
                         return true;
                     }
                     String lowerCase = newVal.toLowerCase();
-                    if (String.valueOf(transaction.getTransactionId()).equals(lowerCase)){
+                    if (String.valueOf(transaction.getTransactionId()).toLowerCase().equals(lowerCase)){
                         return true;
-                    }else if (transaction.getType().name().toLowerCase().contains(lowerCase)){
+                    }else if (transaction.getType().name().toLowerCase().toLowerCase().contains(lowerCase)){
                         return true;
-                    }else if (transaction.getDate().toString().toLowerCase().contains(lowerCase)){
+                    }else if (transaction.getDate().toString().toLowerCase().toLowerCase().contains(lowerCase)){
                         return true;
-                    }else if (transaction.getInfo().toLowerCase().contains(lowerCase)){
+                    }else if (transaction.getInfo().toLowerCase().toLowerCase().contains(lowerCase)){
                         return true;
                     }else if (!transaction.getType().equals(Transaction.TransactionType.IN) &&
                             customerList.stream().filter(c -> c.getUserName().equals(transaction.getInfo())).findFirst().get().getPhone() != null &&
-                            customerList.stream().filter(c -> c.getUserName().equals(transaction.getInfo())).findFirst().get().getPhone().contains(lowerCase)){
+                            customerList.stream().filter(c -> c.getUserName().equals(transaction.getInfo())).findFirst().get().getPhone().toLowerCase().contains(lowerCase)){
                         return true;
                     }
                     return false;

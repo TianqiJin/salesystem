@@ -283,11 +283,11 @@ public class ProductOverviewController implements OverviewController{
                         return true;
                     }
                     String lowerCase = newVal.toLowerCase();
-                    if (String.valueOf(product.getTotalNum()).contains(lowerCase)){
+                    if (String.valueOf(product.getTotalNum()).toLowerCase().contains(lowerCase)){
                         return true;
-                    }else if (String.valueOf(product.getProductId()).contains(lowerCase)){
+                    }else if (String.valueOf(product.getProductId()).toLowerCase().contains(lowerCase)){
                         return true;
-                    }else if(product.getSize().contains(lowerCase)){
+                    }else if(product.getSize().toLowerCase().contains(lowerCase)){
                         return true;
                     }
                     return false;
