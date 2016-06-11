@@ -102,6 +102,9 @@ public class ProductEditDialogController {
         if(!this.saleSystem.getStaff().getPosition().equals(Staff.Position.MANAGER) && isEditClicked){
             unitPriceField.setDisable(true);
         }
+        if(isEditClicked){
+            productIdField.setDisable(true);
+        }
     }
 
     private boolean isInputValid(){

@@ -1,5 +1,6 @@
 package PDF;
 
+import MainClass.SaleSystem;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 import com.itextpdf.text.xml.xmp.PdfAXmpWriter;
@@ -23,19 +24,23 @@ public class InvoiceGenerator {
     static Font subFont = new Font(Font.FontFamily.TIMES_ROMAN, 18);
     static Font smallBold = new Font(Font.FontFamily.TIMES_ROMAN, 14,Font.BOLD);
     static Font tableTitle = new Font(Font.FontFamily.COURIER, 12, Font.BOLD,BaseColor.WHITE);
-    static Font totalFont = new Font(Font.FontFamily.COURIER, 12, Font.BOLD);
+    static Font totalFont = new Font(Font.FontFamily.COURIER, 9, Font.BOLD);
     static Font addressFont = new Font(Font.FontFamily.TIMES_ROMAN, 12);
     static Font smallText = new Font(Font.FontFamily.TIMES_ROMAN, 8);
+    static Font midText = new Font(Font.FontFamily.TIMES_ROMAN, 12);
+    static Font largeText = new Font(Font.FontFamily.TIMES_ROMAN, 13);
     static Font tinyBold = new Font(Font.FontFamily.TIMES_ROMAN, 8,Font.BOLD);
     private static String destination_Invoice;
     private static String destination_Delivery;
     private Invoice invoice;
+    private SaleSystem saleSystem;
 
-    public InvoiceGenerator(String destination_Folder){
+    public InvoiceGenerator(String destination_Folder, SaleSystem saleSystem){
         this.destination_Invoice =
                 new File(destination_Folder, "Invoice_" + new SimpleDateFormat("yyyy-MM-dd'at'HH-mm-ss").format(new Date()) + ".pdf").getPath();
         this.destination_Delivery =
                 new File(destination_Folder, "Delivery_" + new SimpleDateFormat("yyyy-MM-dd'at'HH-mm-ss").format(new Date()) + ".pdf").getPath();
+        this.saleSystem = saleSystem;
 
     }
     public void buildInvoice(Transaction transaction, Customer customer, Staff staff) throws Exception {
@@ -158,7 +163,7 @@ public class InvoiceGenerator {
         table.addCell(getCellNoWrapwithBack("THANK YOU FOR YOUR BUSINESS!", Element.ALIGN_CENTER, addressFont, BaseColor.LIGHT_GRAY));
         document.add(table);
 
-        p = new Paragraph("[Disclaimer:]",smallText);
+        p = new Paragraph("[Disclaimer:]",midText);
         p.setAlignment(Element.ALIGN_LEFT);
         document.add(p);
         p = new Paragraph("1. Payments\n" +
@@ -193,7 +198,7 @@ public class InvoiceGenerator {
                 "\n" +
                 "6. Installations\n" +
                 "Milan will not provide any tile installers for customers. Milan do not have responsibility on any \n" +
-                "installation issues.",smallText);
+                "installation issues.",largeText);
         p.setAlignment(Element.ALIGN_LEFT);
         document.add(p);
         // step 5
@@ -225,6 +230,11 @@ public class InvoiceGenerator {
         p.setAlignment(Element.ALIGN_RIGHT);
         document.add(p);
 
+        //gstNum Field
+        Paragraph pGst = new Paragraph("GST Number: " + saleSystem.getGstNum(), tinyBold);
+        p.setAlignment(Element.ALIGN_LEFT);
+        document.add(pGst);
+        document.add(new Paragraph());
         // Address seller / buyer
         PdfPTable table = new PdfPTable(2);
         if (invoice.getTransaction().getType()== Transaction.TransactionType.RETURN){
@@ -239,11 +249,7 @@ public class InvoiceGenerator {
             table.addCell(buyer);
             PdfPCell seller = getPartyAddress("To:",
                     basic.getSellerName(),
-                    "N/A",
-                    "N/A",
-                    "N/A",
-                    "N/A",
-                    "N/A");
+                    " ", " ", " ", " ", " ");
             table.addCell(seller);
 
         }else if (invoice.getTransaction().getType() == Transaction.TransactionType.OUT){
@@ -258,11 +264,7 @@ public class InvoiceGenerator {
             table.addCell(seller);
             PdfPCell buyer = getPartyAddress("To:",
                     basic.getBuyerName(),
-                    "N/A",
-                    "N/A",
-                    "N/A",
-                    "N/A",
-                    "N/A");
+                    " ", " ", " ", " ", " ");
             table.addCell(buyer);
 
         }
@@ -369,7 +371,7 @@ public class InvoiceGenerator {
         table.addCell(getCellNoWrapwithBack("THANK YOU FOR YOUR BUSINESS!", Element.ALIGN_CENTER, addressFont, BaseColor.LIGHT_GRAY));
         document.add(table);
 
-        p = new Paragraph("[Disclaimer:]",smallText);
+        p = new Paragraph("[Disclaimer:]",midText);
         p.setAlignment(Element.ALIGN_LEFT);
         document.add(p);
         p = new Paragraph("1. Payments\n" +
@@ -404,7 +406,7 @@ public class InvoiceGenerator {
                 "\n" +
                 "6. Installations\n" +
                 "Milan will not provide any tile installers for customers. Milan do not have responsibility on any \n" +
-                "installation issues.",smallText);
+                "installation issues.",largeText);
         p.setAlignment(Element.ALIGN_LEFT);
         document.add(p);
         // step 5
@@ -423,7 +425,8 @@ public class InvoiceGenerator {
         cell.addElement(new Paragraph(name, addressFont));
         cell.addElement(new Paragraph(line1, addressFont));
         cell.addElement(new Paragraph(line2, addressFont));
-        cell.addElement(new Paragraph(String.format("%s-%s %s", countryID, postcode, city), addressFont));
+        cell.addElement(new Paragraph(String.format("%s %s", countryID, city), addressFont));
+        cell.addElement(new Paragraph(postcode, addressFont));
         return cell;
     }
 

@@ -7,11 +7,13 @@ public class Property {
     private Integer productWarnLimit;
     private Integer gstRate;
     private Integer pstRate;
+    private String gstNumber;
 
-    public Property(int productWarnLimit, int gstRate, int pstRate){
+    public Property(int productWarnLimit, int gstRate, int pstRate, String gstNumber){
         this.productWarnLimit = productWarnLimit;
         this.gstRate = gstRate;
         this.pstRate = pstRate;
+        this.gstNumber = gstNumber;
     }
 
     public Integer getProductWarnLimit() {
@@ -36,5 +38,13 @@ public class Property {
 
     public void setPstRate(Integer pstRate) {
         this.pstRate = pstRate;
+    }
+
+    public String getGstNumber() {
+        return gstNumber;
+    }
+
+    public void setGstNumber(String gstNumber) {
+        this.gstNumber = gstNumber;
     }
 }

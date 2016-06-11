@@ -399,6 +399,7 @@ public class SaleSystem extends Application{
             dialogStage.initModality(Modality.WINDOW_MODAL);
 
             InvoiceDirectoryEditDialogController controller = loader.getController();
+            controller.setMainClass(SaleSystem.this);
             controller.setCustomer(customer);
             controller.setTransaction(transaction);
             controller.setStaff(staff);
@@ -532,6 +533,8 @@ public class SaleSystem extends Application{
 
     public int getGstRate(){ return property.getGstRate();}
 
+    public String getGstNum(){ return property.getGstNumber();}
+
     public void setProductLimit(Integer productLimit){
         try{
             dbExecuteProperty.updateDatabase(DBQueries.UpdateQueries.Property.UPDATE_PRODUCT_WARN_LIMIT, productLimit);
@@ -563,6 +566,20 @@ public class SaleSystem extends Application{
     public void setGstRate(Integer gstRate){
         try{
             dbExecuteProperty.updateDatabase(DBQueries.UpdateQueries.Property.UPDATE_GST_RATE, gstRate);
+        }catch(SQLException e){
+            logger.error(e.getMessage());
+            new AlertBuilder()
+                    .alertType(Alert.AlertType.ERROR)
+                    .alertContentText(Constant.DatabaseError.databaseUpdateError + e.toString())
+                    .build()
+                    .showAndWait();
+        }
+        loadPropertyFromDB();
+    }
+
+    public void setGstNumber(String gstNumber){
+        try{
+            dbExecuteProperty.updateDatabase(DBQueries.UpdateQueries.Property.UPDATE_GST_NUMBER, gstNumber);
         }catch(SQLException e){
             logger.error(e.getMessage());
             new AlertBuilder()

@@ -23,6 +23,8 @@ public class PropertySettingDialogController {
     @FXML
     private TextField pstField;
     @FXML
+    private TextField gstNumField;
+    @FXML
     private Button confirmButton;
     @FXML
     private Button cancelButton;
@@ -40,6 +42,9 @@ public class PropertySettingDialogController {
             }
             if(!gstField.getText().trim().isEmpty()){
                 saleSystem.setGstRate(Integer.valueOf(gstField.getText()));
+            }
+            if(!gstNumField.getText().trim().isEmpty()){
+                saleSystem.setGstNumber(gstNumField.getText());
             }
             dialogStage.close();
         }
@@ -62,6 +67,7 @@ public class PropertySettingDialogController {
         productWarnLimitField.setText(String.valueOf(this.saleSystem.getProductWarnLimit()));
         gstField.setText(String.valueOf(this.saleSystem.getGstRate()));
         pstField.setText(String.valueOf(this.saleSystem.getPstRate()));
+        gstNumField.setText(this.saleSystem.getGstNum());
     }
 
     private boolean isInputValid(){

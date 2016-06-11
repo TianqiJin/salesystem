@@ -23,6 +23,7 @@ import model.ProductTransaction;
 import model.Staff;
 import model.Transaction;
 import org.apache.log4j.Logger;
+import util.AlertBuilder;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -154,9 +155,8 @@ public class ProductOverviewController implements OverviewController{
                             productTable.getItems().get(selectedIndex).getProductId());
                 }catch(SQLException e){
                     logger.error(e.getMessage());
-                    e.printStackTrace();
                     flag = false;
-                    Alert alert = new Alert(Alert.AlertType.ERROR, "Error when deleting product: "+tempID+" "+temptotalNum+"pieces");
+                    Alert alert = new Alert(Alert.AlertType.ERROR, "Error When Deleting Product: "+tempID);
                     alert.setTitle("Delete Product Error");
                     alert.showAndWait();
                 }finally{
@@ -165,7 +165,7 @@ public class ProductOverviewController implements OverviewController{
                         Alert alert = new Alert(Alert.AlertType.INFORMATION);
                         alert.setTitle("Delete Product Successfully");
                         alert.setHeaderText(null);
-                        alert.setContentText("Successfully deleted product: "+tempID+" "+temptotalNum+"pieces");
+                        alert.setContentText("Successfully Deleted Product: "+tempID+" "+temptotalNum+" Feet");
                         alert.showAndWait();
                     }
                 }

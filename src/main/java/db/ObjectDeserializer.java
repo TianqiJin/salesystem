@@ -149,7 +149,7 @@ public interface ObjectDeserializer<E> {
     public static final ObjectDeserializer<Property> PROPERTY_OBJECT_DESERIALIZER =  new ObjectDeserializer<Property>() {
         @Override
         public Property deserialize(ResultSet rs) throws SQLException {
-            Property property = new Property(rs.getInt("ProductWarnLimit"), rs.getInt("GstTax"), rs.getInt("PstTax"));
+            Property property = new Property(rs.getInt("ProductWarnLimit"), rs.getInt("GstTax"), rs.getInt("PstTax"), rs.getString("GstNum"));
             return property;
         }
     };
