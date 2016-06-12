@@ -231,7 +231,7 @@ public class InvoiceGenerator {
         document.add(p);
 
         //gstNum Field
-        Paragraph pGst = new Paragraph("GST Number: " + saleSystem.getGstNum(), tinyBold);
+        Paragraph pGst = new Paragraph("GST No. " + saleSystem.getGstNum(), tinyBold);
         p.setAlignment(Element.ALIGN_LEFT);
         document.add(pGst);
         document.add(new Paragraph());

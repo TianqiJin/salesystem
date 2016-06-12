@@ -146,7 +146,7 @@ public class ProductOverviewController implements OverviewController{
         if(selectedIndex >= 0){
             String tempID = productTable.getItems().get(selectedIndex).getProductId();
             float temptotalNum = productTable.getItems().get(selectedIndex).getTotalNum();
-            Alert alertConfirm = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete this product?");
+            Alert alertConfirm = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete product - " + tempID);
             Optional<ButtonType> result =  alertConfirm.showAndWait();
             boolean flag = true;
             if(result.isPresent() && result.get() == ButtonType.OK){
@@ -165,7 +165,7 @@ public class ProductOverviewController implements OverviewController{
                         Alert alert = new Alert(Alert.AlertType.INFORMATION);
                         alert.setTitle("Delete Product Successfully");
                         alert.setHeaderText(null);
-                        alert.setContentText("Successfully Deleted Product: "+tempID+" "+temptotalNum+" Feet");
+                        alert.setContentText("Successfully Deleted Product: "+tempID);
                         alert.showAndWait();
                     }
                 }
