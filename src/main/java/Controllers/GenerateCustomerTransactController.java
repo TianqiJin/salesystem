@@ -225,18 +225,24 @@ public class GenerateCustomerTransactController {
             @Override
             public void handle(TableColumn.CellEditEvent<ProductTransaction, Integer> event) {
                 if(event.getNewValue() > returnDiscount()){
-                    new AlertBuilder().alertTitle("Discount Error")
-                            .alertType(Alert.AlertType.ERROR)
-                            .alertContentText("User Class is " + customer.getUserClass() + ", but the given discount is " + event.getNewValue())
+                    Optional<ButtonType> result = new AlertBuilder().alertTitle("Discount Error")
+                            .alertType(Alert.AlertType.WARNING)
+                            .alertContentText("User Class is " + customer.getUserClass() + ", but the given discount is " + event.getNewValue() + "\n"
+                                    + "Press OK to proceed with this discount. Press Cancel to discard the change")
                             .build()
                             .showAndWait();
-                    refreshTable();
+                    if(result.get() == ButtonType.OK){
+                        (event.getTableView().getItems().get(event.getTablePosition().getRow()))
+                                .setDiscount(event.getNewValue());
+                        showPaymentDetails(productTransactionObservableList, customer);
+                    }else{
+                        refreshTable();
+                    }
                 }else{
                     (event.getTableView().getItems().get(event.getTablePosition().getRow()))
                             .setDiscount(event.getNewValue());
                     showPaymentDetails(productTransactionObservableList, customer);
                 }
-
             }
         });
 
