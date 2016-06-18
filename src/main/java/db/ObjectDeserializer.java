@@ -95,6 +95,7 @@ public interface ObjectDeserializer<E> {
                             .discount(tmpNode.path("discount").asInt())
                             .subTotal(new BigDecimal(String.valueOf(tmpNode.path("subTotal").asDouble())).setScale(2, BigDecimal.ROUND_HALF_EVEN).floatValue())
                             .boxNum(new BoxNum.boxNumBuilder().boxNum(rootBox.path("box").intValue()).residualTileNum(rootBox.path("residualTile").intValue()).build())
+                            .remark(tmpNode.path("remark").asText())
                             .build()
                     );
                 }

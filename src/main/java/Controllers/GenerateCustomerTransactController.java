@@ -88,6 +88,8 @@ public class GenerateCustomerTransactController {
     private TableColumn<ProductTransaction, Number> boxCol;
     @FXML
     private TableColumn<ProductTransaction, Number> residualTileCol;
+    @FXML
+    private TableColumn<ProductTransaction, String> remarkCol;
 
     @FXML
     private Label firstNameLabel;
@@ -143,6 +145,15 @@ public class GenerateCustomerTransactController {
         unitPriceCol.setCellValueFactory(new PropertyValueFactory<>("unitPrice"));
         qtyCol.setCellValueFactory(new PropertyValueFactory<>("quantity"));
         sizeCol.setCellValueFactory(new PropertyValueFactory<>("sizeNumeric"));
+        remarkCol.setCellValueFactory(new PropertyValueFactory<>("remark"));
+        remarkCol.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ProductTransaction, String>>() {
+            @Override
+            public void handle(TableColumn.CellEditEvent<ProductTransaction, String> event) {
+                (event.getTableView().getItems().get(event.getTablePosition().getRow())).setRemark(event.getNewValue().toString());
+            }
+        });
+        remarkCol.setCellFactory(TextFieldTableCell.forTableColumn());
+
         boxCol.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<Number>() {
             @Override
             public String toString(Number object) {
@@ -226,7 +237,7 @@ public class GenerateCustomerTransactController {
             public void handle(TableColumn.CellEditEvent<ProductTransaction, Integer> event) {
                 if(event.getNewValue() > returnDiscount()){
                     Optional<ButtonType> result = new AlertBuilder().alertTitle("Discount Error")
-                            .alertType(Alert.AlertType.WARNING)
+                            .alertType(Alert.AlertType.CONFIRMATION)
                             .alertContentText("User Class is " + customer.getUserClass() + ", but the given discount is " + event.getNewValue() + "\n"
                                     + "Press OK to proceed with this discount. Press Cancel to discard the change")
                             .build()
@@ -439,6 +450,7 @@ public class GenerateCustomerTransactController {
                         .append("Unit Price: " + tmp.getUnitPrice() + "\n")
                         .append("Discount (%): " + tmp.getDiscount() + "\n")
                         .append("Sub Total: " + tmp.getSubTotal() + "\n")
+                        .append("Remark: " + tmp.getRemark() + "\n")
                         .append("\n");
             }
             overviewTransactionString

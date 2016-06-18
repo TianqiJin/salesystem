@@ -511,9 +511,10 @@ public class SaleSystem extends Application{
         };
 
         getPropertyTask.setOnFailed(event -> {
+            logger.error(event.getSource().exceptionProperty().getValue());
             new AlertBuilder()
                     .alertType(Alert.AlertType.WARNING)
-                    .alertContentText(Constant.DatabaseError.databaseReturnError + event.toString())
+                    .alertContentText(Constant.DatabaseError.databaseReturnError +event.getSource().exceptionProperty().getValue())
                     .alertTitle(Constant.DatabaseError.databaseErrorAlertTitle)
                     .build()
                     .showAndWait();

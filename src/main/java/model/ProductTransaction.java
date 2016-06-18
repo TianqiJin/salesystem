@@ -22,6 +22,7 @@ public class ProductTransaction extends ProductBase{
     private FloatProperty quantity;
     private FloatProperty subTotal;
     private IntegerProperty discount;
+    private StringProperty remark;
     private BoxNum boxNum;
 
     public ProductTransaction(ProductTransactionBuilder builder){
@@ -31,6 +32,7 @@ public class ProductTransaction extends ProductBase{
         this.subTotal = new SimpleFloatProperty(builder.subTotal);
         this.subTotal.bind(quantity.multiply(unitPriceProperty()).subtract(quantity.multiply(unitPriceProperty()).multiply(discountProperty()).divide(100)));
         this.boxNum = builder.boxNum;
+        this.remark = new SimpleStringProperty(builder.remark);
     }
 
     public static class ProductTransactionBuilder{
@@ -43,6 +45,7 @@ public class ProductTransaction extends ProductBase{
         private float quantity = 0;
         private int discount = 0;
         private float subTotal = 0;
+        private String remark = null;
         private BoxNum boxNum;
 
         public ProductTransactionBuilder productId(String productId){
@@ -83,6 +86,10 @@ public class ProductTransaction extends ProductBase{
         }
         public ProductTransactionBuilder boxNum(BoxNum boxNum){
             this.boxNum = boxNum;
+            return this;
+        }
+        public ProductTransactionBuilder remark(String remark){
+            this.remark = remark;
             return this;
         }
         public ProductTransaction build(){
@@ -132,6 +139,18 @@ public class ProductTransaction extends ProductBase{
 
     public void setBoxNum(BoxNum boxNum) {
         this.boxNum = boxNum;
+    }
+
+    public String getRemark() {
+        return remark.get();
+    }
+
+    public StringProperty remarkProperty() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark.set(remark);
     }
 
     public String toString(){
