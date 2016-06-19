@@ -40,7 +40,6 @@ public interface ObjectSerializer<E> {
             mapper.writeValue(payInfoWriter, transaction.getPayinfo());
             JsonFactory jsonfactory = new JsonFactory();
             String typeJson = null;
-            String payinfo = null;
             try {
                 JsonGenerator jsonGenerator = jsonfactory.createJsonGenerator(typeWriter);
                 jsonGenerator.writeStartObject();
@@ -84,6 +83,22 @@ public interface ObjectSerializer<E> {
                     transaction.getStoreCredit(),
                     payInfoWriter.toString(),
                     transaction.getTransactionId(),
+            };
+        }
+    };
+
+    public static final ObjectSerializer<Property> PROPERTY_OBJECT_SERIALIZER = new ObjectSerializer<Property>() {
+        @Override
+        public Object[] serialize(Property property) throws SQLException, IOException {
+            StringWriter userClassWriter = new StringWriter();
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.writeValue(userClassWriter, property.getUserClass());
+            return new Object[]{
+                    property.getProductWarnLimit(),
+                    property.getPstRate(),
+                    property.getGstRate(),
+                    property.getGstNumber(),
+                    userClassWriter.toString()
             };
         }
     };

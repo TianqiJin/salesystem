@@ -10,8 +10,8 @@ public class DBQueries {
             public final static String SELECT_PRODUCTID_PROJECT = "SELECT * FROM product WHERE ProductId = ?";
         }
         public static class Customer{
-            public final static String SELECT_ALL_CUSTOMER = "SELECT * FROM Customer";
-            public final static String SELECT_SINGLE_CUSTOMER = "SELECT * FROM Customer WHERE UserName = ?";
+            public final static String SELECT_ALL_CUSTOMER = "SELECT * FROM customer";
+            public final static String SELECT_SINGLE_CUSTOMER = "SELECT * FROM customer WHERE UserName = ?";
         }
 
         public static class Transaction{
@@ -24,12 +24,12 @@ public class DBQueries {
             public final static String SELECT_STAFF_MAX_NUM = "SELECT * from staff order by StaffID desc limit 1";
         }
         public static class Property{
-            public final static String SELECT_ALL_PROPERTY = "SELECT * FROM Property";
+            public final static String SELECT_ALL_PROPERTY = "SELECT * FROM property";
         }
     }
     public static class DeleteQueries{
         public static class Customer{
-            public final static String DELETE_FROM_CUSTOMER = "DELETE FROM Customer WHERE UserName = ?";
+            public final static String DELETE_FROM_CUSTOMER = "DELETE FROM customer WHERE UserName = ?";
         }
         public static class Product{
             public final static String DELETE_FROM_PRODUCT = "DELETE FROM product WHERE ProductId = ?";
@@ -43,7 +43,7 @@ public class DBQueries {
     }
     public static class InsertQueries{
         public static class Customer{
-            public final static String INSERT_INTO_CUSTOMER = "INSERT INTO Customer "
+            public final static String INSERT_INTO_CUSTOMER = "INSERT INTO customer "
                     +"(UserName, FirstName, LastName, Street, PostalCode, City, Phone, Class, Email, StoreCredit, Company, PstNumber) "
                     +"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         }
@@ -65,10 +65,10 @@ public class DBQueries {
     }
     public static class UpdateQueries{
         public static class Customer{
-            public final static String UPDATE_CUSTOMER = "UPDATE Customer "
-                    +"SET FirstName = ?, LastName = ?, Street = ?, PostalCode = ?, City = ?, Phone = ?, Class = ?, Email = ?, StoreCredit = ?, Company = ?, PstNumber = ?"
+            public final static String UPDATE_CUSTOMER = "UPDATE customer "
+                    +"SET FirstName = ?, LastName = ?, Street = ?, PostalCode = ?, City = ?, Phone = ?, Class = ?, Email = ?, StoreCredit = ?, Company = ?, PstNumber = ? "
                     +"WHERE UserName = ? ";
-            public final static String UPDATE_CUSTOMER_STORE_CREDIT = "UPDATE Customer "
+            public final static String UPDATE_CUSTOMER_STORE_CREDIT = "UPDATE customer "
                     +"SET StoreCredit = ? "
                     +"WHERE UserName = ?";
         }
@@ -86,14 +86,19 @@ public class DBQueries {
                     +"WHERE StaffID = ? ";
         }
         public static class Property{
-            public final static String UPDATE_PRODUCT_WARN_LIMIT = "UPDATE Property "
+            public final static String UPDATE_PRODUCT_WARN_LIMIT = "UPDATE property "
                     +"SET ProductWarnLimit = ?";
 
-            public final static String UPDATE_GST_RATE = "UPDATE Property "
+            public final static String UPDATE_GST_RATE = "UPDATE property "
                     +"SET GstTax = ?";
 
-            public final static String UPDATE_PST_RATE = "UPDATE Property "
+            public final static String UPDATE_PST_RATE = "UPDATE property "
                     +"SET PstTax = ?";
+            public final static String UPDATE_GST_NUMBER = "UPDATE property "
+                    +"SET GstNum = ?";
+            public final static String UPDATE_PROPERTY = "UPDATE property "
+                    +"SET ProductWarnLimit = ?, GstTax = ?, PstTax = ?, GstNum = ?, UserClass =? "
+                    +"WHERE PropertyId = 1";
         }
         public static class Transaction{
             public final static String UPDATE_TRANSACTION_OUT = "UPDATE transaction "

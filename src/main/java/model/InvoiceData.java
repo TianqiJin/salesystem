@@ -47,7 +47,7 @@ public class InvoiceData {
         Staff staff = invoice.getStaff();
         profileImp.setSellerName(Constant.Invoice.companyName);
         profileImp.setSellerLineOne(staff.getStreet());
-        profileImp.setSellerPostcode(staff.getCity());
+        profileImp.setSellerPostcode(staff.getPostalCode());
         profileImp.setSellerCityName(staff.getCity());
         profileImp.setSellerCountryID(Constant.Invoice.companyCountry);
         Customer customer = invoice.getCustomer();

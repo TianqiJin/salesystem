@@ -4,6 +4,7 @@ import model.Product;
 import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
 
 /**

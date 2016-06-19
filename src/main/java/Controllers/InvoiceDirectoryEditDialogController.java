@@ -34,6 +34,7 @@ public class InvoiceDirectoryEditDialogController {
     private StringBuilder errorMsgBuilder;
     private Transaction transaction;
     private Staff staff;
+    private SaleSystem saleSystem;
 
     @FXML
     private TextField streetField;
@@ -87,7 +88,7 @@ public class InvoiceDirectoryEditDialogController {
             if(isInvoicedirectoryValid() && isFieldValid()){
                 Address address = new Address(streetField.getText().trim(), cityField.getText().trim(), postalCodeField.getText().trim());
                 try {
-                    InvoiceGenerator generator = new InvoiceGenerator(selectedDirectory.toString());
+                    InvoiceGenerator generator = new InvoiceGenerator(selectedDirectory.toString(), this.saleSystem);
                     generator.buildInvoice(transaction, customer, staff);
                     if (transaction.getType()== Transaction.TransactionType.OUT){
                         generator.buildDelivery(transaction,customer,staff,address);
@@ -109,7 +110,7 @@ public class InvoiceDirectoryEditDialogController {
         }else{
             if(isInvoicedirectoryValid()){
                 try {
-                    InvoiceGenerator generator = new InvoiceGenerator(selectedDirectory.toString());
+                    InvoiceGenerator generator = new InvoiceGenerator(selectedDirectory.toString(), this.saleSystem);
                     generator.buildInvoice(transaction, customer, staff);
                 }catch (Exception e){
                     logger.error(e.getMessage());
@@ -146,6 +147,10 @@ public class InvoiceDirectoryEditDialogController {
     }
     public void setStaff(Staff staff){
         this.staff = staff;
+    }
+
+    public void setMainClass(SaleSystem saleSystem){
+        this.saleSystem = saleSystem;
     }
 
     private boolean isFieldValid(){

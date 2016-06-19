@@ -16,6 +16,7 @@ import model.Customer;
 import model.Product;
 import model.Staff;
 import model.Transaction;
+import org.apache.log4j.Logger;
 import util.AutoCompleteComboBoxListener;
 
 import java.io.File;
@@ -29,6 +30,7 @@ import java.util.List;
  * Created by tjin on 12/28/15.
  */
 public class GeneratePDFReportDialog {
+    private static Logger logger= Logger.getLogger(GeneratePDFReportDialog.class);
     private Stage dialogStage;
     private List<Customer> customerList;
     private List<Product> productList;
@@ -72,6 +74,7 @@ public class GeneratePDFReportDialog {
             productList = dbExecuteProduct.selectFromDatabase(DBQueries.SelectQueries.Product.SELECT_ALL_PRODUCT);
             staffList = dbExecuteStaff.selectFromDatabase(DBQueries.SelectQueries.Staff.SELECT_ALL_STAFF);
         }catch(SQLException e){
+            logger.error(e.getMessage());
             Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to grab data from database!\n" + e.getMessage());
             alert.setTitle("Database Error");
             alert.showAndWait();
@@ -156,6 +159,7 @@ public class GeneratePDFReportDialog {
             returnedTransaction = dbExecuteTransaction.selectFromDatabase(
                             DBQueries.SelectQueries.Transaction.SELECT_ALL_TRANSACTION_FOR_REPORT, startDate, endDate);
         }catch(SQLException e){
+            logger.error(e.getMessage());
             Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to grab data from database!\n" + e.getMessage());
             alert.setTitle("Database Error");
             alert.showAndWait();

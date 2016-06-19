@@ -5,9 +5,7 @@ import MainClass.SaleSystem;
 import db.DBExecuteProduct;
 import db.DBExecuteTransaction;
 import db.DBQueries;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.ReadOnlyIntegerWrapper;
-import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.*;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -25,6 +23,7 @@ import model.ProductTransaction;
 import model.Staff;
 import model.Transaction;
 import org.apache.log4j.Logger;
+import util.AlertBuilder;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -55,7 +54,7 @@ public class ProductOverviewController implements OverviewController{
     @FXML
     private TableColumn<Product, String> productIdCol;
     @FXML
-    private TableColumn<Product, Integer> totalNumCol;
+    private TableColumn<Product, Float> totalNumCol;
     @FXML
     private TableColumn<Product, String> sizeCol;
     @FXML
@@ -90,22 +89,22 @@ public class ProductOverviewController implements OverviewController{
     @FXML
     private void initialize(){
         productIdCol.setCellValueFactory(new PropertyValueFactory<Product, String>("ProductId"));
-        totalNumCol.setCellValueFactory(new PropertyValueFactory<Product, Integer>("totalNum"));
+        totalNumCol.setCellValueFactory(new PropertyValueFactory<Product, Float>("totalNum"));
         sizeCol.setCellValueFactory(new PropertyValueFactory<Product, String>("size"));
-        totalNumCol.setCellFactory(new Callback<TableColumn<Product, Integer>, TableCell<Product, Integer>>() {
+        totalNumCol.setCellFactory(new Callback<TableColumn<Product, Float>, TableCell<Product, Float>>() {
             @Override
-            public TableCell<Product, Integer> call(TableColumn<Product, Integer> param) {
-                return new TableCell<Product, Integer>(){
+            public TableCell<Product, Float> call(TableColumn<Product, Float> param) {
+                return new TableCell<Product, Float>(){
                     @Override
-                    public void updateItem(Integer item, boolean empty){
+                    public void updateItem(Float item, boolean empty){
                         super.updateItem(item, empty);
                         if(item == null || empty){
                             setText(null);
                             getTableRow().setStyle("");
                         }else{
                             setText(String.valueOf(item));
-                            if(item < saleSystem.getProductWarnLimit()){
-                                getTableRow().setStyle("-fx-background-color: lightcoral");
+                            if(item < saleSystem.getProperty().getProductWarnLimit()){
+                                getTableRow().setStyle("-fx-background-color: lightcoral; -fx-border-color: cornsilk");
                             }
                             else{
                                 getTableRow().setStyle("");
@@ -121,10 +120,7 @@ public class ProductOverviewController implements OverviewController{
         productTransactionQuantityCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Transaction, Number>, ObservableValue<Number>>() {
             @Override
             public ObservableValue<Number> call(TableColumn.CellDataFeatures<Transaction, Number> param) {
-                return new SimpleIntegerProperty(
-                        param.getValue().getProductTransactionList().get(0).getQuantity()/
-                        param.getValue().getProductTransactionList().get(0).getSizeNumeric()/
-                        param.getValue().getProductTransactionList().get(0).getPiecesPerBox());
+                return new SimpleIntegerProperty(param.getValue().getProductTransactionList().get(0).getBoxNum().getBox());
             }
         });
 
@@ -149,8 +145,8 @@ public class ProductOverviewController implements OverviewController{
         int selectedIndex = productTable.getSelectionModel().getSelectedIndex();
         if(selectedIndex >= 0){
             String tempID = productTable.getItems().get(selectedIndex).getProductId();
-            int temptotalNum = productTable.getItems().get(selectedIndex).getTotalNum();
-            Alert alertConfirm = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete this product?");
+            float temptotalNum = productTable.getItems().get(selectedIndex).getTotalNum();
+            Alert alertConfirm = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete product - " + tempID);
             Optional<ButtonType> result =  alertConfirm.showAndWait();
             boolean flag = true;
             if(result.isPresent() && result.get() == ButtonType.OK){
@@ -159,9 +155,8 @@ public class ProductOverviewController implements OverviewController{
                             productTable.getItems().get(selectedIndex).getProductId());
                 }catch(SQLException e){
                     logger.error(e.getMessage());
-                    e.printStackTrace();
                     flag = false;
-                    Alert alert = new Alert(Alert.AlertType.ERROR, "Error when deleting product: "+tempID+" "+temptotalNum+"pieces");
+                    Alert alert = new Alert(Alert.AlertType.ERROR, "Error When Deleting Product: "+tempID);
                     alert.setTitle("Delete Product Error");
                     alert.showAndWait();
                 }finally{
@@ -170,7 +165,7 @@ public class ProductOverviewController implements OverviewController{
                         Alert alert = new Alert(Alert.AlertType.INFORMATION);
                         alert.setTitle("Delete Product Successfully");
                         alert.setHeaderText(null);
-                        alert.setContentText("Successfully deleted product: "+tempID+" "+temptotalNum+"pieces");
+                        alert.setContentText("Successfully Deleted Product: "+tempID);
                         alert.showAndWait();
                     }
                 }
@@ -196,6 +191,7 @@ public class ProductOverviewController implements OverviewController{
                 dbExecute.insertIntoDatabase(DBQueries.InsertQueries.Product.INSERT_INTO_PRODUCT,
                         newProduct.getAllProperties());
             }catch(SQLException e){
+                logger.error(e.getMessage());
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Unable To Add New Product.\n" + e.getMessage());
                 alert.setHeaderText(null);
@@ -217,6 +213,7 @@ public class ProductOverviewController implements OverviewController{
                     dbExecute.updateDatabase(DBQueries.UpdateQueries.Product.UPDATE_PRODUCT,
                             selectedProduct.getAllPropertiesForUpdate());
                 }catch(SQLException e){
+                    logger.error(e.getMessage());
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Unable To Edit Product");
                     alert.setHeaderText(null);
@@ -286,11 +283,11 @@ public class ProductOverviewController implements OverviewController{
                         return true;
                     }
                     String lowerCase = newVal.toLowerCase();
-                    if (String.valueOf(product.getTotalNum()).contains(lowerCase)){
+                    if (String.valueOf(product.getTotalNum()).toLowerCase().contains(lowerCase)){
                         return true;
-                    }else if (String.valueOf(product.getProductId()).contains(lowerCase)){
+                    }else if (String.valueOf(product.getProductId()).toLowerCase().contains(lowerCase)){
                         return true;
-                    }else if(product.getSize().contains(lowerCase)){
+                    }else if(product.getSize().toLowerCase().contains(lowerCase)){
                         return true;
                     }
                     return false;

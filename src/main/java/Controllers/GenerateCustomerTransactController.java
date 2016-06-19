@@ -32,6 +32,7 @@ import org.apache.log4j.Logger;
 import util.AlertBuilder;
 import util.AutoCompleteComboBoxListener;
 import util.ButtonCell;
+import util.EditCellFactory;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -75,15 +76,21 @@ public class GenerateCustomerTransactController {
     @FXML
     private TableColumn<ProductTransaction, BigDecimal> unitPriceCol;
     @FXML
-    private TableColumn<ProductTransaction, Integer> qtyCol;
+    private TableColumn<ProductTransaction, Float> qtyCol;
     @FXML
     private TableColumn<ProductTransaction, Integer> discountCol;
     @FXML
     private TableColumn<ProductTransaction, BigDecimal> subTotalCol;
     @FXML
-    private TableColumn<ProductTransaction, Integer> sizeCol;
+    private TableColumn<ProductTransaction, Float> sizeCol;
     @FXML
     private TableColumn deleteCol;
+    @FXML
+    private TableColumn<ProductTransaction, Number> boxCol;
+    @FXML
+    private TableColumn<ProductTransaction, Number> residualTileCol;
+    @FXML
+    private TableColumn<ProductTransaction, String> remarkCol;
 
     @FXML
     private Label firstNameLabel;
@@ -132,6 +139,12 @@ public class GenerateCustomerTransactController {
 
     @FXML
     private void initialize(){
+//        Callback<TableColumn<ProductTransaction, String>, TableCell<ProductTransaction, String>> cellFactory =
+//                new Callback<TableColumn<ProductTransaction, String>, TableCell<ProductTransaction, String>>() {
+//                    public TableCell call(TableColumn p) {
+//                        return new EditCellFactory();
+//                    }
+//                };
         confimButtonBinding = Bindings.size(transactionTableView.getItems()).greaterThan(0);
         confirmButton.disableProperty().bind(confimButtonBinding);
         productIdCol.setCellValueFactory(new PropertyValueFactory<>("productId"));
@@ -139,30 +152,83 @@ public class GenerateCustomerTransactController {
         unitPriceCol.setCellValueFactory(new PropertyValueFactory<>("unitPrice"));
         qtyCol.setCellValueFactory(new PropertyValueFactory<>("quantity"));
         sizeCol.setCellValueFactory(new PropertyValueFactory<>("sizeNumeric"));
-        qtyCol.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<Integer>(){
+        remarkCol.setCellValueFactory(new PropertyValueFactory<>("remark"));
+        remarkCol.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ProductTransaction, String>>() {
             @Override
-            public Integer fromString(String string) {
+            public void handle(TableColumn.CellEditEvent<ProductTransaction, String> event) {
+                (event.getTableView().getItems().get(event.getTablePosition().getRow())).setRemark(event.getNewValue().toString());
+            }
+        });
+//        remarkCol.setCellFactory(cellFactory);
+
+        remarkCol.setCellFactory(TextFieldTableCell.forTableColumn());
+
+        boxCol.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<Number>() {
+            @Override
+            public String toString(Number object) {
+                return String.valueOf(object);
+            }
+
+            @Override
+            public Number fromString(String string) {
                 return Integer.valueOf(string);
             }
-            public String toString(Integer integer){
-                return String.valueOf(integer);
+        }));
+        boxCol.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ProductTransaction, Number>>() {
+            @Override
+            public void handle(TableColumn.CellEditEvent<ProductTransaction, Number> event) {
+                (event.getTableView().getItems().get(event.getTablePosition().getRow())).getBoxNum().setBox(event.getNewValue().intValue());
+            }
+        });
+
+        boxCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ProductTransaction, Number>, ObservableValue<Number>>() {
+            @Override
+            public ObservableValue<Number> call(TableColumn.CellDataFeatures<ProductTransaction, Number> param) {
+                return new SimpleIntegerProperty(param.getValue().getBoxNum().getBox());
+            }
+        });
+        residualTileCol.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<Number>() {
+            @Override
+            public String toString(Number object) {
+                return String.valueOf(object);
+            }
+
+            @Override
+            public Number fromString(String string) {
+                return Integer.valueOf(string);
             }
         }));
-        qtyCol.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ProductTransaction, Integer>>() {
+        residualTileCol.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ProductTransaction, Number>>() {
             @Override
-            public void handle(TableColumn.CellEditEvent<ProductTransaction, Integer> event) {
-                if(event.getNewValue() % event.getTableView().getItems().get(event.getTablePosition().getRow()).getSizeNumeric() != 0){
-                    new AlertBuilder().alertTitle("Purchase Quantity Error")
-                            .alertType(Alert.AlertType.ERROR)
-                            .alertContentText("User has to buy the whole piece of tile.")
-                            .build()
-                            .showAndWait();
-                    refreshTable();
-                }else{
-                    (event.getTableView().getItems().get(event.getTablePosition().getRow()))
-                            .setQuantity(event.getNewValue());
-                    showPaymentDetails(productTransactionObservableList, customer);
-                }
+            public void handle(TableColumn.CellEditEvent<ProductTransaction, Number> event) {
+                (event.getTableView().getItems().get(event.getTablePosition().getRow())).getBoxNum().setResidualTile(event.getNewValue().intValue());
+            }
+        });
+        residualTileCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ProductTransaction, Number>, ObservableValue<Number>>() {
+            @Override
+            public ObservableValue<Number> call(TableColumn.CellDataFeatures<ProductTransaction, Number> param) {
+                return new SimpleIntegerProperty(param.getValue().getBoxNum().getResidualTile());
+            }
+        });
+        qtyCol.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<Float>() {
+            @Override
+            public String toString(Float object) {
+                return String.valueOf(object);
+            }
+
+            @Override
+            public Float fromString(String string) {
+                return Float.valueOf(string);
+            }
+        }));
+
+        qtyCol.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ProductTransaction, Float>>() {
+            @Override
+            public void handle(TableColumn.CellEditEvent<ProductTransaction, Float> event) {
+                (event.getTableView().getItems().get(event.getTablePosition().getRow()))
+                        .setQuantity(event.getNewValue());
+                showPaymentDetails(productTransactionObservableList, customer);
+
             }
         });
         discountCol.setCellValueFactory(new PropertyValueFactory<>("discount"));
@@ -179,18 +245,24 @@ public class GenerateCustomerTransactController {
             @Override
             public void handle(TableColumn.CellEditEvent<ProductTransaction, Integer> event) {
                 if(event.getNewValue() > returnDiscount()){
-                    new AlertBuilder().alertTitle("Discount Error")
-                            .alertType(Alert.AlertType.ERROR)
-                            .alertContentText("User Class is " + customer.getUserClass() + ", but the given discount is " + event.getNewValue())
+                    Optional<ButtonType> result = new AlertBuilder().alertTitle("Discount Error")
+                            .alertType(Alert.AlertType.CONFIRMATION)
+                            .alertContentText("User Class is " + customer.getUserClass() + ", but the given discount is " + event.getNewValue() + "\n"
+                                    + "Press OK to proceed with this discount. Press Cancel to discard the change")
                             .build()
                             .showAndWait();
-                    refreshTable();
+                    if(result.get() == ButtonType.OK){
+                        (event.getTableView().getItems().get(event.getTablePosition().getRow()))
+                                .setDiscount(event.getNewValue());
+                        showPaymentDetails(productTransactionObservableList, customer);
+                    }else{
+                        refreshTable();
+                    }
                 }else{
                     (event.getTableView().getItems().get(event.getTablePosition().getRow()))
                             .setDiscount(event.getNewValue());
                     showPaymentDetails(productTransactionObservableList, customer);
                 }
-
             }
         });
 
@@ -240,6 +312,7 @@ public class GenerateCustomerTransactController {
             customerList = dbExecuteCustomer.selectFromDatabase(DBQueries.SelectQueries.Customer.SELECT_ALL_CUSTOMER);
             productList = dbExecuteProduct.selectFromDatabase(DBQueries.SelectQueries.Product.SELECT_ALL_PRODUCT);
         }catch(SQLException e){
+            logger.error(e.getMessage());
             Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to grab data from database!\n" + e.getMessage());
             alert.setTitle("Database Error");
             alert.showAndWait();
@@ -311,6 +384,7 @@ public class GenerateCustomerTransactController {
                     .piecesPerBox(selectedProduct.getPiecesPerBox())
                     .size(selectedProduct.getSize())
                     .sizeNumeric(selectedProduct.getSizeNumeric())
+                    .boxNum(new BoxNum.boxNumBuilder().build())
                     .build();
             productTransactionObservableList.add(newProductTransaction);
         }
@@ -327,6 +401,7 @@ public class GenerateCustomerTransactController {
                 dbExecuteProduct.insertIntoDatabase(DBQueries.InsertQueries.Customer.INSERT_INTO_CUSTOMER,
                         newCustomer.getAllProperties());
             }catch(SQLException e){
+                logger.error(e.getMessage());
                 flag = false;
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Unable To Add New Customer");
@@ -384,6 +459,7 @@ public class GenerateCustomerTransactController {
                         .append("Unit Price: " + tmp.getUnitPrice() + "\n")
                         .append("Discount (%): " + tmp.getDiscount() + "\n")
                         .append("Sub Total: " + tmp.getSubTotal() + "\n")
+                        .append("Remark: " + tmp.getRemark() + "\n")
                         .append("\n");
             }
             overviewTransactionString
@@ -471,9 +547,9 @@ public class GenerateCustomerTransactController {
             if(customer != null && customer.getPstNumber() != null){
                 pstTax = new BigDecimal("0.0");
             }else{
-                pstTax = new BigDecimal(saleSystem.getPstRate()).multiply(subTotalAfterDiscount).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+                pstTax = new BigDecimal(saleSystem.getProperty().getPstRate()).multiply(subTotalAfterDiscount).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
             }
-            BigDecimal gstTax = new BigDecimal(saleSystem.getGstRate()).multiply(subTotalAfterDiscount).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+            BigDecimal gstTax = new BigDecimal(saleSystem.getProperty().getGstRate()).multiply(subTotalAfterDiscount).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
             BigDecimal total = subTotalAfterDiscount.add(pstTax).add(gstTax).setScale(2, BigDecimal.ROUND_HALF_EVEN);
 
             itemsCountLabel.setText(String.valueOf(productTransactions.size()));
@@ -603,7 +679,13 @@ public class GenerateCustomerTransactController {
 
     private Integer returnDiscount(){
         if(this.customer != null){
-            return Customer.getDiscountMap().get(customer.getUserClass());
+            if(customer.getUserClass().toLowerCase().equals("a")){
+                return this.saleSystem.getProperty().getUserClass().getClassA();
+            }else if(customer.getUserClass().toLowerCase().equals("b")){
+                return this.saleSystem.getProperty().getUserClass().getClassB();
+            }else if(customer.getUserClass().toLowerCase().equals("c")){
+                return this.saleSystem.getProperty().getUserClass().getClassC();
+            }
         }
         return null;
     }
@@ -657,7 +739,7 @@ public class GenerateCustomerTransactController {
                 dbExecuteTransaction.insertIntoDatabase(DBQueries.InsertQueries.Transaction.INSERT_INTO_TRANSACTION,
                         objects);
                 for(ProductTransaction tmp : transaction.getProductTransactionList()){
-                    int remain = tmp.getTotalNum() - tmp.getQuantity();
+                    float remain = tmp.getTotalNum() - tmp.getQuantity();
                     dbExecuteProduct.updateDatabase(DBQueries.UpdateQueries.Product.UPDATE_PRODUCT_QUANTITY,
                             remain, tmp.getProductId());
                 }

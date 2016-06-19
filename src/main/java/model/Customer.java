@@ -23,15 +23,15 @@ public class Customer {
     private final StringProperty company;
     private final StringProperty pstNumber;
     private String customerInfo;
-    private static final Map<String, Integer> discountMap;
+//    private static final Map<String, Integer> discountMap;
 
-    static{
-        Map<String, Integer> tmpDiscountMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        tmpDiscountMap.put("A", 40);
-        tmpDiscountMap.put("B", 30);
-        tmpDiscountMap.put("C", 20);
-        discountMap = Collections.unmodifiableMap(tmpDiscountMap);
-    }
+//    static{
+//        Map<String, Integer> tmpDiscountMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+//        tmpDiscountMap.put("A", 40);
+//        tmpDiscountMap.put("B", 30);
+//        tmpDiscountMap.put("C", 20);
+//        discountMap = Collections.unmodifiableMap(tmpDiscountMap);
+//    }
 
     public Customer(CustomerBuilder builder){
         this.userName = new SimpleStringProperty(builder.userName);
@@ -288,7 +288,7 @@ public class Customer {
         return this.customerInfo;
     }
 
-    public static Map<String, Integer> getDiscountMap() {
-        return discountMap;
-    }
+//    public static Map<String, Integer> getDiscountMap() {
+//        return discountMap;
+//    }
 }

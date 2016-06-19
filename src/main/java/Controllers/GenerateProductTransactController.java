@@ -4,6 +4,7 @@ import Constants.Constant;
 import MainClass.SaleSystem;
 import db.*;
 import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.FloatProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -61,7 +62,9 @@ public class GenerateProductTransactController {
     @FXML
     private TableColumn<ProductTransaction, Float> unitPriceCol;
     @FXML
-    private TableColumn<ProductTransaction, Integer> qtyCol;
+    private TableColumn<ProductTransaction, Number> boxCol;
+    @FXML
+    private TableColumn<ProductTransaction, Float> qtyCol;
     @FXML
     private TableColumn<ProductTransaction, BigDecimal> subTotalCol;
 
@@ -93,10 +96,13 @@ public class GenerateProductTransactController {
         stockCol.setCellValueFactory(new PropertyValueFactory<>("totalNum"));
         unitPriceCol.setCellValueFactory(new PropertyValueFactory<>("unitPrice"));
         qtyCol.setCellValueFactory(new PropertyValueFactory<>("quantity"));
-
+        boxCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ProductTransaction, Number>, ObservableValue<Number>>() {
+            @Override
+            public ObservableValue<Number> call(TableColumn.CellDataFeatures<ProductTransaction, Number> param) {
+                return new SimpleIntegerProperty(param.getValue().getBoxNum().getBox());
+            }
+        });
         loadDataFromDB();
-
-        //filteredData = new FilteredList<ProductTransaction>(productTransactionObservableList,p->true);
 
         productIdField.textProperty().addListener((observable,oldVal,newVal)->{
             filteredData.setPredicate(productTransaction -> {
@@ -124,41 +130,52 @@ public class GenerateProductTransactController {
                 (event.getTableView().getItems().get(event.getTablePosition().getRow()))
                         .setUnitPrice(event.getNewValue().floatValue());
                 transactionTableView.setItems(productTransactionObservableList);
-                //transactionTableView.setItems(event.getTableView().getItems());
-
             }
         });
 
 
-        qtyCol.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<Integer>(){
+        boxCol.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<Number>() {
             @Override
-            public Integer fromString(String string) {
-                return Integer.valueOf(string);
+            public String toString(Number object) {
+                return String.valueOf(object.intValue());
             }
-            public String toString(Integer integer){
-                return String.valueOf(integer);
+
+            @Override
+            public Number fromString(String string) {
+                return Integer.valueOf(string);
             }
         }));
 
-        qtyCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ProductTransaction, Integer>, ObservableValue<Integer>>() {
+        qtyCol.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<Float>() {
             @Override
-            public ObservableValue<Integer> call(TableColumn.CellDataFeatures<ProductTransaction, Integer> param) {
-                ProductTransaction pt = param.getValue();
-                return new SimpleIntegerProperty(Integer.valueOf(pt.getQuantity()/pt.getPiecesPerBox()/pt.getSizeNumeric())).asObject();
+            public String toString(Float object) {
+                return String.valueOf(object);
             }
-        });
 
-        qtyCol.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ProductTransaction, Integer>>() {
             @Override
-            public void handle(TableColumn.CellEditEvent<ProductTransaction, Integer> event) {
+            public Float fromString(String string) {
+                return Float.valueOf(string);
+            }
+        }));
+
+        boxCol.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ProductTransaction, Number>>() {
+            @Override
+            public void handle(TableColumn.CellEditEvent<ProductTransaction, Number> event) {
                 ProductTransaction pt = (event.getTableView().getItems().get(event.getTablePosition().getRow()));
-                pt.setQuantity(event.getNewValue() * pt.getSizeNumeric() * pt.getPiecesPerBox());
-
+                pt.getBoxNum().setBox(event.getNewValue().intValue());
                 transactionTableView.setItems(productTransactionObservableList);
-                //transactionTableView.setItems(event.getTableView().getItems());
-
             }
         });
+
+        qtyCol.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ProductTransaction, Float>>() {
+            @Override
+            public void handle(TableColumn.CellEditEvent<ProductTransaction, Float> event) {
+                ProductTransaction pt = (event.getTableView().getItems().get(event.getTablePosition().getRow()));
+                pt.setQuantity(event.getNewValue());
+                transactionTableView.setItems(productTransactionObservableList);
+            }
+        });
+
         subTotalCol.setCellValueFactory(new PropertyValueFactory<>("subTotal"));
 
         executor = Executors.newCachedThreadPool(r -> {
@@ -249,10 +266,6 @@ public class GenerateProductTransactController {
         this.dialogStage = dialogStage;
     }
 
-
-
-
-
     /*
     * Initilize the main class for this class
     * */
@@ -267,18 +280,6 @@ public class GenerateProductTransactController {
                 .paymentType("IN")
                 .payinfo(new ArrayList<>())
                 .build();
-        productTransactionObservableList = FXCollections.observableArrayList(transaction.getProductTransactionList());
-        transactionTableView.setItems(productTransactionObservableList);
-        productTransactionObservableList.addListener(new ListChangeListener<ProductTransaction>() {
-            @Override
-            public void onChanged(Change<? extends ProductTransaction> c) {
-                while(c.next()){
-                    if( c.wasAdded() || c.wasRemoved()){
-                        //showPaymentDetails(productTransactionObservableList, customer);
-                    }
-                }
-            }
-        });
     }
 
     private boolean isTransactionValid(List<ProductTransaction> list){
@@ -321,7 +322,7 @@ public class GenerateProductTransactController {
                 dbExecuteTransaction.insertIntoDatabase(DBQueries.InsertQueries.Transaction.INSERT_INTO_TRANSACTION,
                         objects);
                 for(ProductTransaction tmp : transaction.getProductTransactionList()){
-                    int remain = tmp.getTotalNum() + tmp.getQuantity();
+                    float remain = tmp.getTotalNum() + tmp.getQuantity();
                     dbExecuteProduct.updateDatabase(DBQueries.UpdateQueries.Product.UPDATE_PRODUCT_QUANTITY,
                             remain, tmp.getProductId());
                 }
@@ -394,6 +395,7 @@ public class GenerateProductTransactController {
                     dbExecute.selectFromDatabase(DBQueries.SelectQueries.Product.SELECT_ALL_PRODUCT)
             );
         }catch(SQLException e){
+            logger.error(e.getMessage());
             Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to grab data from database!\n" + e.getMessage());
             alert.setTitle("Database Error");
             alert.showAndWait();

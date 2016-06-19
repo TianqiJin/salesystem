@@ -43,12 +43,12 @@ public interface ObjectDeserializer<E> {
         public Product deserialize(ResultSet rs) throws SQLException {
             Product product = new Product.ProductBuilder()
                     .productId(rs.getString("ProductId"))
-                    .totalNum(rs.getInt("TotalNum"))
+                    .totalNum(rs.getFloat("TotalNum"))
                     .unitPrice(rs.getBigDecimal("UnitPrice").setScale(2, BigDecimal.ROUND_HALF_EVEN).floatValue())
                     .texture(rs.getString("Texture"))
                     .piecesPerBox(rs.getInt("PiecesPerBox"))
                     .size(rs.getString("Size"))
-                    .sizeNumeric(rs.getInt("SizeNumeric"))
+                    .sizeNumeric(rs.getFloat("SizeNumeric"))
                     .build();
             return product;
         }
@@ -59,13 +59,13 @@ public interface ObjectDeserializer<E> {
         public ProductTransaction deserialize(ResultSet rs) throws SQLException {
             ProductTransaction productTransaction = new ProductTransaction.ProductTransactionBuilder()
                     .productId(rs.getString("ProductId"))
-                    .totalNum(rs.getInt("TotalNum"))
+                    .totalNum(rs.getFloat("TotalNum"))
                     .unitPrice(Float.valueOf(0))
-                    //.unitPrice(rs.getBigDecimal("UnitPrice").setScale(2, BigDecimal.ROUND_HALF_EVEN).floatValue())
                     .piecesPerBox(rs.getInt("PiecesPerBox"))
                     .quantity(0)
                     .size(rs.getString("Size"))
-                    .sizeNumeric(rs.getInt("SizeNumeric"))
+                    .sizeNumeric(rs.getFloat("SizeNumeric"))
+                    .boxNum(new BoxNum.boxNumBuilder().build())
                     .build();
             return productTransaction;
         }
@@ -75,55 +75,58 @@ public interface ObjectDeserializer<E> {
         @Override
         public Transaction deserialize(ResultSet rs) throws SQLException {
             ObjectMapper mapper = new ObjectMapper();
-            String type = null, info = null;
             List<ProductTransaction> list = new ArrayList<>();
             List<PaymentRecord> listPaymentRecord = new ArrayList<>();
             try {
-                JsonNode root = mapper.readValue(rs.getString("Type"),JsonNode.class);
-                type = root.path("type").textValue();
-                info = root.path("info").textValue();
-                root = mapper.readValue(rs.getString("ProductInfo"), JsonNode.class);
-                for(JsonNode tmpNode: root){
+                JsonNode rootType =  mapper.readValue(rs.getString("Type"),JsonNode.class);
+                JsonNode rootPayInfo = mapper.readValue(rs.getString("payinfo"), JsonNode.class);
+                JsonNode rootProductInfo = mapper.readValue(rs.getString("ProductInfo"), JsonNode.class);
+
+                for(JsonNode tmpNode: rootProductInfo){
+                    JsonNode rootBox =  tmpNode.findValue("boxNum");
                     list.add(new ProductTransaction.ProductTransactionBuilder()
                             .productId(tmpNode.path("productId").asText())
-                            .totalNum(tmpNode.path("totalNum").asInt())
+                            .totalNum(new BigDecimal(String.valueOf(tmpNode.path("totalNum").asDouble())).setScale(2, BigDecimal.ROUND_HALF_EVEN).floatValue())
                             .unitPrice(new BigDecimal(String.valueOf(tmpNode.path("unitPrice").asDouble())).setScale(2, BigDecimal.ROUND_HALF_EVEN).floatValue())
                             .piecesPerBox(tmpNode.path("piecesPerBox").asInt())
                             .size(tmpNode.path("size").asText())
                             .sizeNumeric(tmpNode.path("sizeNumeric").asInt())
-                            .quantity(tmpNode.path("quantity").asInt())
+                            .quantity(new BigDecimal(String.valueOf(tmpNode.path("quantity").asDouble())).setScale(2, BigDecimal.ROUND_HALF_EVEN).floatValue())
                             .discount(tmpNode.path("discount").asInt())
                             .subTotal(new BigDecimal(String.valueOf(tmpNode.path("subTotal").asDouble())).setScale(2, BigDecimal.ROUND_HALF_EVEN).floatValue())
+                            .boxNum(new BoxNum.boxNumBuilder().boxNum(rootBox.path("box").intValue()).residualTileNum(rootBox.path("residualTile").intValue()).build())
+                            .remark(tmpNode.path("remark").asText())
                             .build()
                     );
                 }
-                root = mapper.readValue(rs.getString("payinfo"), JsonNode.class);
-                for(JsonNode tmpNode: root){
+                for(JsonNode tmpNode: rootPayInfo){
                     listPaymentRecord.add(new PaymentRecord(
                             tmpNode.path("date").asText(),
                             tmpNode.path("paid").asDouble(),
                             tmpNode.path("paymentType").asText()));
                 }
+                Transaction transaction = new Transaction.TransactionBuilder()
+                        .transactionId(rs.getInt("TransactionID"))
+                        .productInfoList(list)
+                        .date(rs.getDate("Date").toString())
+                        .payment(rs.getDouble("Payment"))
+                        .paymentType(rs.getString("PaymentType"))
+                        .storeCredit(rs.getDouble("storeCredit"))
+                        .staffId(rs.getInt("StaffID"))
+                        .type(Transaction.TransactionType.getType(rootType.path("type").textValue()))
+                        .info(rootType.path("info").textValue())
+                        .total(rs.getDouble("Total"))
+                        .payinfo(listPaymentRecord)
+                        .gstTax(rs.getDouble("GstTax"))
+                        .pstTax(rs.getDouble("PstTax"))
+                        .build();
+                return transaction;
+
             } catch (IOException e) {
                 logger.error(e.getMessage());
                 e.printStackTrace();
             }
-            Transaction transaction = new Transaction.TransactionBuilder()
-                    .transactionId(rs.getInt("TransactionID"))
-                    .productInfoList(list)
-                    .date(rs.getDate("Date").toString())
-                    .payment(rs.getDouble("Payment"))
-                    .paymentType(rs.getString("PaymentType"))
-                    .storeCredit(rs.getDouble("storeCredit"))
-                    .staffId(rs.getInt("StaffID"))
-                    .type(Transaction.TransactionType.getType(type))
-                    .info(info)
-                    .total(rs.getDouble("Total"))
-                    .payinfo(listPaymentRecord)
-                    .gstTax(rs.getDouble("GstTax"))
-                    .pstTax(rs.getDouble("PstTax"))
-                    .build();
-            return transaction;
+            return null;
         }
     };
 
@@ -147,8 +150,23 @@ public interface ObjectDeserializer<E> {
     public static final ObjectDeserializer<Property> PROPERTY_OBJECT_DESERIALIZER =  new ObjectDeserializer<Property>() {
         @Override
         public Property deserialize(ResultSet rs) throws SQLException {
-            Property property = new Property(rs.getInt("ProductWarnLimit"), rs.getInt("GstTax"), rs.getInt("PstTax"));
-            return property;
+            ObjectMapper mapper = new ObjectMapper();
+            try{
+                JsonNode userClassNode =  mapper.readValue(rs.getString("UserClass"),JsonNode.class);
+                Property property = new Property(
+                        rs.getInt("ProductWarnLimit"),
+                        rs.getInt("GstTax"),
+                        rs.getInt("PstTax"),
+                        rs.getString("GstNum"),
+                        new UserClass(
+                                userClassNode.path("classA").asInt(),
+                                userClassNode.path("classB").asInt(),
+                                userClassNode.path("classC").asInt()));
+                return property;
+            }catch (IOException e){
+                logger.error(e.getMessage());
+            }
+            return null;
         }
     };
 
