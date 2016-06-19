@@ -32,6 +32,7 @@ import org.apache.log4j.Logger;
 import util.AlertBuilder;
 import util.AutoCompleteComboBoxListener;
 import util.ButtonCell;
+import util.EditCellFactory;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -138,6 +139,12 @@ public class GenerateCustomerTransactController {
 
     @FXML
     private void initialize(){
+//        Callback<TableColumn<ProductTransaction, String>, TableCell<ProductTransaction, String>> cellFactory =
+//                new Callback<TableColumn<ProductTransaction, String>, TableCell<ProductTransaction, String>>() {
+//                    public TableCell call(TableColumn p) {
+//                        return new EditCellFactory();
+//                    }
+//                };
         confimButtonBinding = Bindings.size(transactionTableView.getItems()).greaterThan(0);
         confirmButton.disableProperty().bind(confimButtonBinding);
         productIdCol.setCellValueFactory(new PropertyValueFactory<>("productId"));
@@ -152,6 +159,8 @@ public class GenerateCustomerTransactController {
                 (event.getTableView().getItems().get(event.getTablePosition().getRow())).setRemark(event.getNewValue().toString());
             }
         });
+//        remarkCol.setCellFactory(cellFactory);
+
         remarkCol.setCellFactory(TextFieldTableCell.forTableColumn());
 
         boxCol.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<Number>() {
@@ -538,9 +547,9 @@ public class GenerateCustomerTransactController {
             if(customer != null && customer.getPstNumber() != null){
                 pstTax = new BigDecimal("0.0");
             }else{
-                pstTax = new BigDecimal(saleSystem.getPstRate()).multiply(subTotalAfterDiscount).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+                pstTax = new BigDecimal(saleSystem.getProperty().getPstRate()).multiply(subTotalAfterDiscount).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
             }
-            BigDecimal gstTax = new BigDecimal(saleSystem.getGstRate()).multiply(subTotalAfterDiscount).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+            BigDecimal gstTax = new BigDecimal(saleSystem.getProperty().getGstRate()).multiply(subTotalAfterDiscount).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
             BigDecimal total = subTotalAfterDiscount.add(pstTax).add(gstTax).setScale(2, BigDecimal.ROUND_HALF_EVEN);
 
             itemsCountLabel.setText(String.valueOf(productTransactions.size()));
@@ -670,7 +679,13 @@ public class GenerateCustomerTransactController {
 
     private Integer returnDiscount(){
         if(this.customer != null){
-            return Customer.getDiscountMap().get(customer.getUserClass());
+            if(customer.getUserClass().toLowerCase().equals("a")){
+                return this.saleSystem.getProperty().getUserClass().getClassA();
+            }else if(customer.getUserClass().toLowerCase().equals("b")){
+                return this.saleSystem.getProperty().getUserClass().getClassB();
+            }else if(customer.getUserClass().toLowerCase().equals("c")){
+                return this.saleSystem.getProperty().getUserClass().getClassC();
+            }
         }
         return null;
     }

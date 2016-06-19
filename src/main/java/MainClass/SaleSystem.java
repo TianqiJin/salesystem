@@ -352,6 +352,7 @@ public class SaleSystem extends Application{
             System.out.println(controller);
             controller.setDialogStage(dialogStage);
             dialogStage.showAndWait();
+            loadPropertyFromDB();
 
         }catch(IOException e){
             logger.error(e.getMessage());
@@ -380,7 +381,6 @@ public class SaleSystem extends Application{
 
         }catch(IOException e){
             logger.error(e.getMessage());
-            e.printStackTrace();
         }
     }
 
@@ -526,71 +526,73 @@ public class SaleSystem extends Application{
         executor.execute(getPropertyTask);
     }
 
-    public int getProductWarnLimit(){
-        return property.getProductWarnLimit();
-    }
+//    public int getProductWarnLimit(){
+//        return property.getProductWarnLimit();
+//    }
+//
+//    public int getPstRate(){ return property.getPstRate();}
+//
+//    public int getGstRate(){ return property.getGstRate();}
+//
+//    public String getGstNum(){ return property.getGstNumber();}
 
-    public int getPstRate(){ return property.getPstRate();}
+    public Property getProperty(){ return property; }
 
-    public int getGstRate(){ return property.getGstRate();}
+//    public void setProductLimit(Integer productLimit){
+//        try{
+//            dbExecuteProperty.updateDatabase(DBQueries.UpdateQueries.Property.UPDATE_PRODUCT_WARN_LIMIT, productLimit);
+//        }catch(SQLException e){
+//            logger.error(e.getMessage());
+//            new AlertBuilder()
+//                    .alertType(Alert.AlertType.ERROR)
+//                    .alertContentText(Constant.DatabaseError.databaseUpdateError + e.toString())
+//                    .build()
+//                    .showAndWait();
+//        }
+//        loadPropertyFromDB();
+//    }
 
-    public String getGstNum(){ return property.getGstNumber();}
-
-    public void setProductLimit(Integer productLimit){
-        try{
-            dbExecuteProperty.updateDatabase(DBQueries.UpdateQueries.Property.UPDATE_PRODUCT_WARN_LIMIT, productLimit);
-        }catch(SQLException e){
-            logger.error(e.getMessage());
-            new AlertBuilder()
-                    .alertType(Alert.AlertType.ERROR)
-                    .alertContentText(Constant.DatabaseError.databaseUpdateError + e.toString())
-                    .build()
-                    .showAndWait();
-        }
-        loadPropertyFromDB();
-    }
-
-    public void setPstRate(Integer pstRate){
-        try{
-            dbExecuteProperty.updateDatabase(DBQueries.UpdateQueries.Property.UPDATE_PST_RATE, pstRate);
-        }catch(SQLException e){
-            logger.error(e.getMessage());
-            new AlertBuilder()
-                    .alertType(Alert.AlertType.ERROR)
-                    .alertContentText(Constant.DatabaseError.databaseUpdateError + e.toString())
-                    .build()
-                    .showAndWait();
-        }
-        loadPropertyFromDB();
-    }
-
-    public void setGstRate(Integer gstRate){
-        try{
-            dbExecuteProperty.updateDatabase(DBQueries.UpdateQueries.Property.UPDATE_GST_RATE, gstRate);
-        }catch(SQLException e){
-            logger.error(e.getMessage());
-            new AlertBuilder()
-                    .alertType(Alert.AlertType.ERROR)
-                    .alertContentText(Constant.DatabaseError.databaseUpdateError + e.toString())
-                    .build()
-                    .showAndWait();
-        }
-        loadPropertyFromDB();
-    }
-
-    public void setGstNumber(String gstNumber){
-        try{
-            dbExecuteProperty.updateDatabase(DBQueries.UpdateQueries.Property.UPDATE_GST_NUMBER, gstNumber);
-        }catch(SQLException e){
-            logger.error(e.getMessage());
-            new AlertBuilder()
-                    .alertType(Alert.AlertType.ERROR)
-                    .alertContentText(Constant.DatabaseError.databaseUpdateError + e.toString())
-                    .build()
-                    .showAndWait();
-        }
-        loadPropertyFromDB();
-    }
+//    public void setPstRate(Integer pstRate){
+//        try{
+//            dbExecuteProperty.updateDatabase(DBQueries.UpdateQueries.Property.UPDATE_PST_RATE, pstRate);
+//        }catch(SQLException e){
+//            logger.error(e.getMessage());
+//            new AlertBuilder()
+//                    .alertType(Alert.AlertType.ERROR)
+//                    .alertContentText(Constant.DatabaseError.databaseUpdateError + e.toString())
+//                    .build()
+//                    .showAndWait();
+//        }
+//        loadPropertyFromDB();
+//    }
+//
+//    public void setGstRate(Integer gstRate){
+//        try{
+//            dbExecuteProperty.updateDatabase(DBQueries.UpdateQueries.Property.UPDATE_GST_RATE, gstRate);
+//        }catch(SQLException e){
+//            logger.error(e.getMessage());
+//            new AlertBuilder()
+//                    .alertType(Alert.AlertType.ERROR)
+//                    .alertContentText(Constant.DatabaseError.databaseUpdateError + e.toString())
+//                    .build()
+//                    .showAndWait();
+//        }
+//        loadPropertyFromDB();
+//    }
+//
+//    public void setGstNumber(String gstNumber){
+//        try{
+//            dbExecuteProperty.updateDatabase(DBQueries.UpdateQueries.Property.UPDATE_GST_NUMBER, gstNumber);
+//        }catch(SQLException e){
+//            logger.error(e.getMessage());
+//            new AlertBuilder()
+//                    .alertType(Alert.AlertType.ERROR)
+//                    .alertContentText(Constant.DatabaseError.databaseUpdateError + e.toString())
+//                    .build()
+//                    .showAndWait();
+//        }
+//        loadPropertyFromDB();
+//    }
 
     private Task<Void> refreshDB(){
         Task<Void> refreshDB = new Task<Void>() {

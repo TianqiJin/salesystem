@@ -238,7 +238,7 @@ public class InvoiceGenerator {
         document.add(p);
 
         //gstNum Field
-        Paragraph pGst = new Paragraph("GST No. " + saleSystem.getGstNum(), tinyBold);
+        Paragraph pGst = new Paragraph("GST No. " + saleSystem.getProperty().getGstNumber(), tinyBold);
         p.setAlignment(Element.ALIGN_LEFT);
         document.add(pGst);
         document.add(new Paragraph());
@@ -298,7 +298,6 @@ public class InvoiceGenerator {
             table.addCell(getCellwithBackground(InvoiceData.format2dec(InvoiceData.round(product.getUnitPrice())), Element.ALIGN_LEFT, totalFont, row));
             table.addCell(getCellwithBackground(String.valueOf(product.getQuantity()), Element.ALIGN_LEFT, totalFont, row));
             table.addCell(getCellwithBackground(InvoiceData.format2dec(InvoiceData.round(product.getSubTotal())), Element.ALIGN_LEFT, totalFont, row));
-            logger.info(product.getRemark());
             table.addCell(getCellwithBackground(product.getRemark(), Element.ALIGN_LEFT, chineseFont, row));
             row++;
         }

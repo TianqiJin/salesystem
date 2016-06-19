@@ -96,6 +96,9 @@ public class DBQueries {
                     +"SET PstTax = ?";
             public final static String UPDATE_GST_NUMBER = "UPDATE property "
                     +"SET GstNum = ?";
+            public final static String UPDATE_PROPERTY = "UPDATE property "
+                    +"SET ProductWarnLimit = ?, GstTax = ?, PstTax = ?, GstNum = ?, UserClass =? "
+                    +"WHERE PropertyId = 1";
         }
         public static class Transaction{
             public final static String UPDATE_TRANSACTION_OUT = "UPDATE transaction "

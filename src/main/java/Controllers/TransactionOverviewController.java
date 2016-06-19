@@ -117,6 +117,9 @@ public class TransactionOverviewController implements OverviewController{
                             Text text = new Text(item.toString());
                             text.setWrappingWidth(remarkCol.getWidth());
                             setGraphic(text);
+                        }else{
+                            setText(null);
+                            setGraphic(null);
                         }
                     }
                 };

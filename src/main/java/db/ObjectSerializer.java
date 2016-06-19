@@ -54,7 +54,6 @@ public interface ObjectSerializer<E> {
                 logger.error(e.getMessage());
                 e.printStackTrace();
             }
-            System.out.println(productInfoWriter.toString());
             return new Object[]{
                     productInfoWriter.toString(),
                     transaction.getDate(),
@@ -84,6 +83,22 @@ public interface ObjectSerializer<E> {
                     transaction.getStoreCredit(),
                     payInfoWriter.toString(),
                     transaction.getTransactionId(),
+            };
+        }
+    };
+
+    public static final ObjectSerializer<Property> PROPERTY_OBJECT_SERIALIZER = new ObjectSerializer<Property>() {
+        @Override
+        public Object[] serialize(Property property) throws SQLException, IOException {
+            StringWriter userClassWriter = new StringWriter();
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.writeValue(userClassWriter, property.getUserClass());
+            return new Object[]{
+                    property.getProductWarnLimit(),
+                    property.getPstRate(),
+                    property.getGstRate(),
+                    property.getGstNumber(),
+                    userClassWriter.toString()
             };
         }
     };

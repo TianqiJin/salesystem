@@ -10,12 +10,12 @@ public class Property {
     private String gstNumber;
     private UserClass userClass;
 
-    public Property(int productWarnLimit, int gstRate, int pstRate, String gstNumber, String classA, String classB, String classC){
+    public Property(int productWarnLimit, int gstRate, int pstRate, String gstNumber, UserClass userClass){
         this.productWarnLimit = productWarnLimit;
         this.gstRate = gstRate;
         this.pstRate = pstRate;
         this.gstNumber = gstNumber;
-        this.userClass = new UserClass(classA, classB, classC);
+        this.userClass = userClass;
     }
 
     public Integer getProductWarnLimit() {
@@ -58,39 +58,4 @@ public class Property {
         this.userClass = userClass;
     }
 
-    private class UserClass{
-        private String classA;
-        private String classB;
-        private String classC;
-
-        UserClass(String classA, String classB, String classC){
-            this.classA = classA;
-            this.classB = classB;
-            this.classC = classC;
-        }
-
-        public String getClassA() {
-            return classA;
-        }
-
-        public void setClassA(String classA) {
-            this.classA = classA;
-        }
-
-        public String getClassB() {
-            return classB;
-        }
-
-        public void setClassB(String classB) {
-            this.classB = classB;
-        }
-
-        public String getClassC() {
-            return classC;
-        }
-
-        public void setClassC(String classC) {
-            this.classC = classC;
-        }
-    }
 }

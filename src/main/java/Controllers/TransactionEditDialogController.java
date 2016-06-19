@@ -386,12 +386,12 @@ public class TransactionEditDialogController {
     }
 
 
-    private Integer returnDiscount(){
-        if(this.customer != null){
-            return Customer.getDiscountMap().get(customer.getUserClass());
-        }
-        return null;
-    }
+//    private Integer returnDiscount(){
+//        if(this.customer != null){
+//            return Customer.getDiscountMap().get(customer.getUserClass());
+//        }
+//        return null;
+//    }
     private void commitTransactionToDatabase() throws SQLException, IOException {
         Task<Customer> customerTask = new Task<Customer>() {
             @Override

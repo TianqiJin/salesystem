@@ -300,9 +300,9 @@ public class GenerateReturnTransactController {
             if(customer != null && customer.getPstNumber() != null){
                 pstTax = new BigDecimal("0.0");
             }else{
-                pstTax = new BigDecimal(saleSystem.getPstRate()).multiply(subTotalAfterDiscount).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+                pstTax = new BigDecimal(saleSystem.getProperty().getPstRate()).multiply(subTotalAfterDiscount).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
             }
-            BigDecimal gstTax = new BigDecimal(saleSystem.getGstRate()).multiply(subTotalAfterDiscount).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+            BigDecimal gstTax = new BigDecimal(saleSystem.getProperty().getGstRate()).multiply(subTotalAfterDiscount).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
             BigDecimal total = subTotalAfterDiscount.add(pstTax).add(gstTax).setScale(2, BigDecimal.ROUND_HALF_EVEN);
 
             itemsCountLabel.setText(String.valueOf(productTransactions.size()));
@@ -362,15 +362,15 @@ public class GenerateReturnTransactController {
                 Product tmp = productList.stream()
                         .filter(product -> product.getProductId().equals(productTransaction.getProductId()))
                         .findFirst()
-                        .get();
+                        .orElse(null);
+
                 if(tmp == null){
                     new AlertBuilder()
                             .alertTitle("Product Error!")
-                            .alertType(Alert.AlertType.ERROR)
+                            .alertType(Alert.AlertType.WARNING)
                             .alertContentText("Product - " + productTransaction.getProductId() + " does not exist!")
                             .build()
                             .showAndWait();
-                    dialogStage.close();
                 }else{
                     productTransaction.setTotalNum(tmp.getTotalNum());
                 }
@@ -496,15 +496,14 @@ public class GenerateReturnTransactController {
                 Product tmp = productListTask.getValue().stream()
                         .filter(product -> product.getProductId().equals(productTransaction.getProductId()))
                         .findFirst()
-                        .get();
+                        .orElse(null);
                 if (tmp == null) {
                     new AlertBuilder()
                             .alertTitle("Product Error!")
-                            .alertType(Alert.AlertType.ERROR)
+                            .alertType(Alert.AlertType.WARNING)
                             .alertContentText("Product - " + productTransaction.getProductId() + " does not exist!")
                             .build()
                             .showAndWait();
-                    dialogStage.close();
                 } else {
                     productTransaction.setTotalNum(tmp.getTotalNum());
                 }
