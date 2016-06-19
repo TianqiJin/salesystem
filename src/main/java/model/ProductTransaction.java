@@ -45,7 +45,7 @@ public class ProductTransaction extends ProductBase{
         private float quantity = 0;
         private int discount = 0;
         private float subTotal = 0;
-        private String remark = null;
+        private String remark = "";
         private BoxNum boxNum;
 
         public ProductTransactionBuilder productId(String productId){

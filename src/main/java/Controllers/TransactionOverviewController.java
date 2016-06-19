@@ -16,6 +16,7 @@ import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import model.*;
@@ -87,6 +88,8 @@ public class TransactionOverviewController implements OverviewController{
     @FXML
     private TableColumn<ProductTransaction, Float> unitPriceCol;
     @FXML
+    private TableColumn<ProductTransaction, String> remarkCol;
+    @FXML
     private ProgressBar progressBar;
     @FXML
     private Button deleteButton;
@@ -102,6 +105,24 @@ public class TransactionOverviewController implements OverviewController{
         qtyCol.setCellValueFactory(new PropertyValueFactory<>("quantity"));
         unitPriceCol.setCellValueFactory(new PropertyValueFactory<>("unitPrice"));
         subTotalCol.setCellValueFactory(new PropertyValueFactory<>("subTotal"));
+        remarkCol.setCellValueFactory(new PropertyValueFactory<>("remark"));
+        remarkCol.setCellFactory(new Callback<TableColumn<ProductTransaction, String>, TableCell<ProductTransaction, String>>() {
+            @Override
+            public TableCell<ProductTransaction, String> call(TableColumn<ProductTransaction, String> param) {
+                return new TableCell<ProductTransaction, String>(){
+                    @Override
+                    public void updateItem(String item, boolean empty){
+                        super.updateItem(item, empty);
+                        if (!isEmpty()) {
+                            Text text = new Text(item.toString());
+                            text.setWrappingWidth(remarkCol.getWidth());
+                            setGraphic(text);
+                        }
+                    }
+                };
+            }
+        });
+
         phoneCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Transaction, String>, ObservableValue<String>>() {
             @Override
             public ObservableValue<String> call(TableColumn.CellDataFeatures<Transaction, String> param) {
