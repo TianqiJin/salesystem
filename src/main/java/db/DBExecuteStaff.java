@@ -20,7 +20,7 @@ public class DBExecuteStaff extends DBExecute<Staff>{
         boolean[] result = {false,false};
         try {
             ResultSet rs = DBConnect.excuteAndReturn(DBQueries.SearchQueries.Staff.AUTHENTICATION, user);
-            if (rs.next() && rs.getString("Password").equals(pswd)){
+            if (rs.next() && rs.getString("Password").equals(pswd) && !rs.getString("Position").equalsIgnoreCase("Discard")){
                 result[0] = true;
                 if (rs.getString("Position").equalsIgnoreCase("Manager")){
                     result[1] = true;

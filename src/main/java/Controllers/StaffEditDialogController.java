@@ -27,6 +27,8 @@ public class StaffEditDialogController {
     private TextField cityField;
     @FXML
     private TextField postalCodeField;
+    @FXML
+    private TextField phoneField;
 
     private Stage dialogStage;
     private Staff staff;
@@ -52,6 +54,7 @@ public class StaffEditDialogController {
         streetField.setText(staff.getStreet());
         cityField.setText(staff.getCity());
         postalCodeField.setText(staff.getPostalCode());
+        phoneField.setText(staff.getPhone());
         if (staff.getPosition()==null){
             positionChoiceBox.getSelectionModel().selectFirst();
         }else{
@@ -67,6 +70,7 @@ public class StaffEditDialogController {
             staff.setStreet(streetField.getText());
             staff.setCity(cityField.getText());
             staff.setPostalCode(postalCodeField.getText());
+            staff.setPhone(phoneField.getText());
 
             okClicked = true;
             dialogStage.close();
@@ -89,6 +93,7 @@ public class StaffEditDialogController {
     }
 
     private boolean isInputValid(){
+        errorMsg = "";
         if(userNameField.getText() == null || userNameField.getText().length() == 0){
             errorMsg += "UserName should not be empty! \n";
         }
@@ -99,13 +104,16 @@ public class StaffEditDialogController {
             errorMsg += "FullName should not be empty! \n";
         }
         if(streetField.getText() == null || streetField.getText().length() == 0){
-            errorMsg += "Location should not be empty! \n";
+            errorMsg += "Street should not be empty! \n";
         }
         if(cityField.getText() == null || cityField.getText().length() == 0){
-            errorMsg += "Location should not be empty! \n";
+            errorMsg += "City should not be empty! \n";
         }
         if(postalCodeField.getText() == null || postalCodeField.getText().length() == 0){
-            errorMsg += "Location should not be empty! \n";
+            errorMsg += "PostalCode should not be empty! \n";
+        }
+        if(phoneField.getText() == null || phoneField.getText().length() == 0){
+            errorMsg += "Phone should not be empty! \n";
         }
 
         if(errorMsg.length() == 0){

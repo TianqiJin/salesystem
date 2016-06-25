@@ -142,6 +142,7 @@ public interface ObjectDeserializer<E> {
                     .street(rs.getString("Street"))
                     .city(rs.getString("City"))
                     .postalCode(rs.getString("PostalCode"))
+                    .phone(rs.getString("phone"))
                     .build();
             return staff;
         }

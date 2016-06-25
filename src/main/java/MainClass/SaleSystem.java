@@ -29,6 +29,7 @@ import util.PropertiesSys;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -400,9 +401,9 @@ public class SaleSystem extends Application{
 
             InvoiceDirectoryEditDialogController controller = loader.getController();
             controller.setMainClass(SaleSystem.this);
+            controller.loadDataFromDB();
             controller.setCustomer(customer);
             controller.setTransaction(transaction);
-            controller.setStaff(staff);
             controller.setDialogStage(dialogStage);
             dialogStage.showAndWait();
 

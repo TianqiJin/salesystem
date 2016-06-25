@@ -20,6 +20,7 @@ public class Staff {
     private String postalCode;
     private String city;
     private String info;
+    private String phone;
 
     public Staff (StaffBuilder builder){
         this.staffId = new SimpleIntegerProperty((Integer) builder.staffId);
@@ -30,6 +31,7 @@ public class Staff {
         this.street = builder.street;
         this.city = builder.city;
         this.postalCode = builder.postalCode;
+        this.phone = builder.phone;
     }
 
 
@@ -86,6 +88,7 @@ public class Staff {
         private String street = null;
         private String postalCode = null;
         private String city = null;
+        private String phone = null;
 
         public StaffBuilder staffId(int staffId){
             this.staffId = staffId;
@@ -119,6 +122,10 @@ public class Staff {
             this.city = city;
             return this;
         }
+        public StaffBuilder phone(String phone){
+            this.phone = phone;
+            return this;
+        }
         public Staff build(){
             return new Staff(this);
         }
@@ -145,15 +152,15 @@ public class Staff {
     }
 
     public Object[] getAllProperties(){
-        return (new Object[]{getUserName(), getPassword(), getFullName(), getPosition().name(), getStreet(), getCity(), getPostalCode()});
+        return (new Object[]{getUserName(), getPassword(), getFullName(), getPosition().name(), getStreet(), getCity(), getPostalCode(), getPhone()});
     }
 
     public Object[] getAllPropertiesForUpdate(){
-        return (new Object[]{getUserName(), getPassword(), getFullName(), getPosition().name(), getStreet(), getCity(), getPostalCode(), getStaffId()});
+        return (new Object[]{getUserName(), getPassword(), getFullName(), getPosition().name(), getStreet(), getCity(), getPostalCode(), getPhone(), getStaffId()});
     }
 
     public enum Position{
-        SALES("sales"),MANAGER("manager");
+        SALES("sales"),MANAGER("manager"), DISCARD("discard");
         private String pos;
         private Position(String pos){
             this.pos = pos;
@@ -173,5 +180,13 @@ public class Staff {
     }
     public void setInfo() {
         this.info = this.getFullName() + "(" + this.getStaffId() + ")";
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 }
