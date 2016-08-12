@@ -64,6 +64,8 @@ public class GenerateProductTransactController {
     @FXML
     private TableColumn<ProductTransaction, Number> boxCol;
     @FXML
+    private TableColumn<ProductTransaction, Number> residualTileCol;
+    @FXML
     private TableColumn<ProductTransaction, Float> qtyCol;
     @FXML
     private TableColumn<ProductTransaction, BigDecimal> subTotalCol;
@@ -102,6 +104,12 @@ public class GenerateProductTransactController {
                 return new SimpleIntegerProperty(param.getValue().getBoxNum().getBox());
             }
         });
+        residualTileCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ProductTransaction, Number>, ObservableValue<Number>>() {
+            @Override
+            public ObservableValue<Number> call(TableColumn.CellDataFeatures<ProductTransaction, Number> param) {
+                return new SimpleIntegerProperty(param.getValue().getBoxNum().getResidualTile());
+            }
+        });
         loadDataFromDB();
 
         productIdField.textProperty().addListener((observable,oldVal,newVal)->{
@@ -110,7 +118,7 @@ public class GenerateProductTransactController {
                     return true;
                 }
                 String lowerCase = newVal.toLowerCase();
-                if (String.valueOf(productTransaction.getProductId()).contains(lowerCase)) {
+                if (String.valueOf(productTransaction.getProductId()).toLowerCase().contains(lowerCase)) {
                     return true;
                 }
                 return false;
@@ -129,12 +137,24 @@ public class GenerateProductTransactController {
             public void handle(TableColumn.CellEditEvent<ProductTransaction, Float> event) {
                 (event.getTableView().getItems().get(event.getTablePosition().getRow()))
                         .setUnitPrice(event.getNewValue().floatValue());
-                transactionTableView.setItems(productTransactionObservableList);
+                transactionTableView.setItems(filteredData);
             }
         });
 
 
         boxCol.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<Number>() {
+            @Override
+            public String toString(Number object) {
+                return String.valueOf(object.intValue());
+            }
+
+            @Override
+            public Number fromString(String string) {
+                return Integer.valueOf(string);
+            }
+        }));
+
+        residualTileCol.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<Number>() {
             @Override
             public String toString(Number object) {
                 return String.valueOf(object.intValue());
@@ -163,7 +183,16 @@ public class GenerateProductTransactController {
             public void handle(TableColumn.CellEditEvent<ProductTransaction, Number> event) {
                 ProductTransaction pt = (event.getTableView().getItems().get(event.getTablePosition().getRow()));
                 pt.getBoxNum().setBox(event.getNewValue().intValue());
-                transactionTableView.setItems(productTransactionObservableList);
+                transactionTableView.setItems(filteredData);
+            }
+        });
+
+        residualTileCol.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ProductTransaction, Number>>() {
+            @Override
+            public void handle(TableColumn.CellEditEvent<ProductTransaction, Number> event) {
+                ProductTransaction pt = (event.getTableView().getItems().get(event.getTablePosition().getRow()));
+                pt.getBoxNum().setResidualTile(event.getNewValue().intValue());
+                transactionTableView.setItems(filteredData);
             }
         });
 
@@ -172,7 +201,7 @@ public class GenerateProductTransactController {
             public void handle(TableColumn.CellEditEvent<ProductTransaction, Float> event) {
                 ProductTransaction pt = (event.getTableView().getItems().get(event.getTablePosition().getRow()));
                 pt.setQuantity(event.getNewValue());
-                transactionTableView.setItems(productTransactionObservableList);
+                transactionTableView.setItems(filteredData);
             }
         });
 

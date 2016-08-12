@@ -78,7 +78,7 @@ public class InvoiceGenerator {
         p = new Paragraph("Milan Building Supply LTD.",catFont);
         p.setAlignment(Element.HEADER);
         document.add(p);
-        p = new Paragraph("PickUp/Delivery Order" + " " + String.format("D/%05d", invoice.getId()), subFont);
+        p = new Paragraph("Pick Up/Delivery Order" + " " + String.format("D/%05d", invoice.getId()), subFont);
         p.setAlignment(Element.ALIGN_RIGHT);
         document.add(p);
         p = new Paragraph(convertDate(basic.getDateTime(), "MMM dd, yyyy"), smallBold);
@@ -456,7 +456,7 @@ public class InvoiceGenerator {
         p = new Paragraph("Milan Building Supply LTD.",catFont);
         p.setAlignment(Element.HEADER);
         document.add(p);
-        p = new Paragraph("Quotation Order" + " " + String.format("D/%05d", invoice.getId()), subFont);
+        p = new Paragraph("Quotation Order" + " " + String.format("Q/%05d", invoice.getId()), subFont);
         p.setAlignment(Element.ALIGN_RIGHT);
         document.add(p);
         p = new Paragraph(convertDate(basic.getDateTime(), "MMM dd, yyyy"), smallBold);

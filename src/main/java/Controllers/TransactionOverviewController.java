@@ -133,12 +133,18 @@ public class TransactionOverviewController implements OverviewController{
                 if(param.getValue().getType().equals(Transaction.TransactionType.IN)){
                     return null;
                 }else{
-                    Customer customer = customerList.stream().filter(c -> c.getUserName().equals(param.getValue().getInfo())).findFirst().get();
-                    if(customer.getPhone() != null){
+
+                    Customer customer = customerList.stream().filter(c -> c.getUserName().equals(param.getValue().getInfo())).findFirst().orElse(null);
+                    if(customer != null && customer.getPhone() != null){
                         return new SimpleStringProperty(customer.getPhone());
                     }else{
                         return null;
                     }
+//                    if(customer.getPhone() != null){
+//                        return new SimpleStringProperty(customer.getPhone());
+//                    }else{
+//                        return null;
+//                    }
                 }
             }
         });
