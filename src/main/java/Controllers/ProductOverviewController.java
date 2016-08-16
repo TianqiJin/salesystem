@@ -78,7 +78,9 @@ public class ProductOverviewController implements OverviewController{
     @FXML
     private TableColumn<Transaction, String> productTransactionInfoCol;
     @FXML
-    private TableColumn<Transaction, Number> productTransactionQuantityCol;
+    private TableColumn<Transaction, Number> productTransactionBoxCol;
+    @FXML
+    private TableColumn<Transaction, Number> productTransactionResidualTileCol;
     @FXML
     private TableColumn<Transaction, Number> productTransactionUnitPriceCol;
     @FXML
@@ -117,13 +119,18 @@ public class ProductOverviewController implements OverviewController{
         productTransactionDateCol.setCellValueFactory(new PropertyValueFactory<>("date"));
         productTransactionStaffIdCol.setCellValueFactory(new PropertyValueFactory<>("staffId"));
         productTransactionInfoCol.setCellValueFactory(new PropertyValueFactory<>("info"));
-        productTransactionQuantityCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Transaction, Number>, ObservableValue<Number>>() {
+        productTransactionBoxCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Transaction, Number>, ObservableValue<Number>>() {
             @Override
             public ObservableValue<Number> call(TableColumn.CellDataFeatures<Transaction, Number> param) {
                 return new SimpleIntegerProperty(param.getValue().getProductTransactionList().get(0).getBoxNum().getBox());
             }
         });
-
+        productTransactionResidualTileCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Transaction, Number>, ObservableValue<Number>>() {
+            @Override
+            public ObservableValue<Number> call(TableColumn.CellDataFeatures<Transaction, Number> param) {
+                return new SimpleIntegerProperty(param.getValue().getProductTransactionList().get(0).getBoxNum().getResidualTile());
+            }
+        });
         showProductDetail(null);
         productTable.getSelectionModel().selectedItemProperty().addListener(
                 new ChangeListener<Product>() {

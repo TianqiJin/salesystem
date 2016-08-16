@@ -127,6 +127,8 @@ public class GenerateCustomerTransactController {
     @FXML
     private ComboBox customerComboBox;
     @FXML
+    private ComboBox customerPhoneComboBox;
+    @FXML
     private ComboBox productComboBox;
     @FXML
     private Label balanceLabel;
@@ -139,12 +141,6 @@ public class GenerateCustomerTransactController {
 
     @FXML
     private void initialize(){
-//        Callback<TableColumn<ProductTransaction, String>, TableCell<ProductTransaction, String>> cellFactory =
-//                new Callback<TableColumn<ProductTransaction, String>, TableCell<ProductTransaction, String>>() {
-//                    public TableCell call(TableColumn p) {
-//                        return new EditCellFactory();
-//                    }
-//                };
         confimButtonBinding = Bindings.size(transactionTableView.getItems()).greaterThan(0);
         confirmButton.disableProperty().bind(confimButtonBinding);
         productIdCol.setCellValueFactory(new PropertyValueFactory<>("productId"));
@@ -336,12 +332,32 @@ public class GenerateCustomerTransactController {
 
             }
         });
+        List<String> tmpCustomerPhoneList = new ArrayList<>();
+        for(Customer customer: customerList){
+            customer.constructCustomerPhoneInfo();
+            tmpCustomerPhoneList.add(customer.getCustomerPhoneInfo());
+        }
+        customerPhoneComboBox.setItems(FXCollections.observableArrayList(tmpCustomerPhoneList));
+        customerPhoneComboBox.valueProperty().addListener(new ChangeListener() {
+            @Override
+            public void changed(ObservableValue observable, Object oldValue, Object newValue) {
+                for(Customer tmpCustomer: customerList){
+                    if(tmpCustomer.getCustomerPhoneInfo() != null && tmpCustomer.getCustomerPhoneInfo().equals(newValue)){
+                        customer = tmpCustomer;
+                        showCustomerDetails(customer);
+                        break;
+                    }
+                }
+
+            }
+        });
         List<String> tmpProductList = productList
                 .stream()
                 .map(product -> product.getProductId())
                 .collect(Collectors.toList());
         productComboBox.setItems(FXCollections.observableArrayList(tmpProductList));
         new AutoCompleteComboBoxListener<>(customerComboBox);
+        new AutoCompleteComboBoxListener<>(customerPhoneComboBox);
         new AutoCompleteComboBoxListener<>(productComboBox);
         storeCreditCheckBox.selectedProperty().addListener(new ChangeListener<Boolean>() {
             @Override
