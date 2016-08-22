@@ -149,6 +149,7 @@ public class InvoiceGenerator {
             row++;
         }
 
+
         document.add(table);
         p = new Paragraph("Payment Information:",addressFont);
         p.setAlignment(Element.ALIGN_LEFT);
@@ -166,6 +167,19 @@ public class InvoiceGenerator {
             row++;
         }
         p.add(table);
+
+
+        PdfPTable signTable = new PdfPTable(2);
+        signTable.setWidthPercentage(86);
+        signTable.addCell(getCellNoWrap("Packing by: _________________", Element.ALIGN_LEFT, largeText));
+        signTable.addCell(getCellNoWrap("Customer Sign: ________________", Element.ALIGN_RIGHT, largeText));
+        signTable.addCell(getCellNoWrap(" ", Element.ALIGN_CENTER,largeText ));
+        signTable.addCell(getCellNoWrap(" ", Element.ALIGN_CENTER, largeText));
+        signTable.addCell(getCellNoWrap("Date:         __________________", Element.ALIGN_LEFT, largeText));
+        signTable.addCell(getCellNoWrap("Date:            ___________________", Element.ALIGN_RIGHT, largeText));
+        if(signTable.getTotalWidth()==0)signTable.setTotalWidth((document.right()-document.left())*signTable.getWidthPercentage()/100f);
+        signTable.writeSelectedRows(0, -1, (document.left()+document.right()-signTable.getTotalWidth())/2f, document.bottom() + signTable.getTotalHeight()*3f, writer.getDirectContent());
+
         document.add(p);
 
         document.newPage();
