@@ -70,7 +70,7 @@ public class GenerateReturnTransactController {
     @FXML
     private TableColumn<ProductTransaction, BigDecimal> unitPriceCol;
     @FXML
-    private TableColumn<ProductTransaction, Integer> qtyCol;
+    private TableColumn<ProductTransaction, Float> qtyCol;
     @FXML
     private TableColumn<ProductTransaction, Integer> sizeCol;
     @FXML
@@ -118,30 +118,23 @@ public class GenerateReturnTransactController {
         stockCol.setCellValueFactory(new PropertyValueFactory<>("totalNum"));
         sizeCol.setCellValueFactory(new PropertyValueFactory<>("sizeNumeric"));
         qtyCol.setCellValueFactory(new PropertyValueFactory<>("quantity"));
-        qtyCol.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<Integer>(){
+        qtyCol.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<Float>() {
             @Override
-            public Integer fromString(String string) {
-                return Integer.valueOf(string);
+            public String toString(Float object) {
+                return String.valueOf(object);
             }
-            public String toString(Integer integer){
-                return String.valueOf(integer);
+
+            @Override
+            public Float fromString(String string) {
+                return Float.valueOf(string);
             }
         }));
-        qtyCol.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ProductTransaction, Integer>>() {
+        qtyCol.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ProductTransaction, Float>>() {
             @Override
-            public void handle(TableColumn.CellEditEvent<ProductTransaction, Integer> event) {
-                if(event.getNewValue() % event.getTableView().getItems().get(event.getTablePosition().getRow()).getSizeNumeric() != 0){
-                    new AlertBuilder().alertTitle("Purchase Quantity Error")
-                            .alertType(Alert.AlertType.ERROR)
-                            .alertContentText("User has to buy the whole piece of tile.")
-                            .build()
-                            .showAndWait();
-                    refreshTable();
-                }else{
-                    (event.getTableView().getItems().get(event.getTablePosition().getRow()))
-                            .setQuantity(event.getNewValue());
-                    showPaymentDetails(productTransactionObservableList, customer);
-                }
+            public void handle(TableColumn.CellEditEvent<ProductTransaction, Float> event) {
+                (event.getTableView().getItems().get(event.getTablePosition().getRow()))
+                        .setQuantity(event.getNewValue());
+                showPaymentDetails(productTransactionObservableList, customer);
             }
         });
         discountCol.setCellValueFactory(new PropertyValueFactory<>("discount"));
@@ -307,9 +300,9 @@ public class GenerateReturnTransactController {
             if(customer != null && customer.getPstNumber() != null){
                 pstTax = new BigDecimal("0.0");
             }else{
-                pstTax = new BigDecimal(saleSystem.getPstRate()).multiply(subTotalAfterDiscount).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+                pstTax = new BigDecimal(saleSystem.getProperty().getPstRate()).multiply(subTotalAfterDiscount).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
             }
-            BigDecimal gstTax = new BigDecimal(saleSystem.getGstRate()).multiply(subTotalAfterDiscount).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+            BigDecimal gstTax = new BigDecimal(saleSystem.getProperty().getGstRate()).multiply(subTotalAfterDiscount).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
             BigDecimal total = subTotalAfterDiscount.add(pstTax).add(gstTax).setScale(2, BigDecimal.ROUND_HALF_EVEN);
 
             itemsCountLabel.setText(String.valueOf(productTransactions.size()));
@@ -369,15 +362,15 @@ public class GenerateReturnTransactController {
                 Product tmp = productList.stream()
                         .filter(product -> product.getProductId().equals(productTransaction.getProductId()))
                         .findFirst()
-                        .get();
+                        .orElse(null);
+
                 if(tmp == null){
                     new AlertBuilder()
                             .alertTitle("Product Error!")
-                            .alertType(Alert.AlertType.ERROR)
+                            .alertType(Alert.AlertType.WARNING)
                             .alertContentText("Product - " + productTransaction.getProductId() + " does not exist!")
                             .build()
                             .showAndWait();
-                    dialogStage.close();
                 }else{
                     productTransaction.setTotalNum(tmp.getTotalNum());
                 }
@@ -487,7 +480,7 @@ public class GenerateReturnTransactController {
                 dbExecuteTransaction.insertIntoDatabase(DBQueries.InsertQueries.Transaction.INSERT_INTO_TRANSACTION,
                         objects);
                 for(ProductTransaction tmp : transaction.getProductTransactionList()){
-                    int remain = tmp.getTotalNum() + tmp.getQuantity();
+                    float remain = tmp.getTotalNum() + tmp.getQuantity();
                     dbExecuteProduct.updateDatabase(DBQueries.UpdateQueries.Product.UPDATE_PRODUCT_QUANTITY, remain, tmp.getProductId());
                 }
                 if(transaction.getPaymentType().equals("Store Credit")){
@@ -503,15 +496,14 @@ public class GenerateReturnTransactController {
                 Product tmp = productListTask.getValue().stream()
                         .filter(product -> product.getProductId().equals(productTransaction.getProductId()))
                         .findFirst()
-                        .get();
+                        .orElse(null);
                 if (tmp == null) {
                     new AlertBuilder()
                             .alertTitle("Product Error!")
-                            .alertType(Alert.AlertType.ERROR)
+                            .alertType(Alert.AlertType.WARNING)
                             .alertContentText("Product - " + productTransaction.getProductId() + " does not exist!")
                             .build()
                             .showAndWait();
-                    dialogStage.close();
                 } else {
                     productTransaction.setTotalNum(tmp.getTotalNum());
                 }

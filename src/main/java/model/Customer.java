@@ -23,15 +23,7 @@ public class Customer {
     private final StringProperty company;
     private final StringProperty pstNumber;
     private String customerInfo;
-    private static final Map<String, Integer> discountMap;
-
-    static{
-        Map<String, Integer> tmpDiscountMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        tmpDiscountMap.put("A", 40);
-        tmpDiscountMap.put("B", 30);
-        tmpDiscountMap.put("C", 20);
-        discountMap = Collections.unmodifiableMap(tmpDiscountMap);
-    }
+    private String customerPhoneInfo;
 
     public Customer(CustomerBuilder builder){
         this.userName = new SimpleStringProperty(builder.userName);
@@ -288,7 +280,33 @@ public class Customer {
         return this.customerInfo;
     }
 
-    public static Map<String, Integer> getDiscountMap() {
-        return discountMap;
+    public void constructCustomerPhoneInfo(){
+        if(this.getPhone() == null){
+            this.customerPhoneInfo = new StringBuffer()
+                    .append("N/A")
+                    .append(" ")
+                    .append("(")
+                    .append(this.getFirstName())
+                    .append(" ")
+                    .append(this.getLastName())
+                    .append(")")
+                    .toString();
+        }else{
+            this.customerPhoneInfo = new StringBuffer()
+                    .append(this.getPhone().trim())
+                    .append(" ")
+                    .append("(")
+                    .append(this.getFirstName())
+                    .append(" ")
+                    .append(this.getLastName())
+                    .append(")")
+                    .toString();
+        }
     }
+
+    public String getCustomerPhoneInfo(){ return this.customerPhoneInfo; }
+
+//    public static Map<String, Integer> getDiscountMap() {
+//        return discountMap;
+//    }
 }

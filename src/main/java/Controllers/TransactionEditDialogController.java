@@ -198,11 +198,11 @@ public class TransactionEditDialogController {
             StringBuffer overviewProductTransactionString = new StringBuffer();
             for(ProductTransaction tmp: transaction.getProductTransactionList()){
                 overviewProductTransactionString
-                        .append("Product ID: " + tmp.getProductId() + " ")
-                        .append("Total Num: " + tmp.getTotalNum() + " ")
-                        .append("Quantity: " + tmp.getQuantity() + " ")
-                        .append("Unit Price: " + tmp.getUnitPrice() + " ")
-                        .append("Sub Total: " + tmp.getSubTotal() + " ")
+                        .append("Product ID: " + tmp.getProductId() + "\n")
+                        .append("Total Num: " + tmp.getTotalNum() + "\n")
+                        .append("Quantity: " + tmp.getQuantity() + "\n")
+                        .append("Unit Price: " + tmp.getUnitPrice() + "\n")
+                        .append("Sub Total: " + tmp.getSubTotal() + "\n")
                         .append("\n");
             }
             overviewTransactionString
@@ -325,6 +325,7 @@ public class TransactionEditDialogController {
         try{
             this.customer = dbExecuteCustomer.selectFromDatabase(DBQueries.SelectQueries.Customer.SELECT_SINGLE_CUSTOMER, this.transaction.getInfo()).get(0);
         }catch(SQLException e){
+            logger.error(e.getMessage());
             Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to grab data from database!\n" + e.getMessage());
             alert.setTitle("Database Error");
             alert.showAndWait();
@@ -350,9 +351,6 @@ public class TransactionEditDialogController {
                     errorMsgBuilder.append("Either Store Credit exceeds customer's limit or Store Credit must be numbers!\n");
                 }
             }
-        }
-        if(!isProductQuantityValid()){
-            errorMsgBuilder.append("Some product's quantity exceeds the stock quota!\n");
         }
         if(errorMsgBuilder.length() != 0){
             return false;
@@ -387,21 +385,13 @@ public class TransactionEditDialogController {
         return true;
     }
 
-    private boolean isProductQuantityValid(){
-        for(ProductTransaction tmp : transaction.getProductTransactionList()){
-            if(tmp.getTotalNum() - tmp.getQuantity() < 0){
-                return false;
-            }
-        }
-        return true;
-    }
 
-    private Integer returnDiscount(){
-        if(this.customer != null){
-            return Customer.getDiscountMap().get(customer.getUserClass());
-        }
-        return null;
-    }
+//    private Integer returnDiscount(){
+//        if(this.customer != null){
+//            return Customer.getDiscountMap().get(customer.getUserClass());
+//        }
+//        return null;
+//    }
     private void commitTransactionToDatabase() throws SQLException, IOException {
         Task<Customer> customerTask = new Task<Customer>() {
             @Override

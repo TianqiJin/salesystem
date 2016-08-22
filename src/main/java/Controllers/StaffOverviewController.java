@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 public class StaffOverviewController implements OverviewController{
 
@@ -54,6 +55,8 @@ public class StaffOverviewController implements OverviewController{
     private Label cityLabel;
     @FXML
     private Label postalCodeLabel;
+    @FXML
+    private Label phoneLabel;
     @FXML
     private ProgressBar progressBar;
 
@@ -133,6 +136,7 @@ public class StaffOverviewController implements OverviewController{
                 dbExecute.insertIntoDatabase(DBQueries.InsertQueries.Staff.INSERT_INTO_STAFF,
                         newStaff.getAllProperties());
             }catch(SQLException e){
+                logger.error(e.getMessage());
                 new AlertBuilder()
                         .alertType(Alert.AlertType.ERROR)
                         .alertTitle(Constant.DatabaseError.databaseErrorAlertTitle)
@@ -155,6 +159,7 @@ public class StaffOverviewController implements OverviewController{
                     dbExecute.updateDatabase(DBQueries.UpdateQueries.Staff.UPDATE_STAFF,
                             selectedStaff.getAllPropertiesForUpdate());
                 }catch(SQLException e){
+                    logger.error(e.getMessage());
                     new AlertBuilder()
                             .alertType(Alert.AlertType.ERROR)
                             .alertTitle(Constant.DatabaseError.databaseErrorAlertTitle)
@@ -204,7 +209,12 @@ public class StaffOverviewController implements OverviewController{
                     .showAndWait();
         });
         staffListTask.setOnSucceeded(event -> {
-            staffList = FXCollections.observableArrayList(staffListTask.getValue());
+            if(!this.saleSystem.getStaff().getPosition().equals(Staff.Position.MANAGER)){
+                staffList = FXCollections.observableArrayList(staffListTask.getValue()
+                        .stream().filter(staff -> !staff.getPosition().equals(Staff.Position.DISCARD)).collect(Collectors.toList()));
+            }else{
+                staffList = FXCollections.observableArrayList(staffListTask.getValue());
+            }
             staffTable.setItems(staffList);
             staffTable.getSelectionModel().selectFirst();
             FilteredList<Staff> filteredData = new FilteredList<Staff>(staffList,p->true);
@@ -246,6 +256,7 @@ public class StaffOverviewController implements OverviewController{
             streetLabel.setText(staff.getStreet());
             cityLabel.setText(staff.getCity());
             postalCodeLabel.setText(staff.getPostalCode());
+            phoneLabel.setText(staff.getPhone());
         }
         else{
             staffIdLabel.setText("");
@@ -254,6 +265,7 @@ public class StaffOverviewController implements OverviewController{
             streetLabel.setText("");
             cityLabel.setText("");
             postalCodeLabel.setText("");
+            phoneLabel.setText("");
         }
     }
 }

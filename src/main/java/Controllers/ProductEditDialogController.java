@@ -102,21 +102,35 @@ public class ProductEditDialogController {
         if(!this.saleSystem.getStaff().getPosition().equals(Staff.Position.MANAGER) && isEditClicked){
             unitPriceField.setDisable(true);
         }
+        if(isEditClicked){
+            productIdField.setDisable(true);
+        }
     }
 
     private boolean isInputValid(){
+        errorMsg  = "";
         if(productIdField.getText() == null || productIdField.getText().length() == 0){
             errorMsg += "ProductID should not be empty! \n";
         }
         try{
-            Integer.parseInt(lengthField.getText());
+            Double.parseDouble(lengthField.getText());
         }catch (NumberFormatException e){
-            errorMsg += "Product Length must be integer!";
+            errorMsg += "Product Length must be number! \n";
         }
         try{
-            Integer.parseInt(widthField.getText());
+            Double.parseDouble(widthField.getText());
         }catch (NumberFormatException e){
-            errorMsg += "Product Width must be integer!";
+            errorMsg += "Product Width must be number! \n";
+        }
+        try{
+            Float.parseFloat(unitPriceField.getText());
+        }catch (NumberFormatException e){
+            errorMsg += "Unit Price must be number! \n";
+        }
+        try{
+            Integer.parseInt(piecesPerBoxField.getText());
+        }catch (NumberFormatException e){
+            errorMsg += "Pieces per box must be integer! \n";
         }
         if(errorMsg.length() == 0){
             return true;

@@ -8,20 +8,30 @@
 
 package Controllers;
 
+import Constants.Constant;
 import MainClass.SaleSystem;
 import PDF.InvoiceGenerator;
+import db.DBExecuteStaff;
+import db.DBQueries;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.DoubleBinding;
+import javafx.collections.FXCollections;
+import javafx.collections.transformation.FilteredList;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
-import model.Address;
-import model.Customer;
-import model.Staff;
-import model.Transaction;
+import model.*;
 import org.apache.log4j.Logger;
 import util.AlertBuilder;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 /**
  * Created by tjin on 3/7/2016.
@@ -34,6 +44,10 @@ public class InvoiceDirectoryEditDialogController {
     private StringBuilder errorMsgBuilder;
     private Transaction transaction;
     private Staff staff;
+    private SaleSystem saleSystem;
+    private Executor executor;
+    private DBExecuteStaff dbExecute;
+    private List<Staff> staffList;
 
     @FXML
     private TextField streetField;
@@ -45,6 +59,10 @@ public class InvoiceDirectoryEditDialogController {
     private CheckBox customerAddressCheckbox;
     @FXML
     private CheckBox deliveryInvoiceCheckbox;
+    @FXML
+    private CheckBox invoiceCheckBox;
+    @FXML
+    private CheckBox quotationInvoiceCheckBox;
     @FXML
     private Label invoiceDirectoryLabel;
     @FXML
@@ -63,11 +81,18 @@ public class InvoiceDirectoryEditDialogController {
                 postalCodeField.clear();
             }
         });
+        invoiceCheckBox.setSelected(true);
         deliveryInvoiceCheckbox.setSelected(true);
         deliveryInvoiceCheckbox.selectedProperty().addListener((observable, oldValue, newValue) -> {
             deliveryTitledPane.setDisable(newValue? false : true);
         });
         invoiceDirectoryLabel.setText("");
+
+        executor = Executors.newCachedThreadPool(r -> {
+            Thread t = new Thread(r);
+            t.setDaemon(true);
+            return t;
+        });
     }
 
     @FXML
@@ -83,47 +108,50 @@ public class InvoiceDirectoryEditDialogController {
     @FXML
     public void handleConfirmButton(){
         errorMsgBuilder = new StringBuilder();
-        if(deliveryInvoiceCheckbox.isSelected()){
-            if(isInvoicedirectoryValid() && isFieldValid()){
-                Address address = new Address(streetField.getText().trim(), cityField.getText().trim(), postalCodeField.getText().trim());
-                try {
-                    InvoiceGenerator generator = new InvoiceGenerator(selectedDirectory.toString());
-                    generator.buildInvoice(transaction, customer, staff);
-                    if (transaction.getType()== Transaction.TransactionType.OUT){
-                        generator.buildDelivery(transaction,customer,staff,address);
+        if(isInvoicedirectoryValid()){
+            try{
+                InvoiceGenerator generator = new InvoiceGenerator(selectedDirectory.toString(), this.saleSystem);
+                if(deliveryInvoiceCheckbox.isSelected()){
+                    if(isFieldValid()){
+                        Address address = new Address(streetField.getText().trim(), cityField.getText().trim(), postalCodeField.getText().trim());
+                        if(invoiceCheckBox.isSelected()){
+                            generator.buildInvoice(transaction,customer,staff);
+                        }
+                        if(quotationInvoiceCheckBox.isSelected()){
+                            generator.buildQuotation(transaction, customer, staff);
+                        }
+                        generator.buildDelivery(transaction, customer, staff, address);
+                    }else{
+                        new AlertBuilder()
+                                .alertType(Alert.AlertType.ERROR)
+                                .alertHeaderText("Please fix the following error")
+                                .alertContentText(errorMsgBuilder.toString())
+                                .alertTitle("Invoice Error")
+                                .build()
+                                .showAndWait();
                     }
-                }catch (Exception e){
-                    logger.error(e.getMessage());
+                }else{
+                    if(invoiceCheckBox.isSelected()){
+                        generator.buildInvoice(transaction,customer,staff);
+                    }
+                    if(quotationInvoiceCheckBox.isSelected()){
+                        generator.buildQuotation(transaction, customer, staff);
+                    }
                 }
-                dialogStage.close();
-            }else{
-                new AlertBuilder()
-                        .alertType(Alert.AlertType.ERROR)
-                        .alertHeaderText("Please fix the following error!")
-                        .alertContentText(errorMsgBuilder.toString())
-                        .alertTitle("Invoice Error")
-                        .build()
-                        .showAndWait();
+            }catch(Exception e){
+                logger.error(e.getMessage());
             }
-
+            if(errorMsgBuilder.length() == 0){
+                dialogStage.close();
+            }
         }else{
-            if(isInvoicedirectoryValid()){
-                try {
-                    InvoiceGenerator generator = new InvoiceGenerator(selectedDirectory.toString());
-                    generator.buildInvoice(transaction, customer, staff);
-                }catch (Exception e){
-                    logger.error(e.getMessage());
-                }
-                dialogStage.close();
-            }else{
-                new AlertBuilder()
-                        .alertType(Alert.AlertType.ERROR)
-                        .alertHeaderText("Please fix the following error")
-                        .alertContentText(errorMsgBuilder.toString())
-                        .alertTitle("Invoice Error")
-                        .build()
-                        .showAndWait();
-            }
+            new AlertBuilder()
+                    .alertType(Alert.AlertType.ERROR)
+                    .alertHeaderText("Please fix the following error")
+                    .alertContentText(errorMsgBuilder.toString())
+                    .alertTitle("Invoice Error")
+                    .build()
+                    .showAndWait();
         }
     }
     @FXML
@@ -131,6 +159,9 @@ public class InvoiceDirectoryEditDialogController {
         dialogStage.close();
     }
 
+    public InvoiceDirectoryEditDialogController(){
+        this.dbExecute = new DBExecuteStaff();
+    }
     public void setCustomer(Customer customer){
         this.customer = customer;
     }
@@ -144,18 +175,19 @@ public class InvoiceDirectoryEditDialogController {
             deliveryInvoiceCheckbox.setDisable(true);
         }
     }
-    public void setStaff(Staff staff){
-        this.staff = staff;
+
+    public void setMainClass(SaleSystem saleSystem){
+        this.saleSystem = saleSystem;
     }
 
     private boolean isFieldValid(){
-        if(streetField.getText().trim().isEmpty()){
+        if(streetField.getText().trim().isEmpty() || streetField.getText() == null){
             errorMsgBuilder.append("Street Field is empty!\n");
         }
-        if(cityField.getText().trim().isEmpty()){
+        if(cityField.getText().trim().isEmpty() || cityField.getText() == null){
             errorMsgBuilder.append("City Field is empty!\n");
         }
-        if(postalCodeField.getText().trim().isEmpty()){
+        if(postalCodeField.getText().trim().isEmpty() || postalCodeField.getText() == null){
             errorMsgBuilder.append("Postal Code Field is empty!\n");
         }
         if(errorMsgBuilder.length() == 0){
@@ -173,4 +205,39 @@ public class InvoiceDirectoryEditDialogController {
         return false;
     }
 
+    public void loadDataFromDB() {
+        Task<List<Staff>> staffTask = new Task<List<Staff>>() {
+            @Override
+            protected List<Staff> call() throws Exception {
+                List<Staff> tmpStaffList = new ArrayList<>();
+                tmpStaffList = dbExecute.selectFromDatabase(DBQueries.SelectQueries.Staff.SELECT_ALL_STAFF);
+                return  tmpStaffList;
+            }
+        };
+
+        staffTask.setOnSucceeded(event -> {
+            staffList = staffTask.getValue();
+            Staff tmpStaff = staffList.stream().filter(staff -> staff.getStaffId() == transaction.getStaffId()).findFirst().orElse(null);
+            if(tmpStaff != null){
+                this.staff = tmpStaff;
+            }else{
+                new AlertBuilder()
+                        .alertType(Alert.AlertType.ERROR)
+                        .alertTitle("Staff Error")
+                        .alertContentText("Unable to find staff id " + transaction.getStaffId())
+                        .build()
+                        .showAndWait();
+            }
+        });
+        staffTask.setOnFailed(event -> {
+            new AlertBuilder()
+                    .alertType(Alert.AlertType.ERROR)
+                    .alertContentText(Constant.DatabaseError.databaseReturnError + event.getSource().exceptionProperty().getValue())
+                    .alertHeaderText(Constant.DatabaseError.databaseErrorAlertTitle)
+                    .build()
+                    .showAndWait();
+        });
+
+        executor.execute(staffTask);
+    }
 }

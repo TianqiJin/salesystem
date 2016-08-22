@@ -16,6 +16,7 @@ import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import model.*;
@@ -25,6 +26,7 @@ import util.DateUtil;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Callable;
@@ -87,6 +89,8 @@ public class TransactionOverviewController implements OverviewController{
     @FXML
     private TableColumn<ProductTransaction, Float> unitPriceCol;
     @FXML
+    private TableColumn<ProductTransaction, String> remarkCol;
+    @FXML
     private ProgressBar progressBar;
     @FXML
     private Button deleteButton;
@@ -102,18 +106,45 @@ public class TransactionOverviewController implements OverviewController{
         qtyCol.setCellValueFactory(new PropertyValueFactory<>("quantity"));
         unitPriceCol.setCellValueFactory(new PropertyValueFactory<>("unitPrice"));
         subTotalCol.setCellValueFactory(new PropertyValueFactory<>("subTotal"));
+        remarkCol.setCellValueFactory(new PropertyValueFactory<>("remark"));
+        remarkCol.setCellFactory(new Callback<TableColumn<ProductTransaction, String>, TableCell<ProductTransaction, String>>() {
+            @Override
+            public TableCell<ProductTransaction, String> call(TableColumn<ProductTransaction, String> param) {
+                return new TableCell<ProductTransaction, String>(){
+                    @Override
+                    public void updateItem(String item, boolean empty){
+                        super.updateItem(item, empty);
+                        if (!isEmpty()) {
+                            Text text = new Text(item.toString());
+                            text.setWrappingWidth(remarkCol.getWidth());
+                            setGraphic(text);
+                        }else{
+                            setText(null);
+                            setGraphic(null);
+                        }
+                    }
+                };
+            }
+        });
+
         phoneCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Transaction, String>, ObservableValue<String>>() {
             @Override
             public ObservableValue<String> call(TableColumn.CellDataFeatures<Transaction, String> param) {
                 if(param.getValue().getType().equals(Transaction.TransactionType.IN)){
                     return null;
                 }else{
-                    Customer customer = customerList.stream().filter(c -> c.getUserName().equals(param.getValue().getInfo())).findFirst().get();
-                    if(customer.getPhone() != null){
+
+                    Customer customer = customerList.stream().filter(c -> c.getUserName().equals(param.getValue().getInfo())).findFirst().orElse(null);
+                    if(customer != null && customer.getPhone() != null){
                         return new SimpleStringProperty(customer.getPhone());
                     }else{
                         return null;
                     }
+//                    if(customer.getPhone() != null){
+//                        return new SimpleStringProperty(customer.getPhone());
+//                    }else{
+//                        return null;
+//                    }
                 }
             }
         });
@@ -136,11 +167,13 @@ public class TransactionOverviewController implements OverviewController{
     @FXML
     private void handleAddTransaction(){
         ContainerClass containerClass = saleSystem.showGenerateCustomerTransactionDialog();
-        Transaction newTransaction = containerClass.getTransaction();
-        if(newTransaction != null){
-            transactionList.add(newTransaction);
-            customerList=containerClass.getCustomers();
-            loadDataFromDB();
+        if(containerClass != null){
+            Transaction newTransaction = containerClass.getTransaction();
+            if(newTransaction != null){
+                transactionList.add(newTransaction);
+                customerList=containerClass.getCustomers();
+                loadDataFromDB();
+            }
         }
     }
 
@@ -187,39 +220,54 @@ public class TransactionOverviewController implements OverviewController{
                     productList = dbExecuteProduct.selectFromDatabase(DBQueries.SelectQueries.Product.SELECT_ALL_PRODUCT);
                     customerList = dbExecuteCustomer.selectFromDatabase(DBQueries.SelectQueries.Customer.SELECT_ALL_CUSTOMER);
                     Transaction deleteTransaction = transactionTable.getItems().get(selectIndex);
+                    List<String> deletedProductList = new ArrayList<>();
                     for(ProductTransaction tmp : deleteTransaction.getProductTransactionList()){
-                        int quantity;
-                        int currentQuality = productList
+                        Product tmpProduct = productList
                                 .stream()
                                 .filter(product -> product.getProductId().equals(tmp.getProductId()))
                                 .findFirst()
-                                .get()
-                                .getTotalNum();
-                        if(deleteTransaction.getType().equals(Transaction.TransactionType.OUT)){
-                            quantity = currentQuality + tmp.getQuantity();
-                            dbExecuteProduct.updateDatabase(DBQueries.UpdateQueries.Product.UPDATE_PRODUCT_QUANTITY,
-                                    quantity, tmp.getProductId());
+                                .orElse(null);
+                        if(tmpProduct != null){
+                            float quantity;
+                            float currentQuality = tmpProduct.getTotalNum();
+                            if(deleteTransaction.getType().equals(Transaction.TransactionType.OUT)){
+                                quantity = currentQuality + tmp.getQuantity();
+                                dbExecuteProduct.updateDatabase(DBQueries.UpdateQueries.Product.UPDATE_PRODUCT_QUANTITY,
+                                        quantity, tmp.getProductId());
+                            }else{
+                                quantity = currentQuality - tmp.getQuantity();
+                                dbExecuteProduct.updateDatabase(DBQueries.UpdateQueries.Product.UPDATE_PRODUCT_QUANTITY,
+                                        quantity, tmp.getProductId());
+                            }
                         }else{
-                            quantity = currentQuality - tmp.getQuantity();
-                            dbExecuteProduct.updateDatabase(DBQueries.UpdateQueries.Product.UPDATE_PRODUCT_QUANTITY,
-                                    quantity, tmp.getProductId());
+                            deletedProductList.add(tmp.getProductId());
                         }
+                    }
+                    if(!deletedProductList.isEmpty()){
+                        new AlertBuilder()
+                                .alertTitle("Missing Products")
+                                .alertHeaderText("The following products are no longer in database anymore")
+                                .alertContentText(Arrays.toString(deletedProductList.toArray()))
+                                .build()
+                                .showAndWait();
                     }
                     if(!deleteTransaction.getType().equals(Transaction.TransactionType.IN)){
                         Customer customer = customerList
                                 .stream()
                                 .filter(c -> c.getUserName().equals(deleteTransaction.getInfo()))
                                 .findFirst()
-                                .get();
-                        double storeCredit = 0;
-                        if(deleteTransaction.getType().equals(Transaction.TransactionType.OUT)){
-                            storeCredit = customer.getStoreCredit() + deleteTransaction.getStoreCredit();
-                        }else if(deleteTransaction.getType().equals(Transaction.TransactionType.RETURN)){
-                            storeCredit = customer.getStoreCredit() - deleteTransaction.getStoreCredit();
-                        }
-                        if(storeCredit > 0){
-                            dbExecuteCustomer.updateDatabase(DBQueries.UpdateQueries.Customer.UPDATE_CUSTOMER_STORE_CREDIT,
-                                    storeCredit, customer.getUserName());
+                                .orElse(null);
+                        if(customer != null){
+                            double storeCredit = 0;
+                            if(deleteTransaction.getType().equals(Transaction.TransactionType.OUT)){
+                                storeCredit = customer.getStoreCredit() + deleteTransaction.getStoreCredit();
+                            }else if(deleteTransaction.getType().equals(Transaction.TransactionType.RETURN)){
+                                storeCredit = customer.getStoreCredit() - deleteTransaction.getStoreCredit();
+                            }
+                            if(storeCredit > 0){
+                                dbExecuteCustomer.updateDatabase(DBQueries.UpdateQueries.Customer.UPDATE_CUSTOMER_STORE_CREDIT,
+                                        storeCredit, customer.getUserName());
+                            }
                         }
                     }
                     dbExecuteTransaction.deleteDatabase(DBQueries.DeleteQueries.Transaction.DELETE_FROM_TRANSACTION, deleteTransaction.getTransactionId());
@@ -251,6 +299,7 @@ public class TransactionOverviewController implements OverviewController{
         if(selectedTransaction != null){
             if(!selectedTransaction.getType().equals(Transaction.TransactionType.OUT)){
                 new AlertBuilder()
+                        .alertTitle("Edit Transaction Error")
                         .alertType(Alert.AlertType.ERROR)
                         .alertContentText("You can only edit OUT transaction!\n")
                         .build()
@@ -272,6 +321,7 @@ public class TransactionOverviewController implements OverviewController{
                 new AlertBuilder()
                         .alertType(Alert.AlertType.ERROR)
                         .alertContentText("Please select OUT/RETURN transaction to generate Invoice!\n")
+                        .alertTitle("Invoice Generation Error")
                         .build()
                         .showAndWait();
             }else{
@@ -350,17 +400,17 @@ public class TransactionOverviewController implements OverviewController{
                         return true;
                     }
                     String lowerCase = newVal.toLowerCase();
-                    if (String.valueOf(transaction.getTransactionId()).equals(lowerCase)){
+                    if (String.valueOf(transaction.getTransactionId()).toLowerCase().equals(lowerCase)){
                         return true;
-                    }else if (transaction.getType().name().toLowerCase().contains(lowerCase)){
+                    }else if (transaction.getType().name().toLowerCase().toLowerCase().contains(lowerCase)){
                         return true;
-                    }else if (transaction.getDate().toString().toLowerCase().contains(lowerCase)){
+                    }else if (transaction.getDate().toString().toLowerCase().toLowerCase().contains(lowerCase)){
                         return true;
-                    }else if (transaction.getInfo().toLowerCase().contains(lowerCase)){
+                    }else if (transaction.getInfo().toLowerCase().toLowerCase().contains(lowerCase)){
                         return true;
                     }else if (!transaction.getType().equals(Transaction.TransactionType.IN) &&
                             customerList.stream().filter(c -> c.getUserName().equals(transaction.getInfo())).findFirst().get().getPhone() != null &&
-                            customerList.stream().filter(c -> c.getUserName().equals(transaction.getInfo())).findFirst().get().getPhone().contains(lowerCase)){
+                            customerList.stream().filter(c -> c.getUserName().equals(transaction.getInfo())).findFirst().get().getPhone().toLowerCase().contains(lowerCase)){
                         return true;
                     }
                     return false;

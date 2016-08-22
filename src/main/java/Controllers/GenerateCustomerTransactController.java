@@ -32,6 +32,7 @@ import org.apache.log4j.Logger;
 import util.AlertBuilder;
 import util.AutoCompleteComboBoxListener;
 import util.ButtonCell;
+import util.EditCellFactory;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -75,15 +76,21 @@ public class GenerateCustomerTransactController {
     @FXML
     private TableColumn<ProductTransaction, BigDecimal> unitPriceCol;
     @FXML
-    private TableColumn<ProductTransaction, Integer> qtyCol;
+    private TableColumn<ProductTransaction, Float> qtyCol;
     @FXML
     private TableColumn<ProductTransaction, Integer> discountCol;
     @FXML
     private TableColumn<ProductTransaction, BigDecimal> subTotalCol;
     @FXML
-    private TableColumn<ProductTransaction, Integer> sizeCol;
+    private TableColumn<ProductTransaction, Float> sizeCol;
     @FXML
     private TableColumn deleteCol;
+    @FXML
+    private TableColumn<ProductTransaction, Number> boxCol;
+    @FXML
+    private TableColumn<ProductTransaction, Number> residualTileCol;
+    @FXML
+    private TableColumn<ProductTransaction, String> remarkCol;
 
     @FXML
     private Label firstNameLabel;
@@ -120,6 +127,8 @@ public class GenerateCustomerTransactController {
     @FXML
     private ComboBox customerComboBox;
     @FXML
+    private ComboBox customerPhoneComboBox;
+    @FXML
     private ComboBox productComboBox;
     @FXML
     private Label balanceLabel;
@@ -139,30 +148,83 @@ public class GenerateCustomerTransactController {
         unitPriceCol.setCellValueFactory(new PropertyValueFactory<>("unitPrice"));
         qtyCol.setCellValueFactory(new PropertyValueFactory<>("quantity"));
         sizeCol.setCellValueFactory(new PropertyValueFactory<>("sizeNumeric"));
-        qtyCol.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<Integer>(){
+        remarkCol.setCellValueFactory(new PropertyValueFactory<>("remark"));
+        remarkCol.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ProductTransaction, String>>() {
             @Override
-            public Integer fromString(String string) {
+            public void handle(TableColumn.CellEditEvent<ProductTransaction, String> event) {
+                (event.getTableView().getItems().get(event.getTablePosition().getRow())).setRemark(event.getNewValue().toString());
+            }
+        });
+//        remarkCol.setCellFactory(cellFactory);
+
+        remarkCol.setCellFactory(TextFieldTableCell.forTableColumn());
+
+        boxCol.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<Number>() {
+            @Override
+            public String toString(Number object) {
+                return String.valueOf(object);
+            }
+
+            @Override
+            public Number fromString(String string) {
                 return Integer.valueOf(string);
             }
-            public String toString(Integer integer){
-                return String.valueOf(integer);
+        }));
+        boxCol.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ProductTransaction, Number>>() {
+            @Override
+            public void handle(TableColumn.CellEditEvent<ProductTransaction, Number> event) {
+                (event.getTableView().getItems().get(event.getTablePosition().getRow())).getBoxNum().setBox(event.getNewValue().intValue());
+            }
+        });
+
+        boxCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ProductTransaction, Number>, ObservableValue<Number>>() {
+            @Override
+            public ObservableValue<Number> call(TableColumn.CellDataFeatures<ProductTransaction, Number> param) {
+                return new SimpleIntegerProperty(param.getValue().getBoxNum().getBox());
+            }
+        });
+        residualTileCol.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<Number>() {
+            @Override
+            public String toString(Number object) {
+                return String.valueOf(object);
+            }
+
+            @Override
+            public Number fromString(String string) {
+                return Integer.valueOf(string);
             }
         }));
-        qtyCol.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ProductTransaction, Integer>>() {
+        residualTileCol.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ProductTransaction, Number>>() {
             @Override
-            public void handle(TableColumn.CellEditEvent<ProductTransaction, Integer> event) {
-                if(event.getNewValue() % event.getTableView().getItems().get(event.getTablePosition().getRow()).getSizeNumeric() != 0){
-                    new AlertBuilder().alertTitle("Purchase Quantity Error")
-                            .alertType(Alert.AlertType.ERROR)
-                            .alertContentText("User has to buy the whole piece of tile.")
-                            .build()
-                            .showAndWait();
-                    refreshTable();
-                }else{
-                    (event.getTableView().getItems().get(event.getTablePosition().getRow()))
-                            .setQuantity(event.getNewValue());
-                    showPaymentDetails(productTransactionObservableList, customer);
-                }
+            public void handle(TableColumn.CellEditEvent<ProductTransaction, Number> event) {
+                (event.getTableView().getItems().get(event.getTablePosition().getRow())).getBoxNum().setResidualTile(event.getNewValue().intValue());
+            }
+        });
+        residualTileCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ProductTransaction, Number>, ObservableValue<Number>>() {
+            @Override
+            public ObservableValue<Number> call(TableColumn.CellDataFeatures<ProductTransaction, Number> param) {
+                return new SimpleIntegerProperty(param.getValue().getBoxNum().getResidualTile());
+            }
+        });
+        qtyCol.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<Float>() {
+            @Override
+            public String toString(Float object) {
+                return String.valueOf(object);
+            }
+
+            @Override
+            public Float fromString(String string) {
+                return Float.valueOf(string);
+            }
+        }));
+
+        qtyCol.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ProductTransaction, Float>>() {
+            @Override
+            public void handle(TableColumn.CellEditEvent<ProductTransaction, Float> event) {
+                (event.getTableView().getItems().get(event.getTablePosition().getRow()))
+                        .setQuantity(event.getNewValue());
+                showPaymentDetails(productTransactionObservableList, customer);
+
             }
         });
         discountCol.setCellValueFactory(new PropertyValueFactory<>("discount"));
@@ -179,18 +241,24 @@ public class GenerateCustomerTransactController {
             @Override
             public void handle(TableColumn.CellEditEvent<ProductTransaction, Integer> event) {
                 if(event.getNewValue() > returnDiscount()){
-                    new AlertBuilder().alertTitle("Discount Error")
-                            .alertType(Alert.AlertType.ERROR)
-                            .alertContentText("User Class is " + customer.getUserClass() + ", but the given discount is " + event.getNewValue())
+                    Optional<ButtonType> result = new AlertBuilder().alertTitle("Discount Error")
+                            .alertType(Alert.AlertType.CONFIRMATION)
+                            .alertContentText("User Class is " + customer.getUserClass() + ", but the given discount is " + event.getNewValue() + "\n"
+                                    + "Press OK to proceed with this discount. Press Cancel to discard the change")
                             .build()
                             .showAndWait();
-                    refreshTable();
+                    if(result.get() == ButtonType.OK){
+                        (event.getTableView().getItems().get(event.getTablePosition().getRow()))
+                                .setDiscount(event.getNewValue());
+                        showPaymentDetails(productTransactionObservableList, customer);
+                    }else{
+                        refreshTable();
+                    }
                 }else{
                     (event.getTableView().getItems().get(event.getTablePosition().getRow()))
                             .setDiscount(event.getNewValue());
                     showPaymentDetails(productTransactionObservableList, customer);
                 }
-
             }
         });
 
@@ -240,6 +308,7 @@ public class GenerateCustomerTransactController {
             customerList = dbExecuteCustomer.selectFromDatabase(DBQueries.SelectQueries.Customer.SELECT_ALL_CUSTOMER);
             productList = dbExecuteProduct.selectFromDatabase(DBQueries.SelectQueries.Product.SELECT_ALL_PRODUCT);
         }catch(SQLException e){
+            logger.error(e.getMessage());
             Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to grab data from database!\n" + e.getMessage());
             alert.setTitle("Database Error");
             alert.showAndWait();
@@ -263,12 +332,32 @@ public class GenerateCustomerTransactController {
 
             }
         });
+        List<String> tmpCustomerPhoneList = new ArrayList<>();
+        for(Customer customer: customerList){
+            customer.constructCustomerPhoneInfo();
+            tmpCustomerPhoneList.add(customer.getCustomerPhoneInfo());
+        }
+        customerPhoneComboBox.setItems(FXCollections.observableArrayList(tmpCustomerPhoneList));
+        customerPhoneComboBox.valueProperty().addListener(new ChangeListener() {
+            @Override
+            public void changed(ObservableValue observable, Object oldValue, Object newValue) {
+                for(Customer tmpCustomer: customerList){
+                    if(tmpCustomer.getCustomerPhoneInfo() != null && tmpCustomer.getCustomerPhoneInfo().equals(newValue)){
+                        customer = tmpCustomer;
+                        showCustomerDetails(customer);
+                        break;
+                    }
+                }
+
+            }
+        });
         List<String> tmpProductList = productList
                 .stream()
                 .map(product -> product.getProductId())
                 .collect(Collectors.toList());
         productComboBox.setItems(FXCollections.observableArrayList(tmpProductList));
         new AutoCompleteComboBoxListener<>(customerComboBox);
+        new AutoCompleteComboBoxListener<>(customerPhoneComboBox);
         new AutoCompleteComboBoxListener<>(productComboBox);
         storeCreditCheckBox.selectedProperty().addListener(new ChangeListener<Boolean>() {
             @Override
@@ -311,6 +400,7 @@ public class GenerateCustomerTransactController {
                     .piecesPerBox(selectedProduct.getPiecesPerBox())
                     .size(selectedProduct.getSize())
                     .sizeNumeric(selectedProduct.getSizeNumeric())
+                    .boxNum(new BoxNum.boxNumBuilder().build())
                     .build();
             productTransactionObservableList.add(newProductTransaction);
         }
@@ -327,6 +417,7 @@ public class GenerateCustomerTransactController {
                 dbExecuteProduct.insertIntoDatabase(DBQueries.InsertQueries.Customer.INSERT_INTO_CUSTOMER,
                         newCustomer.getAllProperties());
             }catch(SQLException e){
+                logger.error(e.getMessage());
                 flag = false;
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Unable To Add New Customer");
@@ -349,71 +440,37 @@ public class GenerateCustomerTransactController {
     }
 
     @FXML
-    public Transaction handleConfirmButton() throws IOException, SQLException {
-        if(!isTransactionValid()){
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Transaction Is Invalid");
-            alert.setHeaderText("Please fix the following errors before proceed");
-            alert.setContentText(errorMsgBuilder.toString());
-            alert.showAndWait();
+    public Transaction handleQuotationButton() throws IOException, SQLException {
+        if(!isQuotationValid()){
+            new AlertBuilder()
+                    .alertType(Alert.AlertType.ERROR)
+                    .alertTitle("Transaction is Invalid")
+                    .alertHeaderText("Please fix the following errors before proceed")
+                    .alertContentText(errorMsgBuilder.toString())
+                    .build()
+                    .showAndWait();
             transaction.getProductTransactionList().clear();
         }
         else{
-            transaction.getProductTransactionList().addAll(productTransactionObservableList);
-            if(!paymentField.getText().trim().isEmpty()){
-                transaction.setPayment(Double.valueOf(paymentField.getText()));
-            }
-            if(storeCreditCheckBox.isSelected() && !storeCreditField.getText().trim().isEmpty()){
-                transaction.setStoreCredit(Double.valueOf(storeCreditField.getText()));
-            }
-            transaction.setGstTax(Double.valueOf(gstTaxLabel.getText()));
-            transaction.setPstTax(Double.valueOf(pstTaxLabel.getText()));
-            transaction.setTotal(Double.valueOf(totalLabel.getText()));
-            transaction.getPayinfo().add(new PaymentRecord(
-                    transaction.getDate().toString(),
-                    transaction.getPayment() + transaction.getStoreCredit(),
-                    transaction.getPaymentType()));
+            generateTransaction();
+        }
+        return transaction;
+    }
 
-            StringBuffer overviewTransactionString = new StringBuffer();
-            StringBuffer overviewProductTransactionString = new StringBuffer();
-            for(ProductTransaction tmp: transaction.getProductTransactionList()){
-                overviewProductTransactionString
-                        .append("Product ID: " + tmp.getProductId() + "\n")
-                        .append("Total Num: " + tmp.getTotalNum() + "\n")
-                        .append("Quantity: " + tmp.getQuantity() + "\n")
-                        .append("Unit Price: " + tmp.getUnitPrice() + "\n")
-                        .append("Discount (%): " + tmp.getDiscount() + "\n")
-                        .append("Sub Total: " + tmp.getSubTotal() + "\n")
-                        .append("\n");
-            }
-            overviewTransactionString
-                    .append("Customer Name: " + customer.getFirstName() + " " + customer.getLastName() + "\n\n")
-                    .append(overviewProductTransactionString)
-                    .append("\n" + "Total: " + totalLabel.getText() + "\n")
-                    .append("Payment: " + transaction.getPayment() + "\n")
-                    .append("Store Credit: " + transaction.getStoreCredit() + "\n")
-                    .append("Payment Type: " + transaction.getPaymentType() + "\n")
-                    .append("Date: " + transaction.getDate() + "\n");
-
-            Alert alert = new Alert(Alert.AlertType.INFORMATION, overviewTransactionString.toString(), ButtonType.OK, ButtonType.CANCEL);
-            alert.setTitle("Transaction Overview");
-            alert.setHeaderText("Please confirm the following transaction");
-            alert.setResizable(true);
-            alert.getDialogPane().setPrefWidth(500);
-            Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-            alertStage.getIcons().add(new Image(this.getClass().getResourceAsStream(Constant.Image.appIconPath)));
-            alert.getDialogPane().getStylesheets().add(getClass().getResource("/css/theme.css").toExternalForm());
-
-            Optional<ButtonType> result = alert.showAndWait();
-            if(result.isPresent() && result.get() == ButtonType.OK){
-                commitTransactionToDatabase();
-                confirmedClicked = true;
-            }else{
-                transaction.getProductTransactionList().clear();
-                transaction.getPayinfo().clear();
-                transaction.setPayment(0);
-                transaction.setStoreCredit(0);
-            }
+    @FXML
+    public Transaction handleConfirmButton() throws IOException, SQLException {
+        if(!isTransactionValid()){
+            new AlertBuilder()
+                    .alertType(Alert.AlertType.ERROR)
+                    .alertTitle("Transaction is Invalid")
+                    .alertHeaderText("Please fix the following errors before proceed")
+                    .alertContentText(errorMsgBuilder.toString())
+                    .build()
+                    .showAndWait();
+            transaction.getProductTransactionList().clear();
+        }
+        else{
+            generateTransaction();
         }
         return transaction;
     }
@@ -434,6 +491,66 @@ public class GenerateCustomerTransactController {
     /*
     * Show customer details grid pane
     * */
+
+    private void generateTransaction() throws IOException, SQLException{
+        transaction.getProductTransactionList().addAll(productTransactionObservableList);
+        if(!paymentField.getText().trim().isEmpty()){
+            transaction.setPayment(Double.valueOf(paymentField.getText()));
+        }
+        if(storeCreditCheckBox.isSelected() && !storeCreditField.getText().trim().isEmpty()){
+            transaction.setStoreCredit(Double.valueOf(storeCreditField.getText()));
+        }
+        transaction.setGstTax(Double.valueOf(gstTaxLabel.getText()));
+        transaction.setPstTax(Double.valueOf(pstTaxLabel.getText()));
+        transaction.setTotal(Double.valueOf(totalLabel.getText()));
+        transaction.getPayinfo().add(new PaymentRecord(
+                transaction.getDate().toString(),
+                transaction.getPayment() + transaction.getStoreCredit(),
+                transaction.getPaymentType()));
+
+        StringBuffer overviewTransactionString = new StringBuffer();
+        StringBuffer overviewProductTransactionString = new StringBuffer();
+        for(ProductTransaction tmp: transaction.getProductTransactionList()){
+            overviewProductTransactionString
+                    .append("Product ID: " + tmp.getProductId() + "\n")
+                    .append("Total Num: " + tmp.getTotalNum() + "\n")
+                    .append("Quantity: " + tmp.getQuantity() + "\n")
+                    .append("Unit Price: " + tmp.getUnitPrice() + "\n")
+                    .append("Discount (%): " + tmp.getDiscount() + "\n")
+                    .append("Sub Total: " + tmp.getSubTotal() + "\n")
+                    .append("Remark: " + tmp.getRemark() + "\n")
+                    .append("\n");
+        }
+        overviewTransactionString
+                .append("Customer Name: " + customer.getFirstName() + " " + customer.getLastName() + "\n\n")
+                .append(overviewProductTransactionString)
+                .append("\n" + "Total: " + totalLabel.getText() + "\n")
+                .append("Payment: " + transaction.getPayment() + "\n")
+                .append("Store Credit: " + transaction.getStoreCredit() + "\n")
+                .append("Payment Type: " + transaction.getPaymentType() + "\n")
+                .append("Date: " + transaction.getDate() + "\n");
+
+        Alert alert = new Alert(Alert.AlertType.INFORMATION, overviewTransactionString.toString(), ButtonType.OK, ButtonType.CANCEL);
+        alert.setTitle("Transaction Overview");
+        alert.setHeaderText("Please confirm the following transaction");
+        alert.setResizable(true);
+        alert.getDialogPane().setPrefWidth(500);
+        Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+        alertStage.getIcons().add(new Image(this.getClass().getResourceAsStream(Constant.Image.appIconPath)));
+        alert.getDialogPane().getStylesheets().add(getClass().getResource("/css/theme.css").toExternalForm());
+
+        Optional<ButtonType> result = alert.showAndWait();
+        if(result.isPresent() && result.get() == ButtonType.OK){
+            commitTransactionToDatabase();
+            confirmedClicked = true;
+        }else{
+            transaction.getProductTransactionList().clear();
+            transaction.getPayinfo().clear();
+            transaction.setPayment(0);
+            transaction.setStoreCredit(0);
+        }
+    }
+
     private void showCustomerDetails(Customer customer){
         if(customer != null){
             addItemButton.setDisable(false);
@@ -471,9 +588,9 @@ public class GenerateCustomerTransactController {
             if(customer != null && customer.getPstNumber() != null){
                 pstTax = new BigDecimal("0.0");
             }else{
-                pstTax = new BigDecimal(saleSystem.getPstRate()).multiply(subTotalAfterDiscount).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+                pstTax = new BigDecimal(saleSystem.getProperty().getPstRate()).multiply(subTotalAfterDiscount).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
             }
-            BigDecimal gstTax = new BigDecimal(saleSystem.getGstRate()).multiply(subTotalAfterDiscount).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+            BigDecimal gstTax = new BigDecimal(saleSystem.getProperty().getGstRate()).multiply(subTotalAfterDiscount).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
             BigDecimal total = subTotalAfterDiscount.add(pstTax).add(gstTax).setScale(2, BigDecimal.ROUND_HALF_EVEN);
 
             itemsCountLabel.setText(String.valueOf(productTransactions.size()));
@@ -574,6 +691,26 @@ public class GenerateCustomerTransactController {
         return true;
     }
 
+    private boolean isQuotationValid(){
+        errorMsgBuilder = new StringBuffer();
+        if(customer == null){
+            errorMsgBuilder.append("Customer is neither selected nor created!\n");
+        }
+        if(storeCreditCheckBox.isSelected()){
+            if(storeCreditField.getText().trim().isEmpty()){
+                errorMsgBuilder.append("Store Credit Field is empty, but it is selected!\n");
+            }else{
+                if(!isStoreCreditValid()){
+                    errorMsgBuilder.append("Either Store Credit exceeds customer's limit or Store Credit must be numbers!\n");
+                }
+            }
+        }
+        if(errorMsgBuilder.length() != 0){
+            return false;
+        }
+        return true;
+    }
+
     private boolean isPaymentValid(){
         try{
             Double.parseDouble(paymentField.getText());
@@ -603,7 +740,13 @@ public class GenerateCustomerTransactController {
 
     private Integer returnDiscount(){
         if(this.customer != null){
-            return Customer.getDiscountMap().get(customer.getUserClass());
+            if(customer.getUserClass().toLowerCase().equals("a")){
+                return this.saleSystem.getProperty().getUserClass().getClassA();
+            }else if(customer.getUserClass().toLowerCase().equals("b")){
+                return this.saleSystem.getProperty().getUserClass().getClassB();
+            }else if(customer.getUserClass().toLowerCase().equals("c")){
+                return this.saleSystem.getProperty().getUserClass().getClassC();
+            }
         }
         return null;
     }
@@ -657,7 +800,7 @@ public class GenerateCustomerTransactController {
                 dbExecuteTransaction.insertIntoDatabase(DBQueries.InsertQueries.Transaction.INSERT_INTO_TRANSACTION,
                         objects);
                 for(ProductTransaction tmp : transaction.getProductTransactionList()){
-                    int remain = tmp.getTotalNum() - tmp.getQuantity();
+                    float remain = tmp.getTotalNum() - tmp.getQuantity();
                     dbExecuteProduct.updateDatabase(DBQueries.UpdateQueries.Product.UPDATE_PRODUCT_QUANTITY,
                             remain, tmp.getProductId());
                 }
