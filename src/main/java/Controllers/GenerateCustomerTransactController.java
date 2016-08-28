@@ -32,7 +32,7 @@ import org.apache.log4j.Logger;
 import util.AlertBuilder;
 import util.AutoCompleteComboBoxListener;
 import util.ButtonCell;
-import util.EditCellFactory;
+//import util.EditCellFactory;
 
 import java.io.IOException;
 import java.math.BigDecimal;
