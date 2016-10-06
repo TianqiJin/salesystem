@@ -7,10 +7,7 @@ import com.sun.prism.impl.Disposer;
 import db.*;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.*;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableObjectValue;
 import javafx.beans.value.ObservableValue;
@@ -80,7 +77,7 @@ public class GenerateCustomerTransactController {
     @FXML
     private TableColumn<ProductTransaction, Integer> discountCol;
     @FXML
-    private TableColumn<ProductTransaction, BigDecimal> subTotalCol;
+    private TableColumn<ProductTransaction, Number> subTotalCol;
     @FXML
     private TableColumn<ProductTransaction, Float> sizeCol;
     @FXML
@@ -224,7 +221,7 @@ public class GenerateCustomerTransactController {
                 (event.getTableView().getItems().get(event.getTablePosition().getRow()))
                         .setQuantity(event.getNewValue());
                 showPaymentDetails(productTransactionObservableList, customer);
-
+                refreshTable();
             }
         });
         discountCol.setCellValueFactory(new PropertyValueFactory<>("discount"));
@@ -251,18 +248,22 @@ public class GenerateCustomerTransactController {
                         (event.getTableView().getItems().get(event.getTablePosition().getRow()))
                                 .setDiscount(event.getNewValue());
                         showPaymentDetails(productTransactionObservableList, customer);
-                    }else{
-                        refreshTable();
                     }
                 }else{
                     (event.getTableView().getItems().get(event.getTablePosition().getRow()))
                             .setDiscount(event.getNewValue());
                     showPaymentDetails(productTransactionObservableList, customer);
                 }
+                refreshTable();
             }
         });
 
-        subTotalCol.setCellValueFactory(new PropertyValueFactory<>("subTotal"));
+        subTotalCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ProductTransaction, Number>, ObservableValue<Number>>() {
+            @Override
+            public ObservableValue<Number> call(TableColumn.CellDataFeatures<ProductTransaction, Number> param) {
+                return new SimpleFloatProperty(new BigDecimal(param.getValue().getSubTotal()).setScale(2, BigDecimal.ROUND_HALF_EVEN).floatValue());
+            }
+        });
         deleteCol.setCellValueFactory(
                 new Callback<TableColumn.CellDataFeatures<ProductTransaction, Boolean>,
                                         ObservableValue<Boolean>>() {

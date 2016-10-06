@@ -250,7 +250,11 @@ public class InvoiceGenerator {
         p = new Paragraph("Milan Building Supply LTD.",catFont);
         p.setAlignment(Element.HEADER);
         document.add(p);
-        p = new Paragraph(basic.getName() + " " + basic.getId(), subFont);
+        if(invoice.getTransaction().getType().equals(Transaction.TransactionType.RETURN)){
+            p = new Paragraph("RETURN" + " " + String.format("R/%05d", invoice.getId()), subFont);
+        }else{
+            p = new Paragraph(basic.getName() + " " + basic.getId(), subFont);
+        }
         p.setAlignment(Element.ALIGN_RIGHT);
         document.add(p);
         p = new Paragraph(convertDate(basic.getDateTime(), "MMM dd, yyyy"), smallBold);
@@ -320,7 +324,7 @@ public class InvoiceGenerator {
             table.addCell(getCellwithBackground(product.getSize(), Element.ALIGN_LEFT, totalFont, row));
             table.addCell(getCellwithBackground(InvoiceData.format2dec(InvoiceData.round(product.getUnitPrice())), Element.ALIGN_LEFT, totalFont, row));
             table.addCell(getCellwithBackground(String.valueOf(product.getQuantity()), Element.ALIGN_LEFT, totalFont, row));
-            table.addCell(getCellwithBackground(InvoiceData.format2dec(InvoiceData.round(product.getSubTotal())), Element.ALIGN_LEFT, totalFont, row));
+            table.addCell(getCellwithBackground(InvoiceData.format2dec(InvoiceData.round(product.getSubTotal()*100/(100-product.getDiscount()))), Element.ALIGN_LEFT, totalFont, row));
             table.addCell(getCellwithBackground(product.getRemark(), Element.ALIGN_LEFT, chineseFont, row));
             row++;
         }
@@ -396,7 +400,7 @@ public class InvoiceGenerator {
         row = 0;
         for (PaymentRecord paymentRecord : invoice.getPaymentRecords()){
             table.addCell(getCellwithBackground(paymentRecord.getDate(), Element.ALIGN_LEFT, totalFont, row));
-            table.addCell(getCellwithBackground(InvoiceData.format2dec(InvoiceData.round(paymentRecord.getPaid())), Element.ALIGN_RIGHT, totalFont, row));
+            table.addCell(getCellwithBackground(InvoiceData.format2dec(InvoiceData.round(paymentRecord.getPaid())), Element.ALIGN_LEFT, totalFont, row));
             table.addCell(getCellwithBackground(paymentRecord.getPaymentType(), Element.ALIGN_LEFT, totalFont, row));
             row++;
         }

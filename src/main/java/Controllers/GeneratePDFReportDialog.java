@@ -36,7 +36,7 @@ public class GeneratePDFReportDialog {
     private List<Product> productList;
     private List<Staff> staffList;
     private Customer customer;
-    private Integer productId;
+    private String productId;
     private Integer staffId;
     private DBExecuteCustomer dbExecuteCustomer;
     private DBExecuteProduct dbExecuteProduct;
@@ -120,6 +120,17 @@ public class GeneratePDFReportDialog {
                 for(Staff tmpStaff: staffList){
                     if(tmpStaff.getInfo().equals(newValue)){
                         staffId = tmpStaff.getStaffId();
+                        break;
+                    }
+                }
+            }
+        });
+        productComboBox.valueProperty().addListener(new ChangeListener() {
+            @Override
+            public void changed(ObservableValue observable, Object oldValue, Object newValue) {
+                for(Product tmpProduct: productList){
+                    if(tmpProduct.getProductId().equals(newValue)){
+                        productId = tmpProduct.getProductId();
                         break;
                     }
                 }

@@ -106,6 +106,7 @@
                                           <TableColumn fx:id="productTransactionResidualTileCol" prefWidth="75.0" text="Pieces" />
                                        </columns>
                                     </TableColumn>
+                                    <TableColumn fx:id="productTransactionTotalFeetCol" prefWidth="75.0" text="Total Feet" />
                                  </columns>
                                  <columnResizePolicy>
                                     <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />

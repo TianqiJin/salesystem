@@ -86,6 +86,8 @@ public class ProductOverviewController implements OverviewController{
     @FXML
     private TableColumn<Transaction, Number> productTransactionSubtotalCol;
     @FXML
+    private TableColumn<Transaction, Number> productTransactionTotalFeetCol;
+    @FXML
     private ProgressBar progressBar;
 
     @FXML
@@ -129,6 +131,12 @@ public class ProductOverviewController implements OverviewController{
             @Override
             public ObservableValue<Number> call(TableColumn.CellDataFeatures<Transaction, Number> param) {
                 return new SimpleIntegerProperty(param.getValue().getProductTransactionList().get(0).getBoxNum().getResidualTile());
+            }
+        });
+        productTransactionTotalFeetCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Transaction, Number>, ObservableValue<Number>>() {
+            @Override
+            public ObservableValue<Number> call(TableColumn.CellDataFeatures<Transaction, Number> param) {
+                return new SimpleFloatProperty(param.getValue().getProductTransactionList().get(0).getQuantity());
             }
         });
         showProductDetail(null);

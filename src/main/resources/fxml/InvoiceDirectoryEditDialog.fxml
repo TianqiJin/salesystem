@@ -40,7 +40,7 @@
                                 </rowConstraints>
                                  <children>
                                     <CheckBox fx:id="quotationInvoiceCheckBox" mnemonicParsing="false" text="Quotation" />
-                                    <CheckBox fx:id="invoiceCheckBox" mnemonicParsing="false" text="Invoice" GridPane.columnIndex="1" />
+                                    <CheckBox fx:id="invoiceCheckBox" mnemonicParsing="false" text="Invoice/Return" GridPane.columnIndex="1" />
                                     <CheckBox fx:id="deliveryInvoiceCheckbox" mnemonicParsing="false" text="Delievery" GridPane.columnIndex="2" />
                                  </children>
                               </GridPane>
