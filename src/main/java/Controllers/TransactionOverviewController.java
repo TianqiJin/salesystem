@@ -208,6 +208,14 @@ public class TransactionOverviewController implements OverviewController{
     }
 
     @FXML
+    private void handleCorrectionTransaction(){
+        Transaction selectedTransaction = transactionTable.getSelectionModel().getSelectedItem();
+        if(selectedTransaction != null){
+
+        }
+    }
+
+    @FXML
     private void handleDeleteTransaction() throws SQLException {
         Connection connection = DBConnect.getConnection();
         int selectIndex = transactionTable.getSelectionModel().getFocusedIndex();

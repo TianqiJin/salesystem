@@ -16,6 +16,7 @@ import javafx.concurrent.Task;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.CheckBoxListCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.Image;
@@ -105,6 +106,8 @@ public class TransactionEditDialogController {
     private TextField storeCreditField;
     @FXML
     private CheckBox storeCreditCheckBox;
+    @FXML
+    private CheckBox isDepositCheckBox;
 
     @FXML
     private void initialize(){
@@ -192,7 +195,8 @@ public class TransactionEditDialogController {
             transaction.getPayinfo().add(new PaymentRecord(
                     transaction.getDate().toString(),
                     currentPayment + currentStoreCredit,
-                    transaction.getPaymentType()));
+                    transaction.getPaymentType(),
+                    (isDepositCheckBox.isSelected())? true : false));
 
             StringBuffer overviewTransactionString = new StringBuffer();
             StringBuffer overviewProductTransactionString = new StringBuffer();

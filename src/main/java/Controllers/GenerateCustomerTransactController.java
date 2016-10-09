@@ -135,6 +135,8 @@ public class GenerateCustomerTransactController {
     private TextField storeCreditField;
     @FXML
     private CheckBox storeCreditCheckBox;
+    @FXML
+    private CheckBox isDepositCheckBox;
 
     @FXML
     private void initialize(){
@@ -507,7 +509,8 @@ public class GenerateCustomerTransactController {
         transaction.getPayinfo().add(new PaymentRecord(
                 transaction.getDate().toString(),
                 transaction.getPayment() + transaction.getStoreCredit(),
-                transaction.getPaymentType()));
+                transaction.getPaymentType(),
+                (isDepositCheckBox.isSelected())? true : false));
 
         StringBuffer overviewTransactionString = new StringBuffer();
         StringBuffer overviewProductTransactionString = new StringBuffer();

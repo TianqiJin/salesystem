@@ -251,7 +251,8 @@ public class GenerateProductTransactController {
             transaction.getPayinfo().add(new PaymentRecord(
                     transaction.getDate().toString(),
                     transaction.getPayment() + transaction.getStoreCredit(),
-                    transaction.getPaymentType()));
+                    transaction.getPaymentType(),
+                    false));
 
             overviewTransactionString
                     .append("Customer Name: " + transaction.getInfo() + "\n\n")

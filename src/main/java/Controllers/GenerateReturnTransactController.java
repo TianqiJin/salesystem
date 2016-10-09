@@ -210,7 +210,8 @@ public class GenerateReturnTransactController {
             transaction.getPayinfo().add(new PaymentRecord(
                     transaction.getDate().toString(),
                     transaction.getPayment() + transaction.getStoreCredit(),
-                    transaction.getPaymentType()));
+                    transaction.getPaymentType(),
+                    false));
             StringBuffer overviewTransactionString = new StringBuffer();
             StringBuffer overviewProductTransactionString = new StringBuffer();
 

@@ -389,20 +389,41 @@ public class InvoiceGenerator {
         document.add(table);
         p = new Paragraph("Payment Information:",addressFont);
         p.setAlignment(Element.ALIGN_LEFT);
-        table = new PdfPTable(3);
-        table.setWidthPercentage(50);
-        table.setHorizontalAlignment(0);
-        table.setSpacingBefore(10);
-        table.setWidths(new int[]{3, 3, 3});
-        table.addCell(getCellTitle("Date", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
-        table.addCell(getCellTitle("Amount", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
-        table.addCell(getCellTitle("Type", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
-        row = 0;
-        for (PaymentRecord paymentRecord : invoice.getPaymentRecords()){
-            table.addCell(getCellwithBackground(paymentRecord.getDate(), Element.ALIGN_LEFT, totalFont, row));
-            table.addCell(getCellwithBackground(InvoiceData.format2dec(InvoiceData.round(paymentRecord.getPaid())), Element.ALIGN_LEFT, totalFont, row));
-            table.addCell(getCellwithBackground(paymentRecord.getPaymentType(), Element.ALIGN_LEFT, totalFont, row));
-            row++;
+        if(invoice.getTransaction().getType().equals(Transaction.TransactionType.OUT)){
+            table = new PdfPTable(4);
+            table.setWidthPercentage(50);
+            table.setHorizontalAlignment(0);
+            table.setSpacingBefore(10);
+            table.setWidths(new int[]{3, 3, 3, 5});
+            table.addCell(getCellTitle("Date", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
+            table.addCell(getCellTitle("Amount", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
+            table.addCell(getCellTitle("Type", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
+            table.addCell(getCellTitle("Is Deposit", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
+            row = 0;
+            for (PaymentRecord paymentRecord : invoice.getPaymentRecords()){
+                logger.info(paymentRecord.isDeposit());
+                table.addCell(getCellwithBackground(paymentRecord.getDate(), Element.ALIGN_LEFT, totalFont, row));
+                table.addCell(getCellwithBackground(InvoiceData.format2dec(InvoiceData.round(paymentRecord.getPaid())), Element.ALIGN_LEFT, totalFont, row));
+                table.addCell(getCellwithBackground(paymentRecord.getPaymentType(), Element.ALIGN_LEFT, totalFont, row));
+                table.addCell(getCellwithBackground(paymentRecord.isDeposit()? "YES" : "NO", Element.ALIGN_LEFT, totalFont, row));
+                row++;
+            }
+        }else if (invoice.getTransaction().getType().equals(Transaction.TransactionType.RETURN)){
+            table = new PdfPTable(3);
+            table.setWidthPercentage(50);
+            table.setHorizontalAlignment(0);
+            table.setSpacingBefore(10);
+            table.setWidths(new int[]{3, 3, 3});
+            table.addCell(getCellTitle("Date", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
+            table.addCell(getCellTitle("Amount", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
+            table.addCell(getCellTitle("Type", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
+            row = 0;
+            for (PaymentRecord paymentRecord : invoice.getPaymentRecords()){
+                table.addCell(getCellwithBackground(paymentRecord.getDate(), Element.ALIGN_LEFT, totalFont, row));
+                table.addCell(getCellwithBackground(InvoiceData.format2dec(InvoiceData.round(paymentRecord.getPaid())), Element.ALIGN_LEFT, totalFont, row));
+                table.addCell(getCellwithBackground(paymentRecord.getPaymentType(), Element.ALIGN_LEFT, totalFont, row));
+                row++;
+            }
         }
         p.add(table);
         document.add(p);
@@ -543,7 +564,7 @@ public class InvoiceGenerator {
             table.addCell(getCellwithBackground(product.getSize(), Element.ALIGN_LEFT, totalFont, row));
             table.addCell(getCellwithBackground(InvoiceData.format2dec(InvoiceData.round(product.getUnitPrice())), Element.ALIGN_LEFT, totalFont, row));
             table.addCell(getCellwithBackground(String.valueOf(product.getQuantity()), Element.ALIGN_LEFT, totalFont, row));
-            table.addCell(getCellwithBackground(InvoiceData.format2dec(InvoiceData.round(product.getSubTotal())), Element.ALIGN_LEFT, totalFont, row));
+            table.addCell(getCellwithBackground(InvoiceData.format2dec(InvoiceData.round(product.getSubTotal()*100/(100-product.getDiscount()))), Element.ALIGN_LEFT, totalFont, row));
             table.addCell(getCellwithBackground(product.getRemark(), Element.ALIGN_LEFT, chineseFont, row));
             row++;
         }
