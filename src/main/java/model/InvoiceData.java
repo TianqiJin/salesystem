@@ -51,9 +51,12 @@ public class InvoiceData {
         profileImp.setSellerCityName(staff.getCity());
         profileImp.setSellerCountryID(Constant.Invoice.companyCountry);
         Customer customer = invoice.getCustomer();
+        Address address = invoice.getAddress();
         profileImp.setBuyerName(String.format("%s, %s", customer.getLastName(), customer.getFirstName()));
-        profileImp.setBuyerLineOne(customer.getStreet());
-        profileImp.setBuyerCityName(customer.getCity());
+        profileImp.setBuyerLineOne(address.getStreet());
+        profileImp.setBuyerCityName(address.getCity());
+        profileImp.setBuyerPostcode(address.getPostalCode());
+        profileImp.setBuyerCountryID(Constant.Invoice.companyCountry);
         profileImp.setPaymentReference(String.format("%09d", invoice.getId()));
         profileImp.setInvoiceCurrencyCode("CAD");
     }

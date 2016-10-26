@@ -37,6 +37,7 @@ public class InvoiceGenerator {
     private static String destination_Invoice;
     private static String destination_Delivery;
     private static String quotation_Delivery;
+    private static String destination_Return;
     private Invoice invoice;
     private SaleSystem saleSystem;
 
@@ -45,28 +46,30 @@ public class InvoiceGenerator {
                 new File(destination_Folder, "Invoice_" + new SimpleDateFormat("yyyy-MM-dd'at'HH-mm-ss").format(new Date()) + ".pdf").getPath();
         this.destination_Delivery =
                 new File(destination_Folder, "Delivery_" + new SimpleDateFormat("yyyy-MM-dd'at'HH-mm-ss").format(new Date()) + ".pdf").getPath();
+        this.destination_Return =
+                new File(destination_Folder, "Return_" + new SimpleDateFormat("yyyy-MM-dd'at'HH-mm-ss").format(new Date()) + ".pdf").getPath();
         this.quotation_Delivery = new File(destination_Folder, "Quotation_" + new SimpleDateFormat("yyyy-MM-dd'at'HH-mm-ss").format(new Date()) + ".pdf").getPath();
         this.saleSystem = saleSystem;
 
 
     }
-    public void buildInvoice(Transaction transaction, Customer customer, Staff staff) throws Exception {
-        invoice = new Invoice(transaction, customer, staff);
+    public void buildInvoice(Transaction transaction, Customer customer, Staff staff, Address address) throws Exception {
+        invoice = new Invoice(transaction, customer, staff, address);
         createPdf(invoice);
     }
 
     public void buildDelivery(Transaction transaction, Customer customer, Staff staff, Address address) throws Exception{
-        invoice = new Invoice(transaction, customer, staff);
-        createPdf_delivery(invoice, address);
+        invoice = new Invoice(transaction, customer, staff, address);
+        createPdf_delivery(invoice);
 
     }
 
-    public void buildQuotation(Transaction transaction, Customer customer, Staff staff) throws Exception {
-        invoice = new Invoice(transaction, customer, staff);
+    public void buildQuotation(Transaction transaction, Customer customer, Staff staff, Address address) throws Exception {
+        invoice = new Invoice(transaction, customer, staff, address);
         createPdf_quotation(invoice);
     }
 
-    public void createPdf_delivery(Invoice invoice, Address address) throws Exception {
+    public void createPdf_delivery(Invoice invoice) throws Exception {
         InvoiceData invoiceData = new InvoiceData();
         BasicProfile basic = invoiceData.createBasicProfileData(invoice);
 
@@ -101,25 +104,13 @@ public class InvoiceGenerator {
                 basic.getSellerCityName());
         table.addCell(seller);
         PdfPCell buyer;
-        if(address!=null){
-            buyer = getPartyAddress("To:",
-                    basic.getBuyerName(),
-                    address.getStreet(),
-                    "",
-                    "CA",
-                    address.getPostalCode(),
-                    address.getCity());
-
-        }else{
-            buyer = getPartyAddress("To:",
-                    basic.getBuyerName(),
-                    basic.getBuyerLineOne(),
-                    basic.getBuyerLineTwo(),
-                    basic.getBuyerCountryID(),
-                    basic.getBuyerPostcode(),
-                    basic.getBuyerCityName());
-
-        }
+        buyer = getPartyAddress("To:",
+                basic.getBuyerName(),
+                basic.getBuyerLineOne(),
+                basic.getBuyerLineTwo(),
+                basic.getBuyerCountryID(),
+                basic.getBuyerPostcode(),
+                basic.getBuyerCityName());
         table.addCell(buyer);
 
         document.add(table);
@@ -239,8 +230,14 @@ public class InvoiceGenerator {
 
         // step 1
         Document document = new Document();
+        PdfWriter writer;
         // step 2
-        PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(destination_Invoice));
+        if(invoice.getTransaction().getType().equals(Transaction.TransactionType.RETURN)){
+            writer = PdfWriter.getInstance(document, new FileOutputStream(destination_Return));
+        }else{
+            writer = PdfWriter.getInstance(document, new FileOutputStream(destination_Invoice));
+        }
+
         // step 3
         document.open();
         // step 4
@@ -283,7 +280,11 @@ public class InvoiceGenerator {
             table.addCell(buyer);
             PdfPCell seller = getPartyAddress("To:",
                     basic.getSellerName(),
-                    " ", " ", " ", " ", " ");
+                    basic.getSellerLineOne(),
+                    basic.getSellerLineTwo(),
+                    basic.getSellerCountryID(),
+                    basic.getSellerPostcode(),
+                    basic.getSellerCityName());
             table.addCell(seller);
 
         }else if (invoice.getTransaction().getType() == Transaction.TransactionType.OUT){
@@ -298,7 +299,11 @@ public class InvoiceGenerator {
             table.addCell(seller);
             PdfPCell buyer = getPartyAddress("To:",
                     basic.getBuyerName(),
-                    " ", " ", " ", " ", " ");
+                    basic.getBuyerLineOne(),
+                    basic.getBuyerLineTwo(),
+                    basic.getBuyerCountryID(),
+                    basic.getBuyerPostcode(),
+                    basic.getBuyerCityName());
             table.addCell(buyer);
 
         }
@@ -319,12 +324,13 @@ public class InvoiceGenerator {
         int row=0;
         double total=0;
         for (ProductTransaction product : invoice.getProducts()) {
-            total+=product.getUnitPrice()*product.getQuantity();
+            double tmpSubTotal = Double.valueOf(InvoiceData.format2dec(InvoiceData.round(product.getSubTotal()*100/(100-product.getDiscount()))));
+            total+=tmpSubTotal;
             table.addCell(getCellwithBackground(product.getProductId(), Element.ALIGN_LEFT, totalFont, row));
             table.addCell(getCellwithBackground(product.getSize(), Element.ALIGN_LEFT, totalFont, row));
             table.addCell(getCellwithBackground(InvoiceData.format2dec(InvoiceData.round(product.getUnitPrice())), Element.ALIGN_LEFT, totalFont, row));
             table.addCell(getCellwithBackground(String.valueOf(product.getQuantity()), Element.ALIGN_LEFT, totalFont, row));
-            table.addCell(getCellwithBackground(InvoiceData.format2dec(InvoiceData.round(product.getSubTotal()*100/(100-product.getDiscount()))), Element.ALIGN_LEFT, totalFont, row));
+            table.addCell(getCellwithBackground(String.valueOf(tmpSubTotal), Element.ALIGN_LEFT, totalFont, row));
             table.addCell(getCellwithBackground(product.getRemark(), Element.ALIGN_LEFT, chineseFont, row));
             row++;
         }
@@ -511,37 +517,23 @@ public class InvoiceGenerator {
         document.add(pPhone);
         // Address seller / buyer
         PdfPTable table = new PdfPTable(2);
-        if (invoice.getTransaction().getType()== Transaction.TransactionType.RETURN){
-            table.setWidthPercentage(100);
-            PdfPCell buyer = getPartyAddress("From:",
-                    basic.getBuyerName(),
-                    basic.getBuyerLineOne(),
-                    basic.getBuyerLineTwo(),
-                    basic.getBuyerCountryID(),
-                    basic.getBuyerPostcode(),
-                    basic.getBuyerCityName());
-            table.addCell(buyer);
-            PdfPCell seller = getPartyAddress("To:",
-                    basic.getSellerName(),
-                    " ", " ", " ", " ", " ");
-            table.addCell(seller);
-
-        }else if (invoice.getTransaction().getType() == Transaction.TransactionType.OUT){
-            table.setWidthPercentage(100);
-            PdfPCell seller = getPartyAddress("From:",
-                    basic.getSellerName(),
-                    basic.getSellerLineOne(),
-                    basic.getSellerLineTwo(),
-                    basic.getSellerCountryID(),
-                    basic.getSellerPostcode(),
-                    basic.getSellerCityName());
-            table.addCell(seller);
-            PdfPCell buyer = getPartyAddress("To:",
-                    basic.getBuyerName(),
-                    " ", " ", " ", " ", " ");
-            table.addCell(buyer);
-
-        }
+        table.setWidthPercentage(100);
+        PdfPCell seller = getPartyAddress("From:",
+                basic.getSellerName(),
+                basic.getSellerLineOne(),
+                basic.getSellerLineTwo(),
+                basic.getSellerCountryID(),
+                basic.getSellerPostcode(),
+                basic.getSellerCityName());
+        table.addCell(seller);
+        PdfPCell buyer = getPartyAddress("To:",
+                basic.getBuyerName(),
+                basic.getBuyerLineOne(),
+                basic.getBuyerLineTwo(),
+                basic.getBuyerCountryID(),
+                basic.getBuyerPostcode(),
+                basic.getBuyerCityName());
+        table.addCell(buyer);
         document.add(table);
 
         // line items
@@ -559,12 +551,13 @@ public class InvoiceGenerator {
         int row=0;
         double total=0;
         for (ProductTransaction product : invoice.getProducts()) {
-            total+=product.getUnitPrice()*product.getQuantity();
+            double tmpSubTotal = Double.valueOf(InvoiceData.format2dec(InvoiceData.round(product.getSubTotal()*100/(100-product.getDiscount()))));
+            total+=tmpSubTotal;
             table.addCell(getCellwithBackground(product.getProductId(), Element.ALIGN_LEFT, totalFont, row));
             table.addCell(getCellwithBackground(product.getSize(), Element.ALIGN_LEFT, totalFont, row));
             table.addCell(getCellwithBackground(InvoiceData.format2dec(InvoiceData.round(product.getUnitPrice())), Element.ALIGN_LEFT, totalFont, row));
             table.addCell(getCellwithBackground(String.valueOf(product.getQuantity()), Element.ALIGN_LEFT, totalFont, row));
-            table.addCell(getCellwithBackground(InvoiceData.format2dec(InvoiceData.round(product.getSubTotal()*100/(100-product.getDiscount()))), Element.ALIGN_LEFT, totalFont, row));
+            table.addCell(getCellwithBackground(String.valueOf(tmpSubTotal), Element.ALIGN_LEFT, totalFont, row));
             table.addCell(getCellwithBackground(product.getRemark(), Element.ALIGN_LEFT, chineseFont, row));
             row++;
         }

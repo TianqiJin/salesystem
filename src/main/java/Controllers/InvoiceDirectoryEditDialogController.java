@@ -83,9 +83,6 @@ public class InvoiceDirectoryEditDialogController {
         });
         invoiceCheckBox.setSelected(true);
         deliveryInvoiceCheckbox.setSelected(true);
-        deliveryInvoiceCheckbox.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            deliveryTitledPane.setDisable(newValue? false : true);
-        });
         invoiceDirectoryLabel.setText("");
 
         executor = Executors.newCachedThreadPool(r -> {
@@ -111,35 +108,28 @@ public class InvoiceDirectoryEditDialogController {
         if(isInvoicedirectoryValid()){
             try{
                 InvoiceGenerator generator = new InvoiceGenerator(selectedDirectory.toString(), this.saleSystem);
-                if(deliveryInvoiceCheckbox.isSelected()){
-                    if(isFieldValid()){
-                        Address address = new Address(streetField.getText().trim(), cityField.getText().trim(), postalCodeField.getText().trim());
-                        if(invoiceCheckBox.isSelected()){
-                            generator.buildInvoice(transaction,customer,staff);
-                        }
-                        if(quotationInvoiceCheckBox.isSelected()){
-                            generator.buildQuotation(transaction, customer, staff);
-                        }
-                        generator.buildDelivery(transaction, customer, staff, address);
-                    }else{
-                        new AlertBuilder()
-                                .alertType(Alert.AlertType.ERROR)
-                                .alertHeaderText("Please fix the following error")
-                                .alertContentText(errorMsgBuilder.toString())
-                                .alertTitle("Invoice Error")
-                                .build()
-                                .showAndWait();
-                    }
-                }else{
+                if(isFieldValid()){
+                    Address address = new Address(streetField.getText().trim(), cityField.getText().trim(), postalCodeField.getText().trim());
                     if(invoiceCheckBox.isSelected()){
-                        generator.buildInvoice(transaction,customer,staff);
+                        generator.buildInvoice(transaction,customer,staff, address);
                     }
                     if(quotationInvoiceCheckBox.isSelected()){
-                        generator.buildQuotation(transaction, customer, staff);
+                        generator.buildQuotation(transaction, customer, staff, address);
                     }
+                    if(deliveryInvoiceCheckbox.isSelected()){
+                        generator.buildDelivery(transaction, customer, staff, address);
+                    }
+                }else{
+                    new AlertBuilder()
+                            .alertType(Alert.AlertType.ERROR)
+                            .alertHeaderText("Please fix the following error")
+                            .alertContentText(errorMsgBuilder.toString())
+                            .alertTitle("Invoice Error")
+                            .build()
+                            .showAndWait();
                 }
             }catch(Exception e){
-                logger.error(e.getMessage());
+                e.printStackTrace();
             }
             if(errorMsgBuilder.length() == 0){
                 dialogStage.close();
@@ -173,6 +163,7 @@ public class InvoiceDirectoryEditDialogController {
         if(this.transaction.getType().equals(Transaction.TransactionType.RETURN)){
             deliveryInvoiceCheckbox.setSelected(false);
             deliveryInvoiceCheckbox.setDisable(true);
+            quotationInvoiceCheckBox.setDisable(true);
         }
     }
 
@@ -181,13 +172,13 @@ public class InvoiceDirectoryEditDialogController {
     }
 
     private boolean isFieldValid(){
-        if(streetField.getText().trim().isEmpty() || streetField.getText() == null){
+        if(streetField.getText() == null || streetField.getText().trim().isEmpty()){
             errorMsgBuilder.append("Street Field is empty!\n");
         }
-        if(cityField.getText().trim().isEmpty() || cityField.getText() == null){
+        if(cityField.getText() == null || cityField.getText().trim().isEmpty()){
             errorMsgBuilder.append("City Field is empty!\n");
         }
-        if(postalCodeField.getText().trim().isEmpty() || postalCodeField.getText() == null){
+        if(postalCodeField.getText() == null || postalCodeField.getText().trim().isEmpty()){
             errorMsgBuilder.append("Postal Code Field is empty!\n");
         }
         if(errorMsgBuilder.length() == 0){

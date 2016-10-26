@@ -186,11 +186,15 @@ public class SaleSystem extends Application{
             loader.setLocation(getClass().getResource("/fxml/RootLayout.fxml"));
             rootLayout = loader.load();
             Scene scene = new Scene(rootLayout);
+            rootLayout.prefHeightProperty().bind(scene.heightProperty());
+            rootLayout.prefWidthProperty().bind(scene.widthProperty());
             primaryStage.setScene(scene);
             primaryStage.show();
             for (Node node: rootLayout.getChildren()){
                 if (node instanceof TabPane){
                     tabPane = (TabPane)node;
+                    tabPane.prefHeightProperty().bind(rootLayout.heightProperty());
+                    tabPane.prefWidthProperty().bind(rootLayout.widthProperty());
                 }else if(node instanceof MenuBar){
                     menuBar = (MenuBar)node;
                 }

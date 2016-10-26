@@ -32,6 +32,7 @@ import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 public class TransactionOverviewController implements OverviewController{
 
@@ -101,7 +102,7 @@ public class TransactionOverviewController implements OverviewController{
         transactionIdCol.setCellValueFactory(new PropertyValueFactory<>("transactionId"));
         dateCol.setCellValueFactory(new PropertyValueFactory<>("Date"));
         typeCol.setCellValueFactory(new PropertyValueFactory<>("Type"));
-        infoCol.setCellValueFactory(new PropertyValueFactory<>("Info"));
+//        infoCol.setCellValueFactory(new PropertyValueFactory<>("Info"));
         productIdCol.setCellValueFactory(new PropertyValueFactory<>("productId"));
         qtyCol.setCellValueFactory(new PropertyValueFactory<>("quantity"));
         unitPriceCol.setCellValueFactory(new PropertyValueFactory<>("unitPrice"));
@@ -436,6 +437,22 @@ public class TransactionOverviewController implements OverviewController{
         });
         customerListTask.setOnSucceeded(event -> {
             customerList = customerListTask.getValue();
+            infoCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Transaction, String>, ObservableValue<String>>() {
+                @Override
+                public ObservableValue<String> call(TableColumn.CellDataFeatures<Transaction, String> param) {
+                   if(param.getValue().getType().equals(Transaction.TransactionType.IN)){
+                       return new SimpleStringProperty(param.getValue().getInfo());
+                   }else{
+                       Optional<Customer> tmpCustomer = customerList.stream().filter(customer -> customer.getUserName().equals(param.getValue().getInfo()))
+                               .findFirst();
+                       if(tmpCustomer.isPresent()){
+                           return new SimpleStringProperty(tmpCustomer.get().getFirstName() + " " + tmpCustomer.get().getLastName());
+                       }else{
+                           return new SimpleStringProperty("");
+                       }
+                   }
+                }
+            });
         });
         customerListTask.setOnFailed(event -> {
             new AlertBuilder()
