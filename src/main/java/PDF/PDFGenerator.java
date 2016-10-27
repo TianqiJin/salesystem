@@ -23,11 +23,11 @@ public class PDFGenerator {
     private Document document;
     private List<Transaction> transactionList;
     private final String destination;
-    private Integer productId;
+    private String productId;
     private Integer staffId;
     private Customer customer;
 
-    public PDFGenerator(List<Transaction> transactionList, String destination, Integer productId, Integer staffId, Customer customer){
+    public PDFGenerator(List<Transaction> transactionList, String destination, String productId, Integer staffId, Customer customer){
         this.transactionList = transactionList;
         this.destination = destination;
         this.productId = productId;
@@ -127,7 +127,7 @@ public class PDFGenerator {
 
     public static class PDFGeneratorBuilder{
         private String destination;
-        private Integer productId;
+        private String productId;
         private Customer customer;
         private List<Transaction> transactionList;
         private Integer staffId;
@@ -137,7 +137,7 @@ public class PDFGenerator {
                     new File(destination, "Report_" + new SimpleDateFormat("yyyy-MM-dd'at'HH-mm-ss").format(new Date()) + ".pdf").getPath();
             return this;
         }
-        public PDFGeneratorBuilder productId(Integer productId){
+        public PDFGeneratorBuilder productId(String productId){
             this.productId = productId;
             return this;
         }
@@ -159,7 +159,7 @@ public class PDFGenerator {
     }
 
     private List<Transaction> filterTransaction(){
-
+        System.out.println(productId);
         if((productId == null) && (staffId == null) && (customer == null)){
             return transactionList;
         }
@@ -171,7 +171,8 @@ public class PDFGenerator {
         }
         if(productId != null){
             for(Transaction transaction: transactionList){
-                transaction.getProductTransactionList().removeIf(productTransaction -> productTransaction.getProductId().equals(String.valueOf(productId)));
+                transaction.getProductTransactionList().removeIf(productTransaction ->
+                        !productTransaction.getProductId().equals(String.valueOf(productId)));
             }
             transactionList.removeIf(transaction -> transaction.getProductTransactionList().size() == 0);
         }

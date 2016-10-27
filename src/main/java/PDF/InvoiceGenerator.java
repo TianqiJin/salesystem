@@ -36,6 +36,8 @@ public class InvoiceGenerator {
 
     private static String destination_Invoice;
     private static String destination_Delivery;
+    private static String quotation_Delivery;
+    private static String destination_Return;
     private Invoice invoice;
     private SaleSystem saleSystem;
 
@@ -44,27 +46,30 @@ public class InvoiceGenerator {
                 new File(destination_Folder, "Invoice_" + new SimpleDateFormat("yyyy-MM-dd'at'HH-mm-ss").format(new Date()) + ".pdf").getPath();
         this.destination_Delivery =
                 new File(destination_Folder, "Delivery_" + new SimpleDateFormat("yyyy-MM-dd'at'HH-mm-ss").format(new Date()) + ".pdf").getPath();
+        this.destination_Return =
+                new File(destination_Folder, "Return_" + new SimpleDateFormat("yyyy-MM-dd'at'HH-mm-ss").format(new Date()) + ".pdf").getPath();
+        this.quotation_Delivery = new File(destination_Folder, "Quotation_" + new SimpleDateFormat("yyyy-MM-dd'at'HH-mm-ss").format(new Date()) + ".pdf").getPath();
         this.saleSystem = saleSystem;
 
 
     }
-    public void buildInvoice(Transaction transaction, Customer customer, Staff staff) throws Exception {
-        invoice = new Invoice(transaction, customer, staff);
+    public void buildInvoice(Transaction transaction, Customer customer, Staff staff, Address address) throws Exception {
+        invoice = new Invoice(transaction, customer, staff, address);
         createPdf(invoice);
-    }
-    public void buildDelivery(Transaction transaction, Customer customer, Staff staff) throws Exception{
-        invoice = new Invoice(transaction, customer, staff);
-        createPdf_delivery(invoice, null);
-
     }
 
     public void buildDelivery(Transaction transaction, Customer customer, Staff staff, Address address) throws Exception{
-        invoice = new Invoice(transaction, customer, staff);
-        createPdf_delivery(invoice, address);
+        invoice = new Invoice(transaction, customer, staff, address);
+        createPdf_delivery(invoice);
 
     }
 
-    public void createPdf_delivery(Invoice invoice, Address address) throws Exception {
+    public void buildQuotation(Transaction transaction, Customer customer, Staff staff, Address address) throws Exception {
+        invoice = new Invoice(transaction, customer, staff, address);
+        createPdf_quotation(invoice);
+    }
+
+    public void createPdf_delivery(Invoice invoice) throws Exception {
         InvoiceData invoiceData = new InvoiceData();
         BasicProfile basic = invoiceData.createBasicProfileData(invoice);
 
@@ -76,12 +81,16 @@ public class InvoiceGenerator {
         p = new Paragraph("Milan Building Supply LTD.",catFont);
         p.setAlignment(Element.HEADER);
         document.add(p);
-        p = new Paragraph("Delivery Order" + " " + String.format("D/%05d", invoice.getId()), subFont);
+        p = new Paragraph("Pick Up/Delivery Order" + " " + String.format("D/%05d", invoice.getId()), subFont);
         p.setAlignment(Element.ALIGN_RIGHT);
         document.add(p);
         p = new Paragraph(convertDate(basic.getDateTime(), "MMM dd, yyyy"), smallBold);
         p.setAlignment(Element.ALIGN_RIGHT);
         document.add(p);
+
+        Paragraph pPhone = new Paragraph("Phone No. " + invoice.getStaff().getPhone(), tinyBold);
+        pPhone.setAlignment(Element.ALIGN_LEFT);
+        document.add(pPhone);
 
         // Address seller / buyer
         PdfPTable table = new PdfPTable(2);
@@ -95,25 +104,13 @@ public class InvoiceGenerator {
                 basic.getSellerCityName());
         table.addCell(seller);
         PdfPCell buyer;
-        if(address!=null){
-            buyer = getPartyAddress("To:",
-                    basic.getBuyerName(),
-                    address.getStreet(),
-                    "",
-                    "CA",
-                    address.getPostalCode(),
-                    address.getCity());
-
-        }else{
-            buyer = getPartyAddress("To:",
-                    basic.getBuyerName(),
-                    basic.getBuyerLineOne(),
-                    basic.getBuyerLineTwo(),
-                    basic.getBuyerCountryID(),
-                    basic.getBuyerPostcode(),
-                    basic.getBuyerCityName());
-
-        }
+        buyer = getPartyAddress("To:",
+                basic.getBuyerName(),
+                basic.getBuyerLineOne(),
+                basic.getBuyerLineTwo(),
+                basic.getBuyerCountryID(),
+                basic.getBuyerPostcode(),
+                basic.getBuyerCityName());
         table.addCell(buyer);
 
         document.add(table);
@@ -143,6 +140,7 @@ public class InvoiceGenerator {
             row++;
         }
 
+
         document.add(table);
         p = new Paragraph("Payment Information:",addressFont);
         p.setAlignment(Element.ALIGN_LEFT);
@@ -160,6 +158,19 @@ public class InvoiceGenerator {
             row++;
         }
         p.add(table);
+
+
+        PdfPTable signTable = new PdfPTable(2);
+        signTable.setWidthPercentage(86);
+        signTable.addCell(getCellNoWrap("Packing by: _________________", Element.ALIGN_LEFT, largeText));
+        signTable.addCell(getCellNoWrap("Customer Sign: ________________", Element.ALIGN_RIGHT, largeText));
+        signTable.addCell(getCellNoWrap(" ", Element.ALIGN_CENTER,largeText ));
+        signTable.addCell(getCellNoWrap(" ", Element.ALIGN_CENTER, largeText));
+        signTable.addCell(getCellNoWrap("Date:         __________________", Element.ALIGN_LEFT, largeText));
+        signTable.addCell(getCellNoWrap("Date:            ___________________", Element.ALIGN_RIGHT, largeText));
+        if(signTable.getTotalWidth()==0)signTable.setTotalWidth((document.right()-document.left())*signTable.getWidthPercentage()/100f);
+        signTable.writeSelectedRows(0, -1, (document.left()+document.right()-signTable.getTotalWidth())/2f, document.bottom() + signTable.getTotalHeight()*3f, writer.getDirectContent());
+
         document.add(p);
 
         document.newPage();
@@ -219,8 +230,14 @@ public class InvoiceGenerator {
 
         // step 1
         Document document = new Document();
+        PdfWriter writer;
         // step 2
-        PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(destination_Invoice));
+        if(invoice.getTransaction().getType().equals(Transaction.TransactionType.RETURN)){
+            writer = PdfWriter.getInstance(document, new FileOutputStream(destination_Return));
+        }else{
+            writer = PdfWriter.getInstance(document, new FileOutputStream(destination_Invoice));
+        }
+
         // step 3
         document.open();
         // step 4
@@ -230,7 +247,11 @@ public class InvoiceGenerator {
         p = new Paragraph("Milan Building Supply LTD.",catFont);
         p.setAlignment(Element.HEADER);
         document.add(p);
-        p = new Paragraph(basic.getName() + " " + basic.getId(), subFont);
+        if(invoice.getTransaction().getType().equals(Transaction.TransactionType.RETURN)){
+            p = new Paragraph("RETURN" + " " + String.format("R/%05d", invoice.getId()), subFont);
+        }else{
+            p = new Paragraph(basic.getName() + " " + basic.getId(), subFont);
+        }
         p.setAlignment(Element.ALIGN_RIGHT);
         document.add(p);
         p = new Paragraph(convertDate(basic.getDateTime(), "MMM dd, yyyy"), smallBold);
@@ -239,8 +260,11 @@ public class InvoiceGenerator {
 
         //gstNum Field
         Paragraph pGst = new Paragraph("GST No. " + saleSystem.getProperty().getGstNumber(), tinyBold);
-        p.setAlignment(Element.ALIGN_LEFT);
+        pGst.setAlignment(Element.ALIGN_LEFT);
+        Paragraph pPhone = new Paragraph("Phone No. " + invoice.getStaff().getPhone(), tinyBold);
+        pPhone.setAlignment(Element.ALIGN_LEFT);
         document.add(pGst);
+        document.add(pPhone);
         document.add(new Paragraph());
         // Address seller / buyer
         PdfPTable table = new PdfPTable(2);
@@ -256,7 +280,11 @@ public class InvoiceGenerator {
             table.addCell(buyer);
             PdfPCell seller = getPartyAddress("To:",
                     basic.getSellerName(),
-                    " ", " ", " ", " ", " ");
+                    basic.getSellerLineOne(),
+                    basic.getSellerLineTwo(),
+                    basic.getSellerCountryID(),
+                    basic.getSellerPostcode(),
+                    basic.getSellerCityName());
             table.addCell(seller);
 
         }else if (invoice.getTransaction().getType() == Transaction.TransactionType.OUT){
@@ -271,7 +299,11 @@ public class InvoiceGenerator {
             table.addCell(seller);
             PdfPCell buyer = getPartyAddress("To:",
                     basic.getBuyerName(),
-                    " ", " ", " ", " ", " ");
+                    basic.getBuyerLineOne(),
+                    basic.getBuyerLineTwo(),
+                    basic.getBuyerCountryID(),
+                    basic.getBuyerPostcode(),
+                    basic.getBuyerCityName());
             table.addCell(buyer);
 
         }
@@ -292,12 +324,13 @@ public class InvoiceGenerator {
         int row=0;
         double total=0;
         for (ProductTransaction product : invoice.getProducts()) {
-            total+=product.getUnitPrice()*product.getQuantity();
+            double tmpSubTotal = Double.valueOf(InvoiceData.format2dec(InvoiceData.round(product.getSubTotal()*100/(100-product.getDiscount()))));
+            total+=tmpSubTotal;
             table.addCell(getCellwithBackground(product.getProductId(), Element.ALIGN_LEFT, totalFont, row));
             table.addCell(getCellwithBackground(product.getSize(), Element.ALIGN_LEFT, totalFont, row));
             table.addCell(getCellwithBackground(InvoiceData.format2dec(InvoiceData.round(product.getUnitPrice())), Element.ALIGN_LEFT, totalFont, row));
             table.addCell(getCellwithBackground(String.valueOf(product.getQuantity()), Element.ALIGN_LEFT, totalFont, row));
-            table.addCell(getCellwithBackground(InvoiceData.format2dec(InvoiceData.round(product.getSubTotal())), Element.ALIGN_LEFT, totalFont, row));
+            table.addCell(getCellwithBackground(String.valueOf(tmpSubTotal), Element.ALIGN_LEFT, totalFont, row));
             table.addCell(getCellwithBackground(product.getRemark(), Element.ALIGN_LEFT, chineseFont, row));
             row++;
         }
@@ -362,23 +395,212 @@ public class InvoiceGenerator {
         document.add(table);
         p = new Paragraph("Payment Information:",addressFont);
         p.setAlignment(Element.ALIGN_LEFT);
-        table = new PdfPTable(3);
-        table.setWidthPercentage(50);
-        table.setHorizontalAlignment(0);
-        table.setSpacingBefore(10);
-        table.setWidths(new int[]{3, 3, 3});
-        table.addCell(getCellTitle("Date", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
-        table.addCell(getCellTitle("Amount", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
-        table.addCell(getCellTitle("Type", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
-        row = 0;
-        for (PaymentRecord paymentRecord : invoice.getPaymentRecords()){
-            table.addCell(getCellwithBackground(paymentRecord.getDate(), Element.ALIGN_LEFT, totalFont, row));
-            table.addCell(getCellwithBackground(InvoiceData.format2dec(InvoiceData.round(paymentRecord.getPaid())), Element.ALIGN_RIGHT, totalFont, row));
-            table.addCell(getCellwithBackground(paymentRecord.getPaymentType(), Element.ALIGN_LEFT, totalFont, row));
-            row++;
+        if(invoice.getTransaction().getType().equals(Transaction.TransactionType.OUT)){
+            table = new PdfPTable(4);
+            table.setWidthPercentage(50);
+            table.setHorizontalAlignment(0);
+            table.setSpacingBefore(10);
+            table.setWidths(new int[]{3, 3, 3, 5});
+            table.addCell(getCellTitle("Date", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
+            table.addCell(getCellTitle("Amount", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
+            table.addCell(getCellTitle("Type", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
+            table.addCell(getCellTitle("Is Deposit", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
+            row = 0;
+            for (PaymentRecord paymentRecord : invoice.getPaymentRecords()){
+                logger.info(paymentRecord.isDeposit());
+                table.addCell(getCellwithBackground(paymentRecord.getDate(), Element.ALIGN_LEFT, totalFont, row));
+                table.addCell(getCellwithBackground(InvoiceData.format2dec(InvoiceData.round(paymentRecord.getPaid())), Element.ALIGN_LEFT, totalFont, row));
+                table.addCell(getCellwithBackground(paymentRecord.getPaymentType(), Element.ALIGN_LEFT, totalFont, row));
+                table.addCell(getCellwithBackground(paymentRecord.isDeposit()? "YES" : "NO", Element.ALIGN_LEFT, totalFont, row));
+                row++;
+            }
+        }else if (invoice.getTransaction().getType().equals(Transaction.TransactionType.RETURN)){
+            table = new PdfPTable(3);
+            table.setWidthPercentage(50);
+            table.setHorizontalAlignment(0);
+            table.setSpacingBefore(10);
+            table.setWidths(new int[]{3, 3, 3});
+            table.addCell(getCellTitle("Date", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
+            table.addCell(getCellTitle("Amount", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
+            table.addCell(getCellTitle("Type", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
+            row = 0;
+            for (PaymentRecord paymentRecord : invoice.getPaymentRecords()){
+                table.addCell(getCellwithBackground(paymentRecord.getDate(), Element.ALIGN_LEFT, totalFont, row));
+                table.addCell(getCellwithBackground(InvoiceData.format2dec(InvoiceData.round(paymentRecord.getPaid())), Element.ALIGN_LEFT, totalFont, row));
+                table.addCell(getCellwithBackground(paymentRecord.getPaymentType(), Element.ALIGN_LEFT, totalFont, row));
+                row++;
+            }
         }
         p.add(table);
         document.add(p);
+
+        document.newPage();
+        table = new PdfPTable(1);
+        table.setWidthPercentage(100);
+        table.setSpacingBefore(10);
+        table.setSpacingAfter(10);
+        table.addCell(getCellNoWrapwithBack("THANK YOU FOR YOUR BUSINESS!", Element.ALIGN_CENTER, addressFont, BaseColor.LIGHT_GRAY));
+        document.add(table);
+
+        p = new Paragraph("[Disclaimer:]",midText);
+        p.setAlignment(Element.ALIGN_LEFT);
+        document.add(p);
+        p = new Paragraph("1. Payments\n" +
+                "-  A 50% deposit is required on all orders.\n" +
+                "-  Full payment is required six days prior to delivery or pickup.\n" +
+                "-  Credit card payments are accepted in sore and by phone.\n" +
+                "-  Milan Tiles does not accept payment upon delivery\n" +
+                "\n" +
+                "2. Return and Cancellation\n" +
+                "-  A refund will be issued for full boxes of current tile returned in good box condition within 2 \n" +
+                "months of the date product were received.\n" +
+                "-  No returns or refund allowed on discontinued or special order items.\n" +
+                "-  Milan Tiles Ltd is under no obligation to accept the cancellation of any special order items.\n" +
+                "-  All returns must be in their original packaging and in the condition in which it was received.\n" +
+                "\n" +
+                "3. Delivery\n" +
+                "-  All deliveries should be arranged through the store of purchase.\n" +
+                "-  We are unable to provide you with specific delivery times – only that it will be a morning or \n" +
+                "afternoon delivery.\n" +
+                "-  Delivery on stocked products will be charge from $50 delivery fee which depends on the location.\n" +
+                "-  Special orders will be take more than 6 weeks to delivery.\n" +
+                "\n" +
+                "4. Pick-Ups\n" +
+                "This is generally arranged through our Milan Tile warehouse. You must check in at the reception \n" +
+                "desk before goods can be released. Once your goods have left our facility, Milan will not accept \n" +
+                "any claims of damage. If someone other than the name on the invoice is picking up yours tiles, \n" +
+                "you must notify us in advance.\n"+
+                "\n" +
+                "5. Third-Party Pick-Ups\n" +
+                "Milan will not accept any damage claims once a third-party carrier has deceived the goods. Please \n" +
+                "note tile installers are considered a third party.\n" +
+                "\n" +
+                "6. Installations\n" +
+                "Milan will not provide any tile installers for customers. Milan do not have responsibility on any \n" +
+                "installation issues.",largeText);
+        p.setAlignment(Element.ALIGN_LEFT);
+        document.add(p);
+        // step 5
+        document.close();
+    }
+
+    public void createPdf_quotation(Invoice invoice) throws Exception{
+        InvoiceData invoiceData = new InvoiceData();
+        BasicProfile basic = invoiceData.createBasicProfileData(invoice);
+
+        // step 1
+        Document document = new Document();
+        // step 2
+        PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(quotation_Delivery));
+        // step 3
+        document.open();
+        // step 4
+
+        // header
+        Paragraph p;
+        p = new Paragraph("Milan Building Supply LTD.",catFont);
+        p.setAlignment(Element.HEADER);
+        document.add(p);
+        p = new Paragraph("Quotation Order" + " " + String.format("Q/%05d", invoice.getId()), subFont);
+        p.setAlignment(Element.ALIGN_RIGHT);
+        document.add(p);
+        p = new Paragraph(convertDate(basic.getDateTime(), "MMM dd, yyyy"), smallBold);
+        p.setAlignment(Element.ALIGN_RIGHT);
+        document.add(p);
+
+        //gstNum Field
+        Paragraph pGst = new Paragraph("GST No. " + saleSystem.getProperty().getGstNumber(), tinyBold);
+        pGst.setAlignment(Element.ALIGN_LEFT);
+        Paragraph pPhone = new Paragraph("Phone No. " + invoice.getStaff().getPhone(), tinyBold);
+        pPhone.setAlignment(Element.ALIGN_LEFT);
+        document.add(pGst);
+        document.add(pPhone);
+        // Address seller / buyer
+        PdfPTable table = new PdfPTable(2);
+        table.setWidthPercentage(100);
+        PdfPCell seller = getPartyAddress("From:",
+                basic.getSellerName(),
+                basic.getSellerLineOne(),
+                basic.getSellerLineTwo(),
+                basic.getSellerCountryID(),
+                basic.getSellerPostcode(),
+                basic.getSellerCityName());
+        table.addCell(seller);
+        PdfPCell buyer = getPartyAddress("To:",
+                basic.getBuyerName(),
+                basic.getBuyerLineOne(),
+                basic.getBuyerLineTwo(),
+                basic.getBuyerCountryID(),
+                basic.getBuyerPostcode(),
+                basic.getBuyerCityName());
+        table.addCell(buyer);
+        document.add(table);
+
+        // line items
+        table = new PdfPTable(6);
+        table.setWidthPercentage(100);
+        table.setSpacingBefore(10);
+        table.setSpacingAfter(10);
+        table.setWidths(new int[]{3, 2, 2, 2, 2, 3});
+        table.addCell(getCellTitle("Item", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
+        table.addCell(getCellTitle("Size", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
+        table.addCell(getCellTitle("Price", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
+        table.addCell(getCellTitle("Qty(feet)", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
+        table.addCell(getCellTitle("Subtotal", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
+        table.addCell(getCellTitle("Remark", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
+        int row=0;
+        double total=0;
+        for (ProductTransaction product : invoice.getProducts()) {
+            double tmpSubTotal = Double.valueOf(InvoiceData.format2dec(InvoiceData.round(product.getSubTotal()*100/(100-product.getDiscount()))));
+            total+=tmpSubTotal;
+            table.addCell(getCellwithBackground(product.getProductId(), Element.ALIGN_LEFT, totalFont, row));
+            table.addCell(getCellwithBackground(product.getSize(), Element.ALIGN_LEFT, totalFont, row));
+            table.addCell(getCellwithBackground(InvoiceData.format2dec(InvoiceData.round(product.getUnitPrice())), Element.ALIGN_LEFT, totalFont, row));
+            table.addCell(getCellwithBackground(String.valueOf(product.getQuantity()), Element.ALIGN_LEFT, totalFont, row));
+            table.addCell(getCellwithBackground(String.valueOf(tmpSubTotal), Element.ALIGN_LEFT, totalFont, row));
+            table.addCell(getCellwithBackground(product.getRemark(), Element.ALIGN_LEFT, chineseFont, row));
+            row++;
+        }
+        table.addCell(getCellHolder());
+        table.addCell(getCellHolder());
+        table.addCell(getCellHolder());
+        table.addCell(getCellHolder());
+        table.addCell(getCellNoWrap("Subtotal:", Element.ALIGN_LEFT, tinyBold));
+        table.addCell(getCellNoWrap("$CAD   " + new BigDecimal(total).setScale(2, BigDecimal.ROUND_HALF_EVEN), Element.ALIGN_JUSTIFIED_ALL, smallText));
+
+        double discount = invoice.getTotal()-invoice.getTransaction().getGstTax()-invoice.getTransaction().getPstTax()-total;
+        if(discount>0){
+            System.out.print("Something went wrong!!");
+        }
+        table.addCell(getCellHolder());
+        table.addCell(getCellHolder());
+        table.addCell(getCellHolder());
+        table.addCell(getCellHolder());
+        table.addCell(getCellNoWrap("Discount:", Element.ALIGN_LEFT, tinyBold));
+        table.addCell(getCellNoWrap("$CAD   " + new BigDecimal(discount).setScale(2, BigDecimal.ROUND_HALF_EVEN), Element.ALIGN_JUSTIFIED_ALL, smallText));
+
+
+        table.addCell(getCellHolder());
+        table.addCell(getCellHolder());
+        table.addCell(getCellHolder());
+        table.addCell(getCellHolder());
+        table.addCell(getCellNoWrap("GST:", Element.ALIGN_LEFT, tinyBold));
+        table.addCell(getCellNoWrap("$CAD   " + (invoice.getTransaction().getGstTax()), Element.ALIGN_JUSTIFIED_ALL, smallText));
+
+        table.addCell(getCellHolder());
+        table.addCell(getCellHolder());
+        table.addCell(getCellHolder());
+        table.addCell(getCellHolder());
+        table.addCell(getCellUnder("PST:", Element.ALIGN_LEFT, tinyBold));
+        table.addCell(getCellUnder("$CAD   " + (invoice.getTransaction().getPstTax()), Element.ALIGN_JUSTIFIED_ALL, smallText));
+
+        table.addCell(getCellHolder());
+        table.addCell(getCellHolder());
+        table.addCell(getCellHolder());
+        table.addCell(getCellHolder());
+        table.addCell(getCellTop("Total:", Element.ALIGN_LEFT, totalFont));
+        table.addCell(getCellTop("$CAD  " + invoice.getTotal(), Element.ALIGN_JUSTIFIED_ALL, totalFont));
+        document.add(table);
 
         document.newPage();
         table = new PdfPTable(1);

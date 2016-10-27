@@ -18,8 +18,9 @@ public class Invoice {
     protected Date invoiceDate;
     protected List<PaymentRecord> paymentRecords;
     protected Staff staff;
+    protected Address address;
 
-    public Invoice(Transaction transaction, Customer customer, Staff staff){
+    public Invoice(Transaction transaction, Customer customer, Staff staff, Address address){
         this.transaction = transaction;
         this.id = transaction.getTransactionId();
         this.invoiceDate = Date.from(transaction.getDate().atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
@@ -31,6 +32,7 @@ public class Invoice {
         }
         this.customer = customer;
         this.staff = staff;
+        this.address = address;
     }
 
     public List<PaymentRecord> getPaymentRecords() {
@@ -87,6 +89,14 @@ public class Invoice {
 
     public void setProducts(List<ProductTransaction> products) {
         this.products = products;
+    }
+
+    public Address getAddress() {
+        return address;
+    }
+
+    public void setAddress(Address address) {
+        this.address = address;
     }
 
     public Date getInvoiceDate() {

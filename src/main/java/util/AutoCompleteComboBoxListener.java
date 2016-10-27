@@ -50,6 +50,7 @@ public class AutoCompleteComboBoxListener<T> {
             } catch (Exception ignored) { }
 
             ObservableList<T> items = comboBox.getItems();
+
             for (int i=0; i<items.size(); i++) {
                 if (items.get(i).toString().toLowerCase().startsWith(comboBox.getEditor().getText().toLowerCase())) {
                     try {
@@ -64,6 +65,8 @@ public class AutoCompleteComboBoxListener<T> {
                     break;
                 }
             }
+
+
         });
 
         // add a focus listener such that if not in focus, reset the filtered typed keys
@@ -101,6 +104,8 @@ public class AutoCompleteComboBoxListener<T> {
                 } catch (Exception ignored) { }
             }
         }
+
+
 
         String s = comboBox.getEditor().getText();
         if (!found && affect) {

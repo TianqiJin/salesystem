@@ -103,7 +103,8 @@ public interface ObjectDeserializer<E> {
                     listPaymentRecord.add(new PaymentRecord(
                             tmpNode.path("date").asText(),
                             tmpNode.path("paid").asDouble(),
-                            tmpNode.path("paymentType").asText()));
+                            tmpNode.path("paymentType").asText(),
+                            tmpNode.path("deposit").asBoolean()));
                 }
                 Transaction transaction = new Transaction.TransactionBuilder()
                         .transactionId(rs.getInt("TransactionID"))
@@ -142,6 +143,7 @@ public interface ObjectDeserializer<E> {
                     .street(rs.getString("Street"))
                     .city(rs.getString("City"))
                     .postalCode(rs.getString("PostalCode"))
+                    .phone(rs.getString("phone"))
                     .build();
             return staff;
         }

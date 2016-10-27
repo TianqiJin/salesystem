@@ -99,6 +99,8 @@ public class GenerateReturnTransactController {
     private Label pstTaxLabel;
     @FXML
     private Label totalLabel;
+    @FXML
+    private Label paymentDiscountLabel;
 
     @FXML
     private Button confirmButton;
@@ -202,11 +204,14 @@ public class GenerateReturnTransactController {
             }else{
                 transaction.setPayment(Double.valueOf(returnAmountField.getText().trim()));
             }
+            transaction.setGstTax(Double.valueOf(gstTaxLabel.getText()));
+            transaction.setPstTax(Double.valueOf(pstTaxLabel.getText()));
             transaction.setTotal(Double.valueOf(totalLabel.getText()));
             transaction.getPayinfo().add(new PaymentRecord(
                     transaction.getDate().toString(),
                     transaction.getPayment() + transaction.getStoreCredit(),
-                    transaction.getPaymentType()));
+                    transaction.getPaymentType(),
+                    false));
             StringBuffer overviewTransactionString = new StringBuffer();
             StringBuffer overviewProductTransactionString = new StringBuffer();
 
@@ -307,7 +312,7 @@ public class GenerateReturnTransactController {
 
             itemsCountLabel.setText(String.valueOf(productTransactions.size()));
             subTotalLabel.setText(subTotalAfterDiscount.toString());
-//            paymentDiscountLabel.setText(paymentDiscount.toString());
+            paymentDiscountLabel.setText(paymentDiscount.toString());
             pstTaxLabel.setText(pstTax.toString());
             gstTaxLabel.setText(gstTax.toString());
             totalLabel.setText(total.toString());
@@ -320,6 +325,7 @@ public class GenerateReturnTransactController {
             gstTaxLabel.setText("");
             totalLabel.setText("");
             balanceLabel.setText("");
+            paymentDiscountLabel.setText("");
         }
     }
 

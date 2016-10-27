@@ -7,10 +7,7 @@ import com.sun.prism.impl.Disposer;
 import db.*;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.*;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableObjectValue;
 import javafx.beans.value.ObservableValue;
@@ -32,7 +29,7 @@ import org.apache.log4j.Logger;
 import util.AlertBuilder;
 import util.AutoCompleteComboBoxListener;
 import util.ButtonCell;
-import util.EditCellFactory;
+//import util.EditCellFactory;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -80,7 +77,7 @@ public class GenerateCustomerTransactController {
     @FXML
     private TableColumn<ProductTransaction, Integer> discountCol;
     @FXML
-    private TableColumn<ProductTransaction, BigDecimal> subTotalCol;
+    private TableColumn<ProductTransaction, Number> subTotalCol;
     @FXML
     private TableColumn<ProductTransaction, Float> sizeCol;
     @FXML
@@ -127,6 +124,8 @@ public class GenerateCustomerTransactController {
     @FXML
     private ComboBox customerComboBox;
     @FXML
+    private ComboBox customerPhoneComboBox;
+    @FXML
     private ComboBox productComboBox;
     @FXML
     private Label balanceLabel;
@@ -136,15 +135,11 @@ public class GenerateCustomerTransactController {
     private TextField storeCreditField;
     @FXML
     private CheckBox storeCreditCheckBox;
+    @FXML
+    private CheckBox isDepositCheckBox;
 
     @FXML
     private void initialize(){
-//        Callback<TableColumn<ProductTransaction, String>, TableCell<ProductTransaction, String>> cellFactory =
-//                new Callback<TableColumn<ProductTransaction, String>, TableCell<ProductTransaction, String>>() {
-//                    public TableCell call(TableColumn p) {
-//                        return new EditCellFactory();
-//                    }
-//                };
         confimButtonBinding = Bindings.size(transactionTableView.getItems()).greaterThan(0);
         confirmButton.disableProperty().bind(confimButtonBinding);
         productIdCol.setCellValueFactory(new PropertyValueFactory<>("productId"));
@@ -228,7 +223,7 @@ public class GenerateCustomerTransactController {
                 (event.getTableView().getItems().get(event.getTablePosition().getRow()))
                         .setQuantity(event.getNewValue());
                 showPaymentDetails(productTransactionObservableList, customer);
-
+                refreshTable();
             }
         });
         discountCol.setCellValueFactory(new PropertyValueFactory<>("discount"));
@@ -255,18 +250,22 @@ public class GenerateCustomerTransactController {
                         (event.getTableView().getItems().get(event.getTablePosition().getRow()))
                                 .setDiscount(event.getNewValue());
                         showPaymentDetails(productTransactionObservableList, customer);
-                    }else{
-                        refreshTable();
                     }
                 }else{
                     (event.getTableView().getItems().get(event.getTablePosition().getRow()))
                             .setDiscount(event.getNewValue());
                     showPaymentDetails(productTransactionObservableList, customer);
                 }
+                refreshTable();
             }
         });
 
-        subTotalCol.setCellValueFactory(new PropertyValueFactory<>("subTotal"));
+        subTotalCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ProductTransaction, Number>, ObservableValue<Number>>() {
+            @Override
+            public ObservableValue<Number> call(TableColumn.CellDataFeatures<ProductTransaction, Number> param) {
+                return new SimpleFloatProperty(new BigDecimal(param.getValue().getSubTotal()).setScale(2, BigDecimal.ROUND_HALF_EVEN).floatValue());
+            }
+        });
         deleteCol.setCellValueFactory(
                 new Callback<TableColumn.CellDataFeatures<ProductTransaction, Boolean>,
                                         ObservableValue<Boolean>>() {
@@ -336,12 +335,32 @@ public class GenerateCustomerTransactController {
 
             }
         });
+        List<String> tmpCustomerPhoneList = new ArrayList<>();
+        for(Customer customer: customerList){
+            customer.constructCustomerPhoneInfo();
+            tmpCustomerPhoneList.add(customer.getCustomerPhoneInfo());
+        }
+        customerPhoneComboBox.setItems(FXCollections.observableArrayList(tmpCustomerPhoneList));
+        customerPhoneComboBox.valueProperty().addListener(new ChangeListener() {
+            @Override
+            public void changed(ObservableValue observable, Object oldValue, Object newValue) {
+                for(Customer tmpCustomer: customerList){
+                    if(tmpCustomer.getCustomerPhoneInfo() != null && tmpCustomer.getCustomerPhoneInfo().equals(newValue)){
+                        customer = tmpCustomer;
+                        showCustomerDetails(customer);
+                        break;
+                    }
+                }
+
+            }
+        });
         List<String> tmpProductList = productList
                 .stream()
                 .map(product -> product.getProductId())
                 .collect(Collectors.toList());
         productComboBox.setItems(FXCollections.observableArrayList(tmpProductList));
         new AutoCompleteComboBoxListener<>(customerComboBox);
+        new AutoCompleteComboBoxListener<>(customerPhoneComboBox);
         new AutoCompleteComboBoxListener<>(productComboBox);
         storeCreditCheckBox.selectedProperty().addListener(new ChangeListener<Boolean>() {
             @Override
@@ -424,72 +443,37 @@ public class GenerateCustomerTransactController {
     }
 
     @FXML
-    public Transaction handleConfirmButton() throws IOException, SQLException {
-        if(!isTransactionValid()){
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Transaction Is Invalid");
-            alert.setHeaderText("Please fix the following errors before proceed");
-            alert.setContentText(errorMsgBuilder.toString());
-            alert.showAndWait();
+    public Transaction handleQuotationButton() throws IOException, SQLException {
+        if(!isQuotationValid()){
+            new AlertBuilder()
+                    .alertType(Alert.AlertType.ERROR)
+                    .alertTitle("Transaction is Invalid")
+                    .alertHeaderText("Please fix the following errors before proceed")
+                    .alertContentText(errorMsgBuilder.toString())
+                    .build()
+                    .showAndWait();
             transaction.getProductTransactionList().clear();
         }
         else{
-            transaction.getProductTransactionList().addAll(productTransactionObservableList);
-            if(!paymentField.getText().trim().isEmpty()){
-                transaction.setPayment(Double.valueOf(paymentField.getText()));
-            }
-            if(storeCreditCheckBox.isSelected() && !storeCreditField.getText().trim().isEmpty()){
-                transaction.setStoreCredit(Double.valueOf(storeCreditField.getText()));
-            }
-            transaction.setGstTax(Double.valueOf(gstTaxLabel.getText()));
-            transaction.setPstTax(Double.valueOf(pstTaxLabel.getText()));
-            transaction.setTotal(Double.valueOf(totalLabel.getText()));
-            transaction.getPayinfo().add(new PaymentRecord(
-                    transaction.getDate().toString(),
-                    transaction.getPayment() + transaction.getStoreCredit(),
-                    transaction.getPaymentType()));
+            generateTransaction();
+        }
+        return transaction;
+    }
 
-            StringBuffer overviewTransactionString = new StringBuffer();
-            StringBuffer overviewProductTransactionString = new StringBuffer();
-            for(ProductTransaction tmp: transaction.getProductTransactionList()){
-                overviewProductTransactionString
-                        .append("Product ID: " + tmp.getProductId() + "\n")
-                        .append("Total Num: " + tmp.getTotalNum() + "\n")
-                        .append("Quantity: " + tmp.getQuantity() + "\n")
-                        .append("Unit Price: " + tmp.getUnitPrice() + "\n")
-                        .append("Discount (%): " + tmp.getDiscount() + "\n")
-                        .append("Sub Total: " + tmp.getSubTotal() + "\n")
-                        .append("Remark: " + tmp.getRemark() + "\n")
-                        .append("\n");
-            }
-            overviewTransactionString
-                    .append("Customer Name: " + customer.getFirstName() + " " + customer.getLastName() + "\n\n")
-                    .append(overviewProductTransactionString)
-                    .append("\n" + "Total: " + totalLabel.getText() + "\n")
-                    .append("Payment: " + transaction.getPayment() + "\n")
-                    .append("Store Credit: " + transaction.getStoreCredit() + "\n")
-                    .append("Payment Type: " + transaction.getPaymentType() + "\n")
-                    .append("Date: " + transaction.getDate() + "\n");
-
-            Alert alert = new Alert(Alert.AlertType.INFORMATION, overviewTransactionString.toString(), ButtonType.OK, ButtonType.CANCEL);
-            alert.setTitle("Transaction Overview");
-            alert.setHeaderText("Please confirm the following transaction");
-            alert.setResizable(true);
-            alert.getDialogPane().setPrefWidth(500);
-            Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-            alertStage.getIcons().add(new Image(this.getClass().getResourceAsStream(Constant.Image.appIconPath)));
-            alert.getDialogPane().getStylesheets().add(getClass().getResource("/css/theme.css").toExternalForm());
-
-            Optional<ButtonType> result = alert.showAndWait();
-            if(result.isPresent() && result.get() == ButtonType.OK){
-                commitTransactionToDatabase();
-                confirmedClicked = true;
-            }else{
-                transaction.getProductTransactionList().clear();
-                transaction.getPayinfo().clear();
-                transaction.setPayment(0);
-                transaction.setStoreCredit(0);
-            }
+    @FXML
+    public Transaction handleConfirmButton() throws IOException, SQLException {
+        if(!isTransactionValid()){
+            new AlertBuilder()
+                    .alertType(Alert.AlertType.ERROR)
+                    .alertTitle("Transaction is Invalid")
+                    .alertHeaderText("Please fix the following errors before proceed")
+                    .alertContentText(errorMsgBuilder.toString())
+                    .build()
+                    .showAndWait();
+            transaction.getProductTransactionList().clear();
+        }
+        else{
+            generateTransaction();
         }
         return transaction;
     }
@@ -510,6 +494,67 @@ public class GenerateCustomerTransactController {
     /*
     * Show customer details grid pane
     * */
+
+    private void generateTransaction() throws IOException, SQLException{
+        transaction.getProductTransactionList().addAll(productTransactionObservableList);
+        if(!paymentField.getText().trim().isEmpty()){
+            transaction.setPayment(Double.valueOf(paymentField.getText()));
+        }
+        if(storeCreditCheckBox.isSelected() && !storeCreditField.getText().trim().isEmpty()){
+            transaction.setStoreCredit(Double.valueOf(storeCreditField.getText()));
+        }
+        transaction.setGstTax(Double.valueOf(gstTaxLabel.getText()));
+        transaction.setPstTax(Double.valueOf(pstTaxLabel.getText()));
+        transaction.setTotal(Double.valueOf(totalLabel.getText()));
+        transaction.getPayinfo().add(new PaymentRecord(
+                transaction.getDate().toString(),
+                transaction.getPayment() + transaction.getStoreCredit(),
+                transaction.getPaymentType(),
+                (isDepositCheckBox.isSelected())? true : false));
+
+        StringBuffer overviewTransactionString = new StringBuffer();
+        StringBuffer overviewProductTransactionString = new StringBuffer();
+        for(ProductTransaction tmp: transaction.getProductTransactionList()){
+            overviewProductTransactionString
+                    .append("Product ID: " + tmp.getProductId() + "\n")
+                    .append("Total Num: " + tmp.getTotalNum() + "\n")
+                    .append("Quantity: " + tmp.getQuantity() + "\n")
+                    .append("Unit Price: " + tmp.getUnitPrice() + "\n")
+                    .append("Discount (%): " + tmp.getDiscount() + "\n")
+                    .append("Sub Total: " + tmp.getSubTotal() + "\n")
+                    .append("Remark: " + tmp.getRemark() + "\n")
+                    .append("\n");
+        }
+        overviewTransactionString
+                .append("Customer Name: " + customer.getFirstName() + " " + customer.getLastName() + "\n\n")
+                .append(overviewProductTransactionString)
+                .append("\n" + "Total: " + totalLabel.getText() + "\n")
+                .append("Payment: " + transaction.getPayment() + "\n")
+                .append("Store Credit: " + transaction.getStoreCredit() + "\n")
+                .append("Payment Type: " + transaction.getPaymentType() + "\n")
+                .append("Date: " + transaction.getDate() + "\n");
+
+        Alert alert = new Alert(Alert.AlertType.INFORMATION, overviewTransactionString.toString(), ButtonType.OK, ButtonType.CANCEL);
+        alert.setTitle("Transaction Overview");
+        alert.setHeaderText("Please confirm the following transaction");
+        alert.setResizable(true);
+        alert.getDialogPane().setPrefWidth(500);
+        Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+        alertStage.getIcons().add(new Image(this.getClass().getResourceAsStream(Constant.Image.appIconPath)));
+        alert.getDialogPane().getStylesheets().add(getClass().getResource("/css/theme.css").toExternalForm());
+
+        Optional<ButtonType> result = alert.showAndWait();
+        if(result.isPresent() && result.get() == ButtonType.OK){
+            commitTransactionToDatabase();
+            confirmedClicked = true;
+        }else{
+            transaction.getProductTransactionList().clear();
+            transaction.getPayinfo().clear();
+            transaction.setPayment(0);
+            transaction.setStoreCredit(0);
+        }
+    }
+
     private void showCustomerDetails(Customer customer){
         if(customer != null){
             addItemButton.setDisable(false);
@@ -632,6 +677,26 @@ public class GenerateCustomerTransactController {
                 errorMsgBuilder.append("Payment must be numbers!\n");
             }
         }
+        if(customer == null){
+            errorMsgBuilder.append("Customer is neither selected nor created!\n");
+        }
+        if(storeCreditCheckBox.isSelected()){
+            if(storeCreditField.getText().trim().isEmpty()){
+                errorMsgBuilder.append("Store Credit Field is empty, but it is selected!\n");
+            }else{
+                if(!isStoreCreditValid()){
+                    errorMsgBuilder.append("Either Store Credit exceeds customer's limit or Store Credit must be numbers!\n");
+                }
+            }
+        }
+        if(errorMsgBuilder.length() != 0){
+            return false;
+        }
+        return true;
+    }
+
+    private boolean isQuotationValid(){
+        errorMsgBuilder = new StringBuffer();
         if(customer == null){
             errorMsgBuilder.append("Customer is neither selected nor created!\n");
         }

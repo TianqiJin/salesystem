@@ -78,11 +78,15 @@ public class ProductOverviewController implements OverviewController{
     @FXML
     private TableColumn<Transaction, String> productTransactionInfoCol;
     @FXML
-    private TableColumn<Transaction, Number> productTransactionQuantityCol;
+    private TableColumn<Transaction, Number> productTransactionBoxCol;
+    @FXML
+    private TableColumn<Transaction, Number> productTransactionResidualTileCol;
     @FXML
     private TableColumn<Transaction, Number> productTransactionUnitPriceCol;
     @FXML
     private TableColumn<Transaction, Number> productTransactionSubtotalCol;
+    @FXML
+    private TableColumn<Transaction, Number> productTransactionTotalFeetCol;
     @FXML
     private ProgressBar progressBar;
 
@@ -117,13 +121,24 @@ public class ProductOverviewController implements OverviewController{
         productTransactionDateCol.setCellValueFactory(new PropertyValueFactory<>("date"));
         productTransactionStaffIdCol.setCellValueFactory(new PropertyValueFactory<>("staffId"));
         productTransactionInfoCol.setCellValueFactory(new PropertyValueFactory<>("info"));
-        productTransactionQuantityCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Transaction, Number>, ObservableValue<Number>>() {
+        productTransactionBoxCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Transaction, Number>, ObservableValue<Number>>() {
             @Override
             public ObservableValue<Number> call(TableColumn.CellDataFeatures<Transaction, Number> param) {
                 return new SimpleIntegerProperty(param.getValue().getProductTransactionList().get(0).getBoxNum().getBox());
             }
         });
-
+        productTransactionResidualTileCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Transaction, Number>, ObservableValue<Number>>() {
+            @Override
+            public ObservableValue<Number> call(TableColumn.CellDataFeatures<Transaction, Number> param) {
+                return new SimpleIntegerProperty(param.getValue().getProductTransactionList().get(0).getBoxNum().getResidualTile());
+            }
+        });
+        productTransactionTotalFeetCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Transaction, Number>, ObservableValue<Number>>() {
+            @Override
+            public ObservableValue<Number> call(TableColumn.CellDataFeatures<Transaction, Number> param) {
+                return new SimpleFloatProperty(param.getValue().getProductTransactionList().get(0).getQuantity());
+            }
+        });
         showProductDetail(null);
         productTable.getSelectionModel().selectedItemProperty().addListener(
                 new ChangeListener<Product>() {

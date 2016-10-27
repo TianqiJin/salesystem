@@ -95,8 +95,8 @@ public interface ObjectSerializer<E> {
             mapper.writeValue(userClassWriter, property.getUserClass());
             return new Object[]{
                     property.getProductWarnLimit(),
-                    property.getPstRate(),
                     property.getGstRate(),
+                    property.getPstRate(),
                     property.getGstNumber(),
                     userClassWriter.toString()
             };

@@ -29,6 +29,7 @@ import util.PropertiesSys;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -185,11 +186,15 @@ public class SaleSystem extends Application{
             loader.setLocation(getClass().getResource("/fxml/RootLayout.fxml"));
             rootLayout = loader.load();
             Scene scene = new Scene(rootLayout);
+            rootLayout.prefHeightProperty().bind(scene.heightProperty());
+            rootLayout.prefWidthProperty().bind(scene.widthProperty());
             primaryStage.setScene(scene);
             primaryStage.show();
             for (Node node: rootLayout.getChildren()){
                 if (node instanceof TabPane){
                     tabPane = (TabPane)node;
+                    tabPane.prefHeightProperty().bind(rootLayout.heightProperty());
+                    tabPane.prefWidthProperty().bind(rootLayout.widthProperty());
                 }else if(node instanceof MenuBar){
                     menuBar = (MenuBar)node;
                 }
@@ -400,9 +405,9 @@ public class SaleSystem extends Application{
 
             InvoiceDirectoryEditDialogController controller = loader.getController();
             controller.setMainClass(SaleSystem.this);
+            controller.loadDataFromDB();
             controller.setCustomer(customer);
             controller.setTransaction(transaction);
-            controller.setStaff(staff);
             controller.setDialogStage(dialogStage);
             dialogStage.showAndWait();
 

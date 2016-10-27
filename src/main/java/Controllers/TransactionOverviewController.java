@@ -26,11 +26,13 @@ import util.DateUtil;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 public class TransactionOverviewController implements OverviewController{
 
@@ -100,7 +102,7 @@ public class TransactionOverviewController implements OverviewController{
         transactionIdCol.setCellValueFactory(new PropertyValueFactory<>("transactionId"));
         dateCol.setCellValueFactory(new PropertyValueFactory<>("Date"));
         typeCol.setCellValueFactory(new PropertyValueFactory<>("Type"));
-        infoCol.setCellValueFactory(new PropertyValueFactory<>("Info"));
+//        infoCol.setCellValueFactory(new PropertyValueFactory<>("Info"));
         productIdCol.setCellValueFactory(new PropertyValueFactory<>("productId"));
         qtyCol.setCellValueFactory(new PropertyValueFactory<>("quantity"));
         unitPriceCol.setCellValueFactory(new PropertyValueFactory<>("unitPrice"));
@@ -132,12 +134,18 @@ public class TransactionOverviewController implements OverviewController{
                 if(param.getValue().getType().equals(Transaction.TransactionType.IN)){
                     return null;
                 }else{
-                    Customer customer = customerList.stream().filter(c -> c.getUserName().equals(param.getValue().getInfo())).findFirst().get();
-                    if(customer.getPhone() != null){
+
+                    Customer customer = customerList.stream().filter(c -> c.getUserName().equals(param.getValue().getInfo())).findFirst().orElse(null);
+                    if(customer != null && customer.getPhone() != null){
                         return new SimpleStringProperty(customer.getPhone());
                     }else{
                         return null;
                     }
+//                    if(customer.getPhone() != null){
+//                        return new SimpleStringProperty(customer.getPhone());
+//                    }else{
+//                        return null;
+//                    }
                 }
             }
         });
@@ -201,6 +209,14 @@ public class TransactionOverviewController implements OverviewController{
     }
 
     @FXML
+    private void handleCorrectionTransaction(){
+        Transaction selectedTransaction = transactionTable.getSelectionModel().getSelectedItem();
+        if(selectedTransaction != null){
+
+        }
+    }
+
+    @FXML
     private void handleDeleteTransaction() throws SQLException {
         Connection connection = DBConnect.getConnection();
         int selectIndex = transactionTable.getSelectionModel().getFocusedIndex();
@@ -213,39 +229,54 @@ public class TransactionOverviewController implements OverviewController{
                     productList = dbExecuteProduct.selectFromDatabase(DBQueries.SelectQueries.Product.SELECT_ALL_PRODUCT);
                     customerList = dbExecuteCustomer.selectFromDatabase(DBQueries.SelectQueries.Customer.SELECT_ALL_CUSTOMER);
                     Transaction deleteTransaction = transactionTable.getItems().get(selectIndex);
+                    List<String> deletedProductList = new ArrayList<>();
                     for(ProductTransaction tmp : deleteTransaction.getProductTransactionList()){
-                        float quantity;
-                        float currentQuality = productList
+                        Product tmpProduct = productList
                                 .stream()
                                 .filter(product -> product.getProductId().equals(tmp.getProductId()))
                                 .findFirst()
-                                .get()
-                                .getTotalNum();
-                        if(deleteTransaction.getType().equals(Transaction.TransactionType.OUT)){
-                            quantity = currentQuality + tmp.getQuantity();
-                            dbExecuteProduct.updateDatabase(DBQueries.UpdateQueries.Product.UPDATE_PRODUCT_QUANTITY,
-                                    quantity, tmp.getProductId());
+                                .orElse(null);
+                        if(tmpProduct != null){
+                            float quantity;
+                            float currentQuality = tmpProduct.getTotalNum();
+                            if(deleteTransaction.getType().equals(Transaction.TransactionType.OUT)){
+                                quantity = currentQuality + tmp.getQuantity();
+                                dbExecuteProduct.updateDatabase(DBQueries.UpdateQueries.Product.UPDATE_PRODUCT_QUANTITY,
+                                        quantity, tmp.getProductId());
+                            }else{
+                                quantity = currentQuality - tmp.getQuantity();
+                                dbExecuteProduct.updateDatabase(DBQueries.UpdateQueries.Product.UPDATE_PRODUCT_QUANTITY,
+                                        quantity, tmp.getProductId());
+                            }
                         }else{
-                            quantity = currentQuality - tmp.getQuantity();
-                            dbExecuteProduct.updateDatabase(DBQueries.UpdateQueries.Product.UPDATE_PRODUCT_QUANTITY,
-                                    quantity, tmp.getProductId());
+                            deletedProductList.add(tmp.getProductId());
                         }
+                    }
+                    if(!deletedProductList.isEmpty()){
+                        new AlertBuilder()
+                                .alertTitle("Missing Products")
+                                .alertHeaderText("The following products are no longer in database anymore")
+                                .alertContentText(Arrays.toString(deletedProductList.toArray()))
+                                .build()
+                                .showAndWait();
                     }
                     if(!deleteTransaction.getType().equals(Transaction.TransactionType.IN)){
                         Customer customer = customerList
                                 .stream()
                                 .filter(c -> c.getUserName().equals(deleteTransaction.getInfo()))
                                 .findFirst()
-                                .get();
-                        double storeCredit = 0;
-                        if(deleteTransaction.getType().equals(Transaction.TransactionType.OUT)){
-                            storeCredit = customer.getStoreCredit() + deleteTransaction.getStoreCredit();
-                        }else if(deleteTransaction.getType().equals(Transaction.TransactionType.RETURN)){
-                            storeCredit = customer.getStoreCredit() - deleteTransaction.getStoreCredit();
-                        }
-                        if(storeCredit > 0){
-                            dbExecuteCustomer.updateDatabase(DBQueries.UpdateQueries.Customer.UPDATE_CUSTOMER_STORE_CREDIT,
-                                    storeCredit, customer.getUserName());
+                                .orElse(null);
+                        if(customer != null){
+                            double storeCredit = 0;
+                            if(deleteTransaction.getType().equals(Transaction.TransactionType.OUT)){
+                                storeCredit = customer.getStoreCredit() + deleteTransaction.getStoreCredit();
+                            }else if(deleteTransaction.getType().equals(Transaction.TransactionType.RETURN)){
+                                storeCredit = customer.getStoreCredit() - deleteTransaction.getStoreCredit();
+                            }
+                            if(storeCredit > 0){
+                                dbExecuteCustomer.updateDatabase(DBQueries.UpdateQueries.Customer.UPDATE_CUSTOMER_STORE_CREDIT,
+                                        storeCredit, customer.getUserName());
+                            }
                         }
                     }
                     dbExecuteTransaction.deleteDatabase(DBQueries.DeleteQueries.Transaction.DELETE_FROM_TRANSACTION, deleteTransaction.getTransactionId());
@@ -406,6 +437,22 @@ public class TransactionOverviewController implements OverviewController{
         });
         customerListTask.setOnSucceeded(event -> {
             customerList = customerListTask.getValue();
+            infoCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Transaction, String>, ObservableValue<String>>() {
+                @Override
+                public ObservableValue<String> call(TableColumn.CellDataFeatures<Transaction, String> param) {
+                   if(param.getValue().getType().equals(Transaction.TransactionType.IN)){
+                       return new SimpleStringProperty(param.getValue().getInfo());
+                   }else{
+                       Optional<Customer> tmpCustomer = customerList.stream().filter(customer -> customer.getUserName().equals(param.getValue().getInfo()))
+                               .findFirst();
+                       if(tmpCustomer.isPresent()){
+                           return new SimpleStringProperty(tmpCustomer.get().getFirstName() + " " + tmpCustomer.get().getLastName());
+                       }else{
+                           return new SimpleStringProperty("");
+                       }
+                   }
+                }
+            });
         });
         customerListTask.setOnFailed(event -> {
             new AlertBuilder()
