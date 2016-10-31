@@ -32,6 +32,7 @@ public interface ObjectDeserializer<E> {
                     .storeCredit(rs.getDouble("StoreCredit"))
                     .company(rs.getString("Company"))
                     .pstNumber(rs.getString("PstNumber"))
+                    .deleted(rs.getBoolean("Deleted"))
                     .build();
 
             return customer;

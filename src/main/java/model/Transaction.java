@@ -294,7 +294,7 @@ public class Transaction{
 
 
     public enum TransactionType {
-        IN("in"), OUT("out"), RETURN("return");
+        IN("in"), OUT("out"), RETURN("return"), QUOTATION("quotation");
         private String type;
 
         private TransactionType(String type) {

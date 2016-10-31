@@ -154,10 +154,8 @@ public class GenerateCustomerTransactController {
                 (event.getTableView().getItems().get(event.getTablePosition().getRow())).setRemark(event.getNewValue().toString());
             }
         });
-//        remarkCol.setCellFactory(cellFactory);
 
         remarkCol.setCellFactory(TextFieldTableCell.forTableColumn());
-
         boxCol.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<Number>() {
             @Override
             public String toString(Number object) {
@@ -456,6 +454,7 @@ public class GenerateCustomerTransactController {
         }
         else{
             generateTransaction();
+            this.transaction.setType(Transaction.TransactionType.QUOTATION);
         }
         return transaction;
     }

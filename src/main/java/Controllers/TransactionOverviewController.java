@@ -102,7 +102,6 @@ public class TransactionOverviewController implements OverviewController{
         transactionIdCol.setCellValueFactory(new PropertyValueFactory<>("transactionId"));
         dateCol.setCellValueFactory(new PropertyValueFactory<>("Date"));
         typeCol.setCellValueFactory(new PropertyValueFactory<>("Type"));
-//        infoCol.setCellValueFactory(new PropertyValueFactory<>("Info"));
         productIdCol.setCellValueFactory(new PropertyValueFactory<>("productId"));
         qtyCol.setCellValueFactory(new PropertyValueFactory<>("quantity"));
         unitPriceCol.setCellValueFactory(new PropertyValueFactory<>("unitPrice"));
@@ -209,14 +208,6 @@ public class TransactionOverviewController implements OverviewController{
     }
 
     @FXML
-    private void handleCorrectionTransaction(){
-        Transaction selectedTransaction = transactionTable.getSelectionModel().getSelectedItem();
-        if(selectedTransaction != null){
-
-        }
-    }
-
-    @FXML
     private void handleDeleteTransaction() throws SQLException {
         Connection connection = DBConnect.getConnection();
         int selectIndex = transactionTable.getSelectionModel().getFocusedIndex();
@@ -239,7 +230,8 @@ public class TransactionOverviewController implements OverviewController{
                         if(tmpProduct != null){
                             float quantity;
                             float currentQuality = tmpProduct.getTotalNum();
-                            if(deleteTransaction.getType().equals(Transaction.TransactionType.OUT)){
+                            if(deleteTransaction.getType().equals(Transaction.TransactionType.OUT) ||
+                                    deleteTransaction.getType().equals(Transaction.TransactionType.QUOTATION)){
                                 quantity = currentQuality + tmp.getQuantity();
                                 dbExecuteProduct.updateDatabase(DBQueries.UpdateQueries.Product.UPDATE_PRODUCT_QUANTITY,
                                         quantity, tmp.getProductId());
@@ -305,16 +297,41 @@ public class TransactionOverviewController implements OverviewController{
     @FXML
     private void handleEditTransaction(){
         Transaction selectedTransaction = transactionTable.getSelectionModel().getSelectedItem();
+        boolean okClicked = false;
         if(selectedTransaction != null){
-            if(!selectedTransaction.getType().equals(Transaction.TransactionType.OUT)){
+            if(!selectedTransaction.getType().equals(Transaction.TransactionType.OUT) &&
+                    !selectedTransaction.getType().equals(Transaction.TransactionType.QUOTATION)){
                 new AlertBuilder()
                         .alertTitle("Edit Transaction Error")
                         .alertType(Alert.AlertType.ERROR)
-                        .alertContentText("You can only edit OUT transaction!\n")
+                        .alertContentText("You can only edit OUT/QUOTATION transaction!\n")
                         .build()
                         .showAndWait();
             }else{
-                boolean okClicked = saleSystem.showTransactionEditDialog(selectedTransaction);
+                if(selectedTransaction.getType().equals(Transaction.TransactionType.QUOTATION)){
+
+                    ButtonType quotationType = new ButtonType("Quotation");
+                    ButtonType outType = new ButtonType("OUT");
+                    ButtonType cancelType = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+                    Alert alert = new AlertBuilder()
+                            .alertType(Alert.AlertType.CONFIRMATION)
+                            .alertTitle("Edit Transaction")
+                            .alertHeaderText("Edit Transaction Confirmation Type")
+                            .alertContentText("Choose what type of transaction you want to create")
+                            .alertButton(quotationType, outType, cancelType)
+                            .build();
+
+                    Optional<ButtonType> result = alert.showAndWait();
+                    if(result.isPresent() && result.get() == quotationType){
+                        okClicked = saleSystem.showTransactionEditDialog(selectedTransaction, Transaction.TransactionType.QUOTATION);
+                    }else if(result.isPresent() && result.get() == outType){
+                        okClicked = saleSystem.showTransactionEditDialog(selectedTransaction, Transaction.TransactionType.OUT);
+                    }else{
+                        alert.close();
+                    }
+                }else{
+                    okClicked = saleSystem.showTransactionEditDialog(selectedTransaction, Transaction.TransactionType.OUT);
+                }
                 if(okClicked){
                     loadDataFromDB();
                 }

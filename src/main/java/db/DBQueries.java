@@ -44,8 +44,8 @@ public class DBQueries {
     public static class InsertQueries{
         public static class Customer{
             public final static String INSERT_INTO_CUSTOMER = "INSERT INTO customer "
-                    +"(UserName, FirstName, LastName, Street, PostalCode, City, Phone, Class, Email, StoreCredit, Company, PstNumber) "
-                    +"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    +"(UserName, FirstName, LastName, Street, PostalCode, City, Phone, Class, Email, StoreCredit, Company, PstNumber, Deleted) "
+                    +"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         }
         public static class Product{
             public final static String INSERT_INTO_PRODUCT = "INSERT INTO product "
@@ -66,7 +66,7 @@ public class DBQueries {
     public static class UpdateQueries{
         public static class Customer{
             public final static String UPDATE_CUSTOMER = "UPDATE customer "
-                    +"SET FirstName = ?, LastName = ?, Street = ?, PostalCode = ?, City = ?, Phone = ?, Class = ?, Email = ?, StoreCredit = ?, Company = ?, PstNumber = ? "
+                    +"SET FirstName = ?, LastName = ?, Street = ?, PostalCode = ?, City = ?, Phone = ?, Class = ?, Email = ?, StoreCredit = ?, Company = ?, PstNumber = ? , Deleted = ? "
                     +"WHERE UserName = ? ";
             public final static String UPDATE_CUSTOMER_STORE_CREDIT = "UPDATE customer "
                     +"SET StoreCredit = ? "
@@ -102,7 +102,10 @@ public class DBQueries {
         }
         public static class Transaction{
             public final static String UPDATE_TRANSACTION_OUT = "UPDATE transaction "
-                    +"SET Date = ?, Payment = ?, PaymentType = ?, StoreCredit = ?, payinfo = ? "
+                    +"SET Type = ?, Date = ?, Payment = ?, PaymentType = ?, StoreCredit = ?, payinfo = ? "
+                    +"WHERE TransactionID = ?";
+            public final static String UPDATE_TRANSACTION_QUOTATION = "UPDATE transaction "
+                    +"SET ProductInfo =?, Date = ?, Payment = ?, PaymentType = ?, StoreCredit = ?, payinfo = ? "
                     +"WHERE TransactionID = ?";
         }
     }

@@ -11,6 +11,7 @@ package util;
 import Constants.Constant;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import org.apache.log4j.Logger;
@@ -18,7 +19,7 @@ import org.apache.log4j.Logger;
 /**
  * Created by tjin on 2/9/2016.
  */
-public class AlertBuilder {
+public class AlertBuilder{
     private Logger logger = Logger.getLogger(AlertBuilder.class);
     private static Alert alert;
 
@@ -46,6 +47,10 @@ public class AlertBuilder {
     }
     public AlertBuilder alertTitle(String title){
         alert.setTitle(title);
+        return this;
+    }
+    public AlertBuilder alertButton(ButtonType...buttonTypes){
+        alert.getButtonTypes().setAll(buttonTypes);
         return this;
     }
     public Alert build(){

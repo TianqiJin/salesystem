@@ -1,7 +1,9 @@
 package Controllers;
 
 import db.DBExecuteCustomer;
+import db.DBExecuteTransaction;
 import db.DBQueries;
+import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -14,14 +16,18 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 import model.Customer;
 import MainClass.SaleSystem;
+import model.Transaction;
 import org.apache.log4j.Logger;
+import util.AlertBuilder;
 
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 /**
  * Created by tjin on 11/29/2015.
@@ -30,7 +36,10 @@ public class CustomerOverviewController implements OverviewController{
 
     private static Logger logger= Logger.getLogger(CustomerOverviewController.class);
     private DBExecuteCustomer dbExecute;
+    private DBExecuteTransaction dbExecuteTransaction;
     private ObservableList<Customer> customerList;
+    private List<Transaction> transactionList;
+    private List<Transaction> customerTransactionList;
     private SaleSystem saleSystem;
     private Executor executor;
     private Stage dialogStage;
@@ -69,6 +78,22 @@ public class CustomerOverviewController implements OverviewController{
     private Label pstNumberLabel;
     @FXML
     private ProgressBar progressBar;
+    @FXML
+    private TableView<Transaction> transactionTableView;
+    @FXML
+    private TableColumn<Transaction, Integer> transactionIdTableCol;
+    @FXML
+    private TableColumn<Transaction, String> transactionTypeTableCol;
+    @FXML
+    private TableColumn<Transaction, String> transactionPaymentTypeTableCol;
+    @FXML
+    private TableColumn<Transaction, Double> transactionTotalTableCol;
+    @FXML
+    private TableColumn<Transaction, Integer> transactionStaffTableCol;
+    @FXML
+    private TableColumn<Transaction, LocalDate> transactionDateTableCol;
+    @FXML
+    private Button deleteButton;
 
     @FXML
     private void initialize(){
@@ -83,6 +108,12 @@ public class CustomerOverviewController implements OverviewController{
                 }
             }
         );
+        transactionDateTableCol.setCellValueFactory(new PropertyValueFactory<Transaction, LocalDate>("date"));
+        transactionTypeTableCol.setCellValueFactory(new PropertyValueFactory<Transaction, String>("type"));
+        transactionPaymentTypeTableCol.setCellValueFactory(new PropertyValueFactory<Transaction, String>("paymentType"));
+        transactionTotalTableCol.setCellValueFactory(new PropertyValueFactory<Transaction, Double>("total"));
+        transactionStaffTableCol.setCellValueFactory(new PropertyValueFactory<Transaction, Integer>("staffId"));
+        transactionIdTableCol.setCellValueFactory(new PropertyValueFactory<Transaction, Integer>("transactionId"));
         executor = Executors.newCachedThreadPool(r -> {
             Thread t = new Thread(r);
             t.setDaemon(true);
@@ -94,25 +125,34 @@ public class CustomerOverviewController implements OverviewController{
     private void handleDeleteCustomer(){
         int selectedIndex = customerTable.getSelectionModel().getSelectedIndex();
         if(selectedIndex >= 0){
-            String tempFirstName = customerTable.getItems().get(selectedIndex).getFirstName();
-            String tempLastName = customerTable.getItems().get(selectedIndex).getLastName();
-            Alert alertConfirm = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete this customer?");
+            Customer deletedCustomer = customerTable.getItems().get(selectedIndex);
+            String tempFirstName = deletedCustomer.getFirstName();
+            String tempLastName = deletedCustomer.getLastName();
+            Alert alertConfirm = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete customer "
+                    +tempFirstName + " " + tempLastName + "?");
             Optional<ButtonType> result =  alertConfirm.showAndWait();
             boolean flag = true;
             if(result.isPresent() && result.get() == ButtonType.OK){
                 try {
-                    dbExecute.deleteDatabase(DBQueries.DeleteQueries.Customer.DELETE_FROM_CUSTOMER,
-                            customerTable.getItems().get(selectedIndex).getUserName());
+                    deletedCustomer.setDeleted(true);
+                    dbExecute.deleteDatabase(DBQueries.UpdateQueries.Customer.UPDATE_CUSTOMER,
+                            deletedCustomer.getAllPropertiesForUpdate());
                 } catch (SQLException e) {
                     logger.error(e.getMessage());
                     flag = false;
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle("Delete Customer Error");
-                    alert.setHeaderText(null);
-                    alert.setContentText("Error when deleting customer "+tempFirstName+" "+tempLastName);
-                    alert.showAndWait();
+                    deletedCustomer.setDeleted(false);
+                    new AlertBuilder().alertType(Alert.AlertType.ERROR)
+                            .alertTitle("Delete Error")
+                            .alertContentText("Error when deleting customer "+tempFirstName+" "+tempLastName)
+                            .build()
+                            .showAndWait();
                 }finally {
                     if(flag){
+                        new AlertBuilder()
+                                .alertTitle("Delete Successful")
+                                .alertContentText("Customer" + tempFirstName + " " + tempLastName +" is successfully deleted!")
+                                .build()
+                                .showAndWait();
                         customerTable.getItems().remove(selectedIndex);
                     }
                 }
@@ -184,6 +224,7 @@ public class CustomerOverviewController implements OverviewController{
 
     public CustomerOverviewController(){
         dbExecute = new DBExecuteCustomer();
+        dbExecuteTransaction = new DBExecuteTransaction();
     }
 
     public void loadDataFromDB(){
@@ -198,12 +239,34 @@ public class CustomerOverviewController implements OverviewController{
                 return tmpCustomerList;
             }
         };
-        progressBar.progressProperty().bind(customerListTask.progressProperty());
+        Task<List<Transaction>> transactionListTask = new Task<List<Transaction>>() {
+            @Override
+            protected List<Transaction> call() throws Exception {
+                List<Transaction> tmpTransactionList = new ArrayList<>();
+                for(int i = 0; i < 1; i++){
+                    tmpTransactionList = dbExecuteTransaction.selectFromDatabase(DBQueries.SelectQueries.Transaction.SELECT_ALL_TRANSACTION);
+                    updateProgress(i+1, 1);
+                }
+                return tmpTransactionList;
+            }
+        };
+
+        progressBar.progressProperty().bind(transactionListTask.progressProperty());
+        transactionListTask.setOnSucceeded(event -> {
+            transactionList = transactionListTask.getValue();
+            progressBar.progressProperty().unbind();
+            progressBar.progressProperty().bind(customerListTask.progressProperty());
+            executor.execute(customerListTask);
+        });
+        transactionListTask.setOnFailed(event -> {
+            Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to grab data from database!\n" + event.toString());
+            alert.setTitle("Database Error");
+            alert.showAndWait();
+        });
         customerListTask.setOnSucceeded(event -> {
             customerList = FXCollections.observableArrayList(customerListTask.getValue());
             customerTable.setItems(customerList);
             customerTable.getSelectionModel().selectFirst();
-            showCustomerDetail(customerTable.getSelectionModel().getSelectedItem());
             FilteredList<Customer> filteredData = new FilteredList<Customer>(customerList,p->true);
             filterField.textProperty().addListener((observable,oldVal,newVal)->{
                 filteredData.setPredicate(customer -> {
@@ -229,7 +292,7 @@ public class CustomerOverviewController implements OverviewController{
             alert.setTitle("Database Error");
             alert.showAndWait();
         });
-        executor.execute(customerListTask);
+        executor.execute(transactionListTask);
     }
 
     @Override
@@ -243,7 +306,7 @@ public class CustomerOverviewController implements OverviewController{
         this.dialogStage = stage;
     }
 
-    public void showCustomerDetail(Customer customer){
+    private void showCustomerDetail(Customer customer){
         if(customer != null){
             firstNameLabel.setText(customer.getFirstName());
             lastNameLabel.setText(customer.getLastName());
@@ -256,6 +319,7 @@ public class CustomerOverviewController implements OverviewController{
             storeCreditLabel.setText(String.valueOf(customer.getStoreCredit()));
             companyLabel.setText(customer.getCompany());
             pstNumberLabel.setText(customer.getPstNumber());
+            showCustomerTransactionDetail(customer);
         }
         else{
             firstNameLabel.setText("");
@@ -269,6 +333,16 @@ public class CustomerOverviewController implements OverviewController{
             storeCreditLabel.setText("");
             companyLabel.setText("");
             pstNumberLabel.setText("");
+        }
+    }
+
+    private void showCustomerTransactionDetail(Customer customer){
+        customerTransactionList = transactionList.stream().filter(t -> t.getInfo().equals(customer.getUserName())).collect(Collectors.toList());
+        transactionTableView.setItems(FXCollections.observableArrayList(customerTransactionList));
+        if(customerTransactionList == null || customerTransactionList.size() == 0){
+            deleteButton.setDisable(false);
+        }else{
+            deleteButton.setDisable(true);
         }
     }
 }
