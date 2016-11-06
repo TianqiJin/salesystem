@@ -230,7 +230,7 @@ public class SaleSystem extends Application{
         }
     }
 
-    public boolean showTransactionEditDialog(Transaction transaction){
+    public boolean showTransactionEditDialog(Transaction transaction, Transaction.TransactionType type){
         try{
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(SaleSystem.class.getResource("/fxml/EditTransactionDialog.fxml"));
@@ -246,7 +246,9 @@ public class SaleSystem extends Application{
 
             TransactionEditDialogController controller = loader.getController();
             controller.setDialogStage(dialogStage);
-            controller.setSelectedTransaction(transaction);
+            controller.setMainClass(this);
+            controller.setSelectedTransaction(transaction, type);
+            controller.loadDataFromDB();
             dialogStage.showAndWait();
             return controller.isConfirmedClicked();
         }catch (IOException e){

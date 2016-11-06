@@ -74,14 +74,58 @@ public interface ObjectSerializer<E> {
         @Override
         public Object[] serialize(Transaction transaction) throws SQLException, IOException {
             StringWriter payInfoWriter = new StringWriter();
+            StringWriter typeWriter = new StringWriter();
+            StringWriter productInfoWriter = new StringWriter();
             ObjectMapper mapper = new ObjectMapper();
             mapper.writeValue(payInfoWriter, transaction.getPayinfo());
+            mapper.writeValue(productInfoWriter, transaction.getProductTransactionList());
+            JsonFactory jsonfactory = new JsonFactory();
+            String typeJson = null;
+            try {
+                JsonGenerator jsonGenerator = jsonfactory.createJsonGenerator(typeWriter);
+                jsonGenerator.writeStartObject();
+                jsonGenerator.writeFieldName("type");
+                jsonGenerator.writeString(transaction.getType().toString());
+                jsonGenerator.writeFieldName("info");
+                jsonGenerator.writeString(transaction.getInfo());
+                jsonGenerator.writeEndObject();
+                jsonGenerator.close();
+                typeJson = typeWriter.toString();
+            } catch (IOException e) {
+                logger.error(e.getMessage());
+                e.printStackTrace();
+            }
             return new Object[]{
+                    productInfoWriter.toString(),
+                    typeJson,
                     transaction.getDate(),
                     transaction.getPayment(),
                     transaction.getPaymentType(),
                     transaction.getStoreCredit(),
                     payInfoWriter.toString(),
+                    transaction.getTransactionId(),
+            };
+        }
+    };
+
+    public static final ObjectSerializer<Transaction> TRANSACTION_QUOTATION_SERIALIZER_UPDATE = new ObjectSerializer<Transaction>() {
+        @Override
+        public Object[] serialize(Transaction transaction) throws SQLException, IOException {
+            StringWriter payInfoWriter = new StringWriter();
+            StringWriter productInfoWriter = new StringWriter();
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.writeValue(payInfoWriter, transaction.getPayinfo());
+            mapper.writeValue(productInfoWriter, transaction.getProductTransactionList());
+            return new Object[]{
+                    productInfoWriter.toString(),
+                    transaction.getDate(),
+                    transaction.getPayment(),
+                    transaction.getPaymentType(),
+                    transaction.getStoreCredit(),
+                    payInfoWriter.toString(),
+                    transaction.getTotal(),
+                    transaction.getGstTax(),
+                    transaction.getPstTax(),
                     transaction.getTransactionId(),
             };
         }

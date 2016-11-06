@@ -10,18 +10,20 @@ import java.util.*;
  */
 public class Customer {
 
-    private final StringProperty userName;
-    private final StringProperty firstName;
-    private final StringProperty lastName;
-    private final StringProperty street;
-    private final StringProperty postalCode;
-    private final StringProperty city;
-    private final StringProperty phone;
-    private final StringProperty userClass;
-    private final StringProperty email;
-    private final DoubleProperty storeCredit;
-    private final StringProperty company;
-    private final StringProperty pstNumber;
+    private StringProperty userName;
+    private StringProperty firstName;
+    private StringProperty lastName;
+    private StringProperty street;
+    private StringProperty postalCode;
+    private StringProperty city;
+    private StringProperty phone;
+    private StringProperty userClass;
+    private StringProperty email;
+    private DoubleProperty storeCredit;
+    private StringProperty company;
+    private StringProperty pstNumber;
+    private BooleanProperty deleted;
+
     private String customerInfo;
     private String customerPhoneInfo;
 
@@ -38,6 +40,7 @@ public class Customer {
         this.storeCredit = new SimpleDoubleProperty(builder.storeCredit);
         this.company = new SimpleStringProperty(builder.company);
         this.pstNumber = new SimpleStringProperty(builder.pstNumber);
+        this.deleted = new SimpleBooleanProperty(builder.deleted);
     }
 
     public static class CustomerBuilder{
@@ -53,6 +56,7 @@ public class Customer {
         private double storeCredit = 0.0;
         private String company;
         private String pstNumber;
+        private boolean deleted = false;
 
         public CustomerBuilder userName(String userName){
             this.userName = userName;
@@ -100,6 +104,10 @@ public class Customer {
         }
         public CustomerBuilder pstNumber(String pstNumber){
             this.pstNumber = pstNumber;
+            return this;
+        }
+        public CustomerBuilder deleted(boolean deleted){
+            this.deleted = deleted;
             return this;
         }
         public Customer build(){
@@ -247,6 +255,18 @@ public class Customer {
         this.pstNumber.set(pstNumber);
     }
 
+    public boolean isDeleted() {
+        return deleted.get();
+    }
+
+    public BooleanProperty deletedProperty() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted.set(deleted);
+    }
+
     private String generateUserName(){
         SimpleDateFormat sdf = new SimpleDateFormat("HHmmss");
         String tmpUserName = getFirstName().substring(0,1) + getLastName() +
@@ -256,12 +276,12 @@ public class Customer {
 
     public Object[] getAllProperties(){
         return (new Object[]{getUserName(), getFirstName(), getLastName(), getStreet(), getPostalCode(), getCity(),
-            getPhone(), getUserClass(), getEmail(), getStoreCredit(), getCompany(), getPstNumber()});
+            getPhone(), getUserClass(), getEmail(), getStoreCredit(), getCompany(), getPstNumber(), isDeleted()});
     }
 
     public Object[] getAllPropertiesForUpdate(){
         return (new Object[]{getFirstName(), getLastName(), getStreet(), getPostalCode(), getCity(),
-                getPhone(), getUserClass(), getEmail(), getStoreCredit(), getCompany(), getPstNumber(), getUserName()});
+                getPhone(), getUserClass(), getEmail(), getStoreCredit(), getCompany(), getPstNumber(), isDeleted(), getUserName()});
     }
 
     public void constructCustomerInfo(){

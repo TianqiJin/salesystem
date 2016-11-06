@@ -21,24 +21,63 @@ import java.util.TreeMap;
  */
 public class InvoiceData {
 
+    public class AdvancedProfileImp extends BasicProfileImp{
+        protected String sellerPhoneNumber;
+        protected String buyerPhoneNumber;
+        protected String buyerCompanyName;
+        protected String sellerCompanyName;
+
+        public String getSellerPhoneNumber() {
+            return sellerPhoneNumber;
+        }
+
+        public void setSellerPhoneNumber(String sellerPhoneNumber) {
+            this.sellerPhoneNumber = sellerPhoneNumber;
+        }
+
+        public String getBuyerPhoneNumber() {
+            return buyerPhoneNumber;
+        }
+
+        public void setBuyerPhoneNumber(String buyerPhoneNumber) {
+            this.buyerPhoneNumber = buyerPhoneNumber;
+        }
+
+        public String getBuyerCompanyName() {
+            return buyerCompanyName;
+        }
+
+        public void setBuyerCompanyName(String buyerCompanyName) {
+            this.buyerCompanyName = buyerCompanyName;
+        }
+
+        public String getSellerCompanyName() {
+            return sellerCompanyName;
+        }
+
+        public void setSellerCompanyName(String sellerCompanyName) {
+            this.sellerCompanyName = sellerCompanyName;
+        }
+    }
+
     public InvoiceData() {
     }
 
-    public BasicProfile createBasicProfileData(Invoice invoice) {
-        BasicProfileImp profileImp = new BasicProfileImp();
+    public AdvancedProfileImp createBasicProfileData(Invoice invoice) {
+        AdvancedProfileImp profileImp = new AdvancedProfileImp();
         importData(profileImp, invoice);
         importBasicData(profileImp, invoice);
         return profileImp;
     }
 
-    public ComfortProfile createComfortProfileData(Invoice invoice) {
-        ComfortProfileImp profileImp = new ComfortProfileImp();
-        importData(profileImp, invoice);
-        importComfortData(profileImp, invoice);
-        return profileImp;
-    }
+//    public ComfortProfile createComfortProfileData(Invoice invoice) {
+//        ComfortProfileImp profileImp = new ComfortProfileImp();
+//        importData(profileImp, invoice);
+//        importComfortData(profileImp, invoice);
+//        return profileImp;
+//    }
 
-    public void importData(BasicProfileImp profileImp, Invoice invoice) {
+    public void importData(AdvancedProfileImp profileImp, Invoice invoice) {
         profileImp.setTest(true);
         profileImp.setId(String.format("I/%05d", invoice.getId()));
         profileImp.setName("INVOICE");
@@ -50,6 +89,7 @@ public class InvoiceData {
         profileImp.setSellerPostcode(staff.getPostalCode());
         profileImp.setSellerCityName(staff.getCity());
         profileImp.setSellerCountryID(Constant.Invoice.companyCountry);
+        profileImp.setSellerPhoneNumber(staff.getPhone());
         Customer customer = invoice.getCustomer();
         Address address = invoice.getAddress();
         profileImp.setBuyerName(String.format("%s, %s", customer.getLastName(), customer.getFirstName()));
@@ -57,6 +97,8 @@ public class InvoiceData {
         profileImp.setBuyerCityName(address.getCity());
         profileImp.setBuyerPostcode(address.getPostalCode());
         profileImp.setBuyerCountryID(Constant.Invoice.companyCountry);
+        profileImp.setBuyerCompanyName(customer.getCompany());
+        profileImp.setBuyerPhoneNumber(customer.getPhone());
         profileImp.setPaymentReference(String.format("%09d", invoice.getId()));
         profileImp.setInvoiceCurrencyCode("CAD");
     }
