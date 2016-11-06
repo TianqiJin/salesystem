@@ -75,8 +75,10 @@ public interface ObjectSerializer<E> {
         public Object[] serialize(Transaction transaction) throws SQLException, IOException {
             StringWriter payInfoWriter = new StringWriter();
             StringWriter typeWriter = new StringWriter();
+            StringWriter productInfoWriter = new StringWriter();
             ObjectMapper mapper = new ObjectMapper();
             mapper.writeValue(payInfoWriter, transaction.getPayinfo());
+            mapper.writeValue(productInfoWriter, transaction.getProductTransactionList());
             JsonFactory jsonfactory = new JsonFactory();
             String typeJson = null;
             try {
@@ -94,6 +96,7 @@ public interface ObjectSerializer<E> {
                 e.printStackTrace();
             }
             return new Object[]{
+                    productInfoWriter.toString(),
                     typeJson,
                     transaction.getDate(),
                     transaction.getPayment(),
@@ -120,6 +123,9 @@ public interface ObjectSerializer<E> {
                     transaction.getPaymentType(),
                     transaction.getStoreCredit(),
                     payInfoWriter.toString(),
+                    transaction.getTotal(),
+                    transaction.getGstTax(),
+                    transaction.getPstTax(),
                     transaction.getTransactionId(),
             };
         }

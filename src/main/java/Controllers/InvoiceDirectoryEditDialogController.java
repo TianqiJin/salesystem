@@ -164,6 +164,14 @@ public class InvoiceDirectoryEditDialogController {
             deliveryInvoiceCheckbox.setSelected(false);
             deliveryInvoiceCheckbox.setDisable(true);
             quotationInvoiceCheckBox.setDisable(true);
+        }else if(this.transaction.getType().equals(Transaction.TransactionType.QUOTATION)){
+            deliveryInvoiceCheckbox.setSelected(false);
+            deliveryInvoiceCheckbox.setDisable(true);
+            invoiceCheckBox.setSelected(false);
+            invoiceCheckBox.setDisable(true);
+            quotationInvoiceCheckBox.setSelected(true);
+        }else{
+            quotationInvoiceCheckBox.setDisable(true);
         }
     }
 

@@ -343,10 +343,11 @@ public class TransactionOverviewController implements OverviewController{
     private void handleInvoice(){
         Transaction selectedTransaction = transactionTable.getSelectionModel().getSelectedItem();
         if(selectedTransaction != null){
-            if(!selectedTransaction.getType().equals(Transaction.TransactionType.OUT) && !selectedTransaction.getType().equals(Transaction.TransactionType.RETURN)){
+            if(!selectedTransaction.getType().equals(Transaction.TransactionType.OUT) && !selectedTransaction.getType().equals(Transaction.TransactionType.RETURN)
+                    && !selectedTransaction.getType().equals(Transaction.TransactionType.QUOTATION)){
                 new AlertBuilder()
                         .alertType(Alert.AlertType.ERROR)
-                        .alertContentText("Please select OUT/RETURN transaction to generate Invoice!\n")
+                        .alertContentText("Please select OUT/QUOTATION/RETURN transaction to generate Invoice!\n")
                         .alertTitle("Invoice Generation Error")
                         .build()
                         .showAndWait();

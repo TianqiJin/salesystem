@@ -26,6 +26,7 @@ import javafx.util.Callback;
 import javafx.util.StringConverter;
 import model.*;
 import org.apache.log4j.Logger;
+import org.omg.SendingContext.RunTime;
 import util.AlertBuilder;
 import util.AutoCompleteComboBoxListener;
 import util.ButtonCell;
@@ -80,6 +81,12 @@ public class TransactionEditDialogController {
     @FXML
     private TableColumn<ProductTransaction, BigDecimal> subTotalCol;
     @FXML
+    private TableColumn<ProductTransaction, Number> boxCol;
+    @FXML
+    private TableColumn<ProductTransaction, Number> residualTileCol;
+    @FXML
+    private TableColumn<ProductTransaction, String> remarkCol;
+    @FXML
     private TableColumn deleteCol;
 
     @FXML
@@ -101,6 +108,11 @@ public class TransactionEditDialogController {
     private Label pstLabel;
     @FXML
     private Label gstLabel;
+    @FXML
+    private Label subtotalLabel;
+    @FXML
+    private Label transactionDiscountLabel;
+
 
     @FXML
     private TextField paymentField;
@@ -130,61 +142,7 @@ public class TransactionEditDialogController {
         productIdCol.setCellValueFactory(new PropertyValueFactory<>("productId"));
         unitPriceCol.setCellValueFactory(new PropertyValueFactory<>("unitPrice"));
         qtyCol.setCellValueFactory(new PropertyValueFactory<ProductTransaction, Float>("quantity"));
-        qtyCol.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<Float>() {
-            @Override
-            public String toString(Float object) {
-                return String.valueOf(object);
-            }
-
-            @Override
-            public Float fromString(String string) {
-                return Float.valueOf(string);
-            }
-        }));
-
-        qtyCol.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ProductTransaction, Float>>() {
-            @Override
-            public void handle(TableColumn.CellEditEvent<ProductTransaction, Float> event) {
-                (event.getTableView().getItems().get(event.getTablePosition().getRow()))
-                        .setQuantity(event.getNewValue());
-                showPaymentDetails();
-                refreshTable();
-            }
-        });
         discountCol.setCellValueFactory(new PropertyValueFactory<ProductTransaction, Integer>("discount"));
-        discountCol.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<Integer>(){
-            @Override
-            public Integer fromString(String string) {
-                return Integer.valueOf(string);
-            }
-            public String toString(Integer integer){
-                return String.valueOf(integer);
-            }
-        }));
-        discountCol.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ProductTransaction, Integer>>() {
-            @Override
-            public void handle(TableColumn.CellEditEvent<ProductTransaction, Integer> event) {
-                if(event.getNewValue() > returnDiscount()){
-                    Optional<ButtonType> result = new AlertBuilder().alertTitle("Discount Error")
-                            .alertType(Alert.AlertType.CONFIRMATION)
-                            .alertContentText("User Class is " + customer.getUserClass() + ", but the given discount is " + event.getNewValue() + "\n"
-                                    + "Press OK to proceed with this discount. Press Cancel to discard the change")
-                            .build()
-                            .showAndWait();
-                    if(result.get() == ButtonType.OK){
-                        (event.getTableView().getItems().get(event.getTablePosition().getRow()))
-                                .setDiscount(event.getNewValue());
-                        showPaymentDetails();
-                    }
-                }else{
-                    (event.getTableView().getItems().get(event.getTablePosition().getRow()))
-                            .setDiscount(event.getNewValue());
-                    showPaymentDetails();
-                }
-                refreshTable();
-            }
-        });
-
         subTotalCol.setCellValueFactory(new PropertyValueFactory<>("subTotal"));
         paymentField.textProperty().addListener(new ChangeListener<String>() {
             @Override
@@ -233,6 +191,62 @@ public class TransactionEditDialogController {
                     }
 
                 });
+        remarkCol.setCellValueFactory(new PropertyValueFactory<>("remark"));
+        remarkCol.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ProductTransaction, String>>() {
+            @Override
+            public void handle(TableColumn.CellEditEvent<ProductTransaction, String> event) {
+                (event.getTableView().getItems().get(event.getTablePosition().getRow())).setRemark(event.getNewValue().toString());
+            }
+        });
+
+        remarkCol.setCellFactory(TextFieldTableCell.forTableColumn());
+        boxCol.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<Number>() {
+            @Override
+            public String toString(Number object) {
+                return String.valueOf(object);
+            }
+
+            @Override
+            public Number fromString(String string) {
+                return Integer.valueOf(string);
+            }
+        }));
+        boxCol.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ProductTransaction, Number>>() {
+            @Override
+            public void handle(TableColumn.CellEditEvent<ProductTransaction, Number> event) {
+                (event.getTableView().getItems().get(event.getTablePosition().getRow())).getBoxNum().setBox(event.getNewValue().intValue());
+            }
+        });
+
+        boxCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ProductTransaction, Number>, ObservableValue<Number>>() {
+            @Override
+            public ObservableValue<Number> call(TableColumn.CellDataFeatures<ProductTransaction, Number> param) {
+                return new SimpleIntegerProperty(param.getValue().getBoxNum().getBox());
+            }
+        });
+        residualTileCol.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<Number>() {
+            @Override
+            public String toString(Number object) {
+                return String.valueOf(object);
+            }
+
+            @Override
+            public Number fromString(String string) {
+                return Integer.valueOf(string);
+            }
+        }));
+        residualTileCol.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ProductTransaction, Number>>() {
+            @Override
+            public void handle(TableColumn.CellEditEvent<ProductTransaction, Number> event) {
+                (event.getTableView().getItems().get(event.getTablePosition().getRow())).getBoxNum().setResidualTile(event.getNewValue().intValue());
+            }
+        });
+        residualTileCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ProductTransaction, Number>, ObservableValue<Number>>() {
+            @Override
+            public ObservableValue<Number> call(TableColumn.CellDataFeatures<ProductTransaction, Number> param) {
+                return new SimpleIntegerProperty(param.getValue().getBoxNum().getResidualTile());
+            }
+        });
         new AutoCompleteComboBoxListener<>(productComboBox);
         executor = Executors.newCachedThreadPool(r -> {
             Thread t = new Thread(r);
@@ -358,8 +372,10 @@ public class TransactionEditDialogController {
             }
             residual = total.subtract(residual).setScale(2, BigDecimal.ROUND_HALF_EVEN);
             itemsCountLabel.setText(String.valueOf(this.productTransactionObservableList.size()));
+            subtotalLabel.setText(subTotalBeforediscount.toString());
             pstLabel.setText(pstTax.toString());
             gstLabel.setText(gstTax.toString());
+            transactionDiscountLabel.setText(paymentDiscount.toString());
             totalLabel.setText(total.toString());
             residualLabel.setText(residual.toString());
             showBalanceDetails();
@@ -372,6 +388,8 @@ public class TransactionEditDialogController {
             totalLabel.setText("");
             residualLabel.setText("");
             balanceLabel.setText("");
+            transactionDiscountLabel.setText("");
+            subtotalLabel.setText("");
         }
     }
 
@@ -446,9 +464,62 @@ public class TransactionEditDialogController {
             qtyCol.setEditable(false);
             discountCol.setEditable(false);
             quotationButton.setDisable(true);
-            BooleanBinding confimButtonBinding = paymentField.textProperty().isEmpty().or(Bindings.size(transactionTableView.getItems()).lessThan(1));
-            confirmButton.disableProperty().bind(confimButtonBinding);
+            BooleanBinding confirmButtonBinding = paymentField.textProperty().isEmpty().or(Bindings.size(transactionTableView.getItems()).lessThan(1));
+            confirmButton.disableProperty().bind(confirmButtonBinding);
         }else{
+            qtyCol.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<Float>() {
+                @Override
+                public String toString(Float object) {
+                    return String.valueOf(object);
+                }
+
+                @Override
+                public Float fromString(String string) {
+                    return Float.valueOf(string);
+                }
+            }));
+
+            qtyCol.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ProductTransaction, Float>>() {
+                @Override
+                public void handle(TableColumn.CellEditEvent<ProductTransaction, Float> event) {
+                    (event.getTableView().getItems().get(event.getTablePosition().getRow()))
+                            .setQuantity(event.getNewValue());
+                    showPaymentDetails();
+                    refreshTable();
+                }
+            });
+            discountCol.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<Integer>(){
+                @Override
+                public Integer fromString(String string) {
+                    return Integer.valueOf(string);
+                }
+                public String toString(Integer integer){
+                    return String.valueOf(integer);
+                }
+            }));
+            discountCol.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ProductTransaction, Integer>>() {
+                @Override
+                public void handle(TableColumn.CellEditEvent<ProductTransaction, Integer> event) {
+                    if(event.getNewValue() > returnDiscount()){
+                        Optional<ButtonType> result = new AlertBuilder().alertTitle("Discount Error")
+                                .alertType(Alert.AlertType.CONFIRMATION)
+                                .alertContentText("User Class is " + customer.getUserClass() + ", but the given discount is " + event.getNewValue() + "\n"
+                                        + "Press OK to proceed with this discount. Press Cancel to discard the change")
+                                .build()
+                                .showAndWait();
+                        if(result.get() == ButtonType.OK){
+                            (event.getTableView().getItems().get(event.getTablePosition().getRow()))
+                                    .setDiscount(event.getNewValue());
+                            showPaymentDetails();
+                        }
+                    }else{
+                        (event.getTableView().getItems().get(event.getTablePosition().getRow()))
+                                .setDiscount(event.getNewValue());
+                        showPaymentDetails();
+                    }
+                    refreshTable();
+                }
+            });
             confirmButton.setDisable(true);
         }
     }
@@ -562,6 +633,7 @@ public class TransactionEditDialogController {
                 return dbExecuteProduct.selectFromDatabase(DBQueries.SelectQueries.Product.SELECT_ALL_PRODUCT);
             }
         };
+
         Task<Void> commitTask = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
@@ -591,8 +663,14 @@ public class TransactionEditDialogController {
                 } catch (IOException e) {
                     logger.error(e.getMessage() + "\nThe full stack trace is: ", e);
                 }
-                dbExecuteTransaction.updateDatabase(DBQueries.UpdateQueries.Transaction.UPDATE_TRANSACTION_QUOTATION, objects);
-                return null;
+                int row = dbExecuteTransaction.updateDatabase(DBQueries.UpdateQueries.Transaction.UPDATE_TRANSACTION_QUOTATION, objects);
+                if(row == 0){
+                    connection.rollback();
+                    throw new RuntimeException("Error occurred when updating database. This might be caused by conflict actions on the transaction");
+                }
+                connection.commit();
+                return  null;
+
             }
         };
         productListTask.setOnSucceeded(event -> {
@@ -613,6 +691,9 @@ public class TransactionEditDialogController {
             });
             executor.execute(commitTask);
         });
+
+        //What about two process wanna manipulate the same quotation
+
         commitTask.setOnFailed(event ->{
             Connection connection = DBConnect.getConnection();
             try {
@@ -656,11 +737,15 @@ public class TransactionEditDialogController {
 
                 connection.setAutoCommit(false);
                 Object[] objects = ObjectSerializer.TRANSACTION_OBJECT_SERIALIZER_UPDATE.serialize(transaction);
-                dbExecuteTransaction.updateDatabase(DBQueries.UpdateQueries.Transaction.UPDATE_TRANSACTION_OUT, objects);
+                int row = dbExecuteTransaction.updateDatabase(DBQueries.UpdateQueries.Transaction.UPDATE_TRANSACTION_OUT, objects);
                 if(storeCreditCheckBox.isSelected()){
                     double remainStoreCredit = customer.getStoreCredit() - Double.valueOf(storeCreditField.getText());
                     dbExecuteCustomer.updateDatabase(DBQueries.UpdateQueries.Customer.UPDATE_CUSTOMER_STORE_CREDIT,
                             remainStoreCredit, customer.getUserName());
+                }
+                if(row == 0){
+                    connection.rollback();
+                    throw new RuntimeException("Error occurred when updating database. This might be caused by conflict actions on the transaction");
                 }
                 connection.commit();
                 return null;
@@ -707,9 +792,15 @@ public class TransactionEditDialogController {
         String originalPaymentType = transaction.getPaymentType();
         double originalPayment = transaction.getPayment();
         double originalStoreCredit = transaction.getStoreCredit();
+        double originalTotal = transaction.getTotal();
+        double originalGst = transaction.getGstTax();
+        double originalPst = transaction.getPstTax();
         Transaction.TransactionType originalTransactionType = transaction.getType();
         List<PaymentRecord> originalPayInfo = transaction.getPayinfo();
         transaction.setDate(DateUtil.parse(new SimpleDateFormat("yyyy-MM-dd").format(new Date())));
+        transaction.setGstTax(Double.valueOf(gstLabel.getText()));
+        transaction.setPstTax(Double.valueOf(pstLabel.getText()));
+        transaction.setTotal(Double.valueOf(totalLabel.getText()));
 
         if(type.equals(Transaction.TransactionType.OUT)){
             double currentPayment = 0;
@@ -791,7 +882,9 @@ public class TransactionEditDialogController {
                 transaction.setType(originalTransactionType);
             }
             transaction.setDate(originalDate);
-
+            transaction.setGstTax(originalGst);
+            transaction.setTotal(originalTotal);
+            transaction.setPstTax(originalPst);
         }
     }
 

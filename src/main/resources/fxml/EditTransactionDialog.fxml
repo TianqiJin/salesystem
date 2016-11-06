@@ -43,7 +43,14 @@
                 <TableColumn fx:id="unitPriceCol" prefWidth="65.0" text="Price" />
                 <TableColumn fx:id="qtyCol" editable="true" prefWidth="65.0" text="Purchased (ft)" />
                         <TableColumn fx:id="discountCol" prefWidth="75.0" text="Discount (%)" />
+                        <TableColumn prefWidth="75.0" text="Delievery Information">
+                           <columns>
+                              <TableColumn fx:id="boxCol" prefWidth="75.0" text="Box" />
+                              <TableColumn fx:id="residualTileCol" prefWidth="75.0" text="Tiles" />
+                           </columns>
+                        </TableColumn>
                 <TableColumn fx:id="subTotalCol" maxWidth="5000.0" minWidth="10.0" prefWidth="65.0" text="Total" />
+                        <TableColumn fx:id="remarkCol" prefWidth="75.0" text="Remark" />
                         <TableColumn fx:id="deleteCol" prefWidth="75.0" />
               </columns>
             </TableView>
@@ -54,7 +61,7 @@
         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
           <children>
             <Accordion layoutX="-29.0" layoutY="36.0" />
-            <SplitPane dividerPositions="0.35, 0.7" focusTraversable="true" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <SplitPane dividerPositions="0.28, 0.7" focusTraversable="true" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
               <items>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                   <children>
@@ -103,22 +110,26 @@
                                     <children>
                                       <Label text="Items In Cart" GridPane.columnIndex="0" GridPane.rowIndex="0" />
                                       <Label fx:id="itemsCountLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-                                      <Label text="Total" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-                                      <Label fx:id="totalLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                                                <Label text="Residual" GridPane.rowIndex="4">
+                                      <Label text="Total" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+                                      <Label fx:id="totalLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                                                <Label text="Residual" GridPane.rowIndex="6">
                                                    <font>
                                                       <Font name="System Bold" size="18.0" />
                                                    </font>
                                                 </Label>
-                                                <Label fx:id="residualLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                                                <Label fx:id="residualLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="6">
                                                    <font>
                                                       <Font name="System Bold" size="18.0" />
                                                    </font>
                                                 </Label>
-                                                <Label text="PST Tax" GridPane.rowIndex="1" />
-                                                <Label text="GST Tax" GridPane.rowIndex="2" />
-                                                <Label fx:id="pstLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                                                <Label fx:id="gstLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                                <Label text="PST Tax" GridPane.rowIndex="2" />
+                                                <Label text="GST Tax" GridPane.rowIndex="3" />
+                                                <Label fx:id="pstLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                                <Label fx:id="gstLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                                <Label text="Subtotal" GridPane.rowIndex="1" />
+                                                <Label fx:id="subtotalLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                                <Label text="Discount" GridPane.rowIndex="4" />
+                                                <Label fx:id="transactionDiscountLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="4" />
                                     </children>
                                     <columnConstraints>
                                       <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -129,6 +140,8 @@
                                     </padding>
                                     <rowConstraints>
                                       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />

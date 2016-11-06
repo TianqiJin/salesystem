@@ -17,6 +17,7 @@ public class DBQueries {
         public static class Transaction{
             public final static String SELECT_ALL_TRANSACTION = "SELECT * FROM transaction";
             public final static String SELECT_ALL_TRANSACTION_FOR_REPORT = "SELECT * FROM transaction WHERE Date BETWEEN ? AND ?";
+            public final static String SELECT_SINGLE_TRANSACTION = "SELECT * FROM transaction WHERE TransactionID = ?";
         }
         public static class Staff{
             public final static String SELECT_ALL_STAFF = "SELECT * FROM staff";
@@ -102,10 +103,10 @@ public class DBQueries {
         }
         public static class Transaction{
             public final static String UPDATE_TRANSACTION_OUT = "UPDATE transaction "
-                    +"SET Type = ?, Date = ?, Payment = ?, PaymentType = ?, StoreCredit = ?, payinfo = ? "
+                    +"SET ProductInfo =?, Type = ?, Date = ?, Payment = ?, PaymentType = ?, StoreCredit = ?, payinfo = ? "
                     +"WHERE TransactionID = ?";
             public final static String UPDATE_TRANSACTION_QUOTATION = "UPDATE transaction "
-                    +"SET ProductInfo =?, Date = ?, Payment = ?, PaymentType = ?, StoreCredit = ?, payinfo = ? "
+                    +"SET ProductInfo =?, Date = ?, Payment = ?, PaymentType = ?, StoreCredit = ?, payinfo = ?, Total =?, GstTax = ?, PstTax = ?"
                     +"WHERE TransactionID = ?";
         }
     }
