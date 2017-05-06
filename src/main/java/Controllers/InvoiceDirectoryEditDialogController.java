@@ -64,6 +64,8 @@ public class InvoiceDirectoryEditDialogController {
     @FXML
     private CheckBox quotationInvoiceCheckBox;
     @FXML
+    private CheckBox poCheckBox;
+    @FXML
     private Label invoiceDirectoryLabel;
     @FXML
     private TitledPane deliveryTitledPane;
@@ -119,6 +121,9 @@ public class InvoiceDirectoryEditDialogController {
                     if(deliveryInvoiceCheckbox.isSelected()){
                         generator.buildDelivery(transaction, customer, staff, address);
                     }
+                    if(poCheckBox.isSelected()){
+                        generator.buildPo(transaction, customer, staff, address);
+                    }
                 }else{
                     new AlertBuilder()
                             .alertType(Alert.AlertType.ERROR)
@@ -164,6 +169,7 @@ public class InvoiceDirectoryEditDialogController {
             deliveryInvoiceCheckbox.setSelected(false);
             deliveryInvoiceCheckbox.setDisable(true);
             quotationInvoiceCheckBox.setDisable(true);
+            poCheckBox.setDisable(true);
         }else if(this.transaction.getType().equals(Transaction.TransactionType.QUOTATION)){
             deliveryInvoiceCheckbox.setSelected(false);
             deliveryInvoiceCheckbox.setDisable(true);

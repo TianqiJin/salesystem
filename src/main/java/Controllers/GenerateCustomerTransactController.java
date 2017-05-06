@@ -453,7 +453,7 @@ public class GenerateCustomerTransactController {
             transaction.getProductTransactionList().clear();
         }
         else{
-            generateTransaction();
+            generateTransaction(true);
             this.transaction.setType(Transaction.TransactionType.QUOTATION);
         }
         return transaction;
@@ -472,7 +472,7 @@ public class GenerateCustomerTransactController {
             transaction.getProductTransactionList().clear();
         }
         else{
-            generateTransaction();
+            generateTransaction(false);
         }
         return transaction;
     }
@@ -494,7 +494,7 @@ public class GenerateCustomerTransactController {
     * Show customer details grid pane
     * */
 
-    private void generateTransaction() throws IOException, SQLException{
+    private void generateTransaction(boolean isQuotation) throws IOException, SQLException{
         transaction.getProductTransactionList().addAll(productTransactionObservableList);
         if(!paymentField.getText().trim().isEmpty()){
             transaction.setPayment(Double.valueOf(paymentField.getText()));
@@ -505,11 +505,14 @@ public class GenerateCustomerTransactController {
         transaction.setGstTax(Double.valueOf(gstTaxLabel.getText()));
         transaction.setPstTax(Double.valueOf(pstTaxLabel.getText()));
         transaction.setTotal(Double.valueOf(totalLabel.getText()));
-        transaction.getPayinfo().add(new PaymentRecord(
-                transaction.getDate().toString(),
-                transaction.getPayment() + transaction.getStoreCredit(),
-                transaction.getPaymentType(),
-                (isDepositCheckBox.isSelected())? true : false));
+        if(!isQuotation){
+            transaction.getPayinfo().add(new PaymentRecord(
+                    transaction.getDate().toString(),
+                    transaction.getPayment() + transaction.getStoreCredit(),
+                    transaction.getPaymentType(),
+                    (isDepositCheckBox.isSelected())? true : false));
+        }
+
 
         StringBuffer overviewTransactionString = new StringBuffer();
         StringBuffer overviewProductTransactionString = new StringBuffer();

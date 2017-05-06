@@ -49,16 +49,17 @@ public class InvoiceGenerator {
     static final String CHINESE_FONT_LOCATION = "/fonts/Deng.ttf";
     Font chineseFont = new Font(BaseFont.createFont(CHINESE_FONT_LOCATION, BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 9);
 
-    private String destination_Invoice;
-    private String destination_Delivery;
-    private String quotation_Delivery;
-    private String destination_Return;
+    private String destinationInvoice;
+    private String destinationDelivery;
+    private String destinationQuotation;
+    private String destinationReturn;
+    private String destinationPo;
     private Invoice invoice;
     private SaleSystem saleSystem;
     private StringBuilder errorMsg;
 
     public enum InvoiceType{
-        INVOICE("Invoice"), QUOTATION("Quotation"), DELIVERY("Delivery");
+        INVOICE("Invoice"), QUOTATION("Quotation"), DELIVERY("Delivery"), PO("Purchase Order");
 
         private String type;
         InvoiceType(String type){
@@ -67,13 +68,16 @@ public class InvoiceGenerator {
     }
 
     public InvoiceGenerator(String destination_Folder, SaleSystem saleSystem) throws IOException, DocumentException{
-        this.destination_Invoice =
+        this.destinationInvoice =
                 new File(destination_Folder, "Invoice_" + new SimpleDateFormat("yyyy-MM-dd'at'HH-mm-ss").format(new Date()) + ".pdf").getPath();
-        this.destination_Delivery =
+        this.destinationDelivery =
                 new File(destination_Folder, "Delivery_" + new SimpleDateFormat("yyyy-MM-dd'at'HH-mm-ss").format(new Date()) + ".pdf").getPath();
-        this.destination_Return =
+        this.destinationReturn =
                 new File(destination_Folder, "Return_" + new SimpleDateFormat("yyyy-MM-dd'at'HH-mm-ss").format(new Date()) + ".pdf").getPath();
-        this.quotation_Delivery = new File(destination_Folder, "Quotation_" + new SimpleDateFormat("yyyy-MM-dd'at'HH-mm-ss").format(new Date()) + ".pdf").getPath();
+        this.destinationQuotation =
+                new File(destination_Folder, "Quotation_" + new SimpleDateFormat("yyyy-MM-dd'at'HH-mm-ss").format(new Date()) + ".pdf").getPath();
+        this.destinationPo =
+                new File(destination_Folder, "PurchaseOrder_" + new SimpleDateFormat("yyyy-MM-dd'at'HH-mm-ss").format(new Date()) + ".pdf").getPath();
         this.saleSystem = saleSystem;
         this.errorMsg = new StringBuilder();
     }
@@ -93,16 +97,46 @@ public class InvoiceGenerator {
         createPdf_quotation(invoice);
     }
 
+    public void buildPo(Transaction transaction, Customer customer, Staff staff, Address address) throws Exception {
+        invoice = new Invoice(transaction, customer, staff, address);
+        createPdfPo(invoice);
+    }
+
+    public void createPdfPo(Invoice invoice) throws Exception{
+        InvoiceData invoiceData = new InvoiceData();
+        InvoiceData.AdvancedProfileImp basic = invoiceData.createBasicProfileData(invoice);
+
+        //init
+        Document document = new Document();
+        PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(destinationPo));
+        document.open();
+        //Create Header;
+        createHeader(document, basic, InvoiceType.PO, invoice.getTransaction());
+        //gstNum Field
+        createGSTNo(document);
+        // Address seller / buyer
+        createPartyAddress(document, basic);
+
+        // line items
+        createItemList(document, InvoiceType.PO);
+        //Add PaymentInfo
+        createPaymentInfo(document, InvoiceType.PO);
+        //Create CompanyClaims
+        createCompanyClaims(document);
+        document.close();
+        openPDF(this.destinationPo);
+    }
+
     public void createPdf_delivery(Invoice invoice) throws Exception {
         InvoiceData invoiceData = new InvoiceData();
         InvoiceData.AdvancedProfileImp basic = invoiceData.createBasicProfileData(invoice);
 
         //init
         Document document = new Document();
-        PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(destination_Delivery));
+        PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(destinationDelivery));
         document.open();
         //Create Header;
-        createHeader(document, basic, InvoiceType.DELIVERY);
+        createHeader(document, basic, InvoiceType.DELIVERY, invoice.getTransaction());
         // Address seller / buyer
         createPartyAddress(document, basic);
         // line items
@@ -147,7 +181,7 @@ public class InvoiceGenerator {
         //Create CompanyClaims
         createCompanyClaims(document);
         document.close();
-        openPDF(this.destination_Delivery);
+        openPDF(this.destinationDelivery);
     }
 
 
@@ -159,29 +193,29 @@ public class InvoiceGenerator {
         Document document = new Document();
         PdfWriter writer;
         if(invoice.getTransaction().getType().equals(Transaction.TransactionType.RETURN)){
-            writer = PdfWriter.getInstance(document, new FileOutputStream(destination_Return));
+            writer = PdfWriter.getInstance(document, new FileOutputStream(destinationReturn));
         }else{
-            writer = PdfWriter.getInstance(document, new FileOutputStream(destination_Invoice));
+            writer = PdfWriter.getInstance(document, new FileOutputStream(destinationInvoice));
         }
         document.open();
         // header
-        createHeader(document, basic, InvoiceType.INVOICE);
+        createHeader(document, basic, InvoiceType.INVOICE, invoice.getTransaction());
         //gstNum Field
         createGSTNo(document);
         // Address seller / buyer
         createPartyAddress(document, basic);
 
         // line items
-        createItemList(document);
+        createItemList(document, InvoiceType.INVOICE);
         //Add PaymentInfo
         createPaymentInfo(document, InvoiceType.INVOICE);
         //Add Company Claims
         createCompanyClaims(document);
         document.close();
         if(invoice.getTransaction().getType().equals(Transaction.TransactionType.OUT)){
-            openPDF(this.destination_Invoice);
+            openPDF(this.destinationInvoice);
         }else if(invoice.getTransaction().getType().equals(Transaction.TransactionType.RETURN)){
-            openPDF(this.destination_Return);
+            openPDF(this.destinationReturn);
         }
     }
 
@@ -190,20 +224,20 @@ public class InvoiceGenerator {
         InvoiceData.AdvancedProfileImp basic = invoiceData.createBasicProfileData(invoice);
         //init
         Document document = new Document();
-        PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(quotation_Delivery));
+        PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(destinationQuotation));
         document.open();
         // header
-        createHeader(document, basic, InvoiceType.QUOTATION);
+        createHeader(document, basic, InvoiceType.QUOTATION, invoice.getTransaction());
         //gstNum Field
         createGSTNo(document);
         // Address seller / buyer
         createPartyAddress(document, basic);
         // line items
-        createItemList(document);
+        createItemList(document, InvoiceType.QUOTATION);
         //Create CompanyClaims
         createCompanyClaims(document);
         document.close();
-        openPDF(this.quotation_Delivery);
+        openPDF(this.destinationQuotation);
     }
 
     public String convertDate(Date d, String newFormat) throws Exception {
@@ -324,10 +358,13 @@ public class InvoiceGenerator {
         }
     }
 
-    private void createHeader(Document document, InvoiceData.AdvancedProfileImp profileImp, InvoiceType type){
+    private void createHeader(Document document, InvoiceData.AdvancedProfileImp profileImp, InvoiceType type, Transaction transaction){
         Paragraph pCompany = new Paragraph("Milan Building Supply LTD.",catFont);
         pCompany.setAlignment(Element.HEADER);
         String typeString = null;
+        String invoiceId = null;
+
+        //Generate invoice type
         if(type.equals(InvoiceType.DELIVERY)){
             typeString = "Pick Up/Delivery Order";
         }else if(type.equals(InvoiceType.QUOTATION)){
@@ -338,8 +375,17 @@ public class InvoiceGenerator {
             }else if(this.invoice.getTransaction().getType().equals(Transaction.TransactionType.RETURN)){
                 typeString = "RETURN";
             }
+        }else if(type.equals(InvoiceType.PO)){
+            typeString = "PO";
         }
-        Paragraph pType = new Paragraph(typeString + " " + String.format("D/%05d", invoice.getId()), subFont);
+
+        //Generate invoice Id
+        if(type.equals(InvoiceType.PO)){
+            invoiceId = String.format("D/%05d", invoice.getId()) + "-" + String.format("%02d", transaction.getPayinfo().size());
+        }else{
+            invoiceId = String.format("D/%05d", invoice.getId());
+        }
+        Paragraph pType = new Paragraph(typeString + " " + invoiceId, subFont);
         pType.setAlignment(Element.ALIGN_RIGHT);
         Paragraph pDate = null;
         try {
@@ -360,7 +406,7 @@ public class InvoiceGenerator {
 
     }
 
-    private void createItemList(Document document){
+    private void createItemList(Document document, InvoiceType type){
         PdfPTable table = new PdfPTable(6);
         table.setWidthPercentage(100);
         table.setSpacingBefore(10);
@@ -395,7 +441,7 @@ public class InvoiceGenerator {
         table.addCell(getCellNoWrap("$CAD   " + new BigDecimal(total).setScale(2, BigDecimal.ROUND_HALF_EVEN), Element.ALIGN_JUSTIFIED_ALL, smallText));
 
         double discount = invoice.getTotal()-invoice.getTransaction().getGstTax()-invoice.getTransaction().getPstTax()-total;
-        if(discount>0){
+        if(discount > 0){
             String msg = "Discount is greater than 0";
             logger.error(msg);
             errorMsg.append(msg).append("\n");
@@ -417,17 +463,19 @@ public class InvoiceGenerator {
         table.addCell(getCellTop("Total:", Element.ALIGN_LEFT, totalFont));
         table.addCell(getCellTop("$CAD  " + invoice.getTotal(), Element.ALIGN_JUSTIFIED_ALL, totalFont));
 
-        double paid =0;
-        for (PaymentRecord paymentRecord : invoice.getPaymentRecords()){
-            paid+=paymentRecord.getPaid();
-        }
-        getEmptyCellHolder(table, 4);
-        table.addCell(getCellUnder("Paid:", Element.ALIGN_LEFT, totalFont));
-        table.addCell(getCell("$CAD  " + paid, Element.ALIGN_JUSTIFIED_ALL, totalFont));
+        if(!type.equals(InvoiceType.PO)) {
+            double paid = 0;
+            for (PaymentRecord paymentRecord : invoice.getPaymentRecords()) {
+                paid += paymentRecord.getPaid();
+            }
+            getEmptyCellHolder(table, 4);
+            table.addCell(getCellUnder("Paid:", Element.ALIGN_LEFT, totalFont));
+            table.addCell(getCell("$CAD  " + paid, Element.ALIGN_JUSTIFIED_ALL, totalFont));
 
-        getEmptyCellHolder(table, 4);
-        table.addCell(getCellTop("Total Due:", Element.ALIGN_LEFT, totalFont));
-        table.addCell(getCellTop("$CAD  " + new BigDecimal((invoice.getTotal()-paid)).setScale(2, BigDecimal.ROUND_HALF_EVEN), Element.ALIGN_JUSTIFIED_ALL, totalFont));
+            getEmptyCellHolder(table, 4);
+            table.addCell(getCellTop("Total Due:", Element.ALIGN_LEFT, totalFont));
+            table.addCell(getCellTop("$CAD  " + new BigDecimal((invoice.getTotal() - paid)).setScale(2, BigDecimal.ROUND_HALF_EVEN), Element.ALIGN_JUSTIFIED_ALL, totalFont));
+        }
 
         try {
             document.add(table);
@@ -522,7 +570,7 @@ public class InvoiceGenerator {
                 row++;
             }
             p.add(table);
-        }else if(type.equals(InvoiceType.INVOICE)){
+        }else if(type.equals(InvoiceType.INVOICE) || type.equals(InvoiceType.PO)){
             if(this.invoice.getTransaction().getType().equals(Transaction.TransactionType.OUT)){
                 table = new PdfPTable(4);
                 table.setWidthPercentage(50);
@@ -537,7 +585,7 @@ public class InvoiceGenerator {
                 table.addCell(getCellTitle("Date", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
                 table.addCell(getCellTitle("Amount", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
                 table.addCell(getCellTitle("Type", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
-                table.addCell(getCellTitle("Is Deposit", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
+                table.addCell(getCellTitle("Deposit", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
                 for (PaymentRecord paymentRecord : invoice.getPaymentRecords()){
                     table.addCell(getCellwithBackground(paymentRecord.getDate(), Element.ALIGN_LEFT, totalFont, row));
                     table.addCell(getCellwithBackground(InvoiceData.format2dec(InvoiceData.round(paymentRecord.getPaid())), Element.ALIGN_LEFT, totalFont, row));

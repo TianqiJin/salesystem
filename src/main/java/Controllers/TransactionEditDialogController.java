@@ -626,7 +626,6 @@ public class TransactionEditDialogController {
     }
 
     private void commitUpdatedQuotationToDatabase(){
-        this.productTransactionObservableList.forEach(p -> logger.info(p.getQuantity()));
         Task<List<Product>> productListTask = new Task<List<Product>>() {
             @Override
             protected List<Product> call() throws Exception {

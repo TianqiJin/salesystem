@@ -45,7 +45,4 @@ public class BoxNum {
         this.residualTile = residualTile;
     }
 
-//    public String toString(){
-//        return new StringBuilder().append(this.box).append("-").append(this.residualTileNum).toString();
-//    }
 }
