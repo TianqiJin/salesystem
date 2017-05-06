@@ -52,7 +52,6 @@ public interface ObjectSerializer<E> {
                 typeJson = typeWriter.toString();
             } catch (IOException e) {
                 logger.error(e.getMessage());
-                e.printStackTrace();
             }
             return new Object[]{
                     productInfoWriter.toString(),

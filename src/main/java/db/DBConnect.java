@@ -70,6 +70,7 @@ public class DBConnect {
 
     public static <E> List<E> executeQuery(String query, ObjectDeserializer<E> loader, Object... params) throws SQLException {
         PreparedStatement preparedStatement = createStatement(query, params);
+//        logger.info(preparedStatement.toString());
         ResultSet rs = preparedStatement.executeQuery();
         return resultSetToList(rs, loader);
     }

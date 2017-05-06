@@ -271,7 +271,8 @@ public class TransactionOverviewController implements OverviewController{
                             }
                         }
                     }
-                    dbExecuteTransaction.deleteDatabase(DBQueries.DeleteQueries.Transaction.DELETE_FROM_TRANSACTION, deleteTransaction.getTransactionId());
+                    deleteTransaction.setDeleted(true);
+                    dbExecuteTransaction.updateDatabase(DBQueries.UpdateQueries.Transaction.UPDATE_TRANSACTION_DELETE, deleteTransaction.getPropertiesForDeleteUpdate());
                     connection.commit();
                 }catch (SQLException e){
                     logger.error(e.getMessage());

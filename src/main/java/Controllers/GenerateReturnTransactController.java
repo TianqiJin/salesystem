@@ -377,6 +377,7 @@ public class GenerateReturnTransactController {
                             .alertContentText("Product - " + productTransaction.getProductId() + " does not exist!")
                             .build()
                             .showAndWait();
+                    dialogStage.close();
                 }else{
                     productTransaction.setTotalNum(tmp.getTotalNum());
                 }
@@ -393,14 +394,12 @@ public class GenerateReturnTransactController {
                 }
             });
             transactionTableView.setItems(this.productTransactionObservableList);
-            System.out.println(productTransactionObservableList.get(0).getTotalNum());
             this.transaction.setType(Transaction.TransactionType.RETURN);
             this.transaction.setPayment(0.0);
             this.transaction.setStoreCredit(0.0);
             this.transaction.setDate(LocalDate.parse(new SimpleDateFormat("yyyy-MM-dd").format(new Date())));
             this.transaction.getPayinfo().clear();
             this.transaction.getProductTransactionList().clear();
-            System.out.println(productTransactionObservableList.get(0).getTotalNum());
             executor.execute(customerTask);
         });
 
@@ -498,23 +497,30 @@ public class GenerateReturnTransactController {
             }
         };
         productListTask.setOnSucceeded(event -> {
+            List<String> missingProducts = new ArrayList<String>();
             transaction.getProductTransactionList().forEach(productTransaction -> {
-                Product tmp = productListTask.getValue().stream()
+                 Optional<Product> tmp = productListTask.getValue().stream()
                         .filter(product -> product.getProductId().equals(productTransaction.getProductId()))
-                        .findFirst()
-                        .orElse(null);
-                if (tmp == null) {
-                    new AlertBuilder()
-                            .alertTitle("Product Error!")
-                            .alertType(Alert.AlertType.WARNING)
-                            .alertContentText("Product - " + productTransaction.getProductId() + " does not exist!")
-                            .build()
-                            .showAndWait();
+                        .findFirst();
+                if (!tmp.isPresent()) {
+                    missingProducts.add(productTransaction.getProductId());
                 } else {
-                    productTransaction.setTotalNum(tmp.getTotalNum());
+                    productTransaction.setTotalNum(tmp.get().getTotalNum());
                 }
             });
-            executor.execute(customerTask);
+            if(missingProducts.size() != 0){
+                StringBuilder sb = new StringBuilder();
+                missingProducts.forEach(p -> sb.append(p).append("\n"));
+                new AlertBuilder()
+                        .alertTitle("Product Error!")
+                        .alertType(Alert.AlertType.ERROR)
+                        .alertContentText("The following products do not exist!\n" + sb.toString())
+                        .build()
+                        .showAndWait();
+                dialogStage.close();
+            }else{
+                executor.execute(customerTask);
+            }
         });
         customerTask.setOnSucceeded(event->{
             customer.setStoreCredit(customerTask.getValue().getStoreCredit());

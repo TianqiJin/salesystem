@@ -415,7 +415,7 @@ public class GenerateCustomerTransactController {
             newCustomer.setUserName();
             boolean flag = true;
             try{
-                dbExecuteProduct.insertIntoDatabase(DBQueries.InsertQueries.Customer.INSERT_INTO_CUSTOMER,
+                dbExecuteCustomer.insertIntoDatabase(DBQueries.InsertQueries.Customer.INSERT_INTO_CUSTOMER,
                         newCustomer.getAllProperties());
             }catch(SQLException e){
                 logger.error(e.getMessage());
@@ -453,8 +453,7 @@ public class GenerateCustomerTransactController {
             transaction.getProductTransactionList().clear();
         }
         else{
-            generateTransaction();
-            this.transaction.setType(Transaction.TransactionType.QUOTATION);
+            generateTransaction(Transaction.TransactionType.QUOTATION);
         }
         return transaction;
     }
@@ -472,7 +471,7 @@ public class GenerateCustomerTransactController {
             transaction.getProductTransactionList().clear();
         }
         else{
-            generateTransaction();
+            generateTransaction(Transaction.TransactionType.OUT);
         }
         return transaction;
     }
@@ -494,7 +493,7 @@ public class GenerateCustomerTransactController {
     * Show customer details grid pane
     * */
 
-    private void generateTransaction() throws IOException, SQLException{
+    private void generateTransaction(Transaction.TransactionType type) throws IOException, SQLException{
         transaction.getProductTransactionList().addAll(productTransactionObservableList);
         if(!paymentField.getText().trim().isEmpty()){
             transaction.setPayment(Double.valueOf(paymentField.getText()));
@@ -510,6 +509,7 @@ public class GenerateCustomerTransactController {
                 transaction.getPayment() + transaction.getStoreCredit(),
                 transaction.getPaymentType(),
                 (isDepositCheckBox.isSelected())? true : false));
+        transaction.setType(type);
 
         StringBuffer overviewTransactionString = new StringBuffer();
         StringBuffer overviewProductTransactionString = new StringBuffer();
@@ -798,7 +798,6 @@ public class GenerateCustomerTransactController {
                     objects = ObjectSerializer.TRANSACTION_OBJECT_SERIALIZER.serialize(transaction);
                 } catch (IOException e) {
                     logger.error(e.getMessage());
-                    e.printStackTrace();
                 }
                 dbExecuteTransaction.insertIntoDatabase(DBQueries.InsertQueries.Transaction.INSERT_INTO_TRANSACTION,
                         objects);
@@ -817,24 +816,30 @@ public class GenerateCustomerTransactController {
             }
         };
         productListTask.setOnSucceeded(event -> {
+            List<String> missingProducts = new ArrayList<String>();
             transaction.getProductTransactionList().forEach(productTransaction -> {
-                Product tmp = productListTask.getValue().stream()
+                Optional<Product> tmp = productListTask.getValue().stream()
                         .filter(product -> product.getProductId().equals(productTransaction.getProductId()))
-                        .findFirst()
-                        .get();
-                if (tmp == null) {
-                    new AlertBuilder()
-                            .alertTitle("Product Error!")
-                            .alertType(Alert.AlertType.ERROR)
-                            .alertContentText("Product - " + productTransaction.getProductId() + " does not exist!")
-                            .build()
-                            .showAndWait();
-                    dialogStage.close();
+                        .findFirst();
+                if (!tmp.isPresent()) {
+                    missingProducts.add(productTransaction.getProductId());
                 } else {
-                    productTransaction.setTotalNum(tmp.getTotalNum());
+                    productTransaction.setTotalNum(tmp.get().getTotalNum());
                 }
             });
-            executor.execute(customerTask);
+            if(missingProducts.size() != 0){
+                StringBuilder sb = new StringBuilder();
+                missingProducts.forEach(p -> sb.append(p).append("\n"));
+                new AlertBuilder()
+                        .alertTitle("Product Error!")
+                        .alertType(Alert.AlertType.ERROR)
+                        .alertContentText("The following products do not exist!\n" + sb.toString())
+                        .build()
+                        .showAndWait();
+                dialogStage.close();
+            }else{
+                executor.execute(customerTask);
+            }
         });
         customerTask.setOnSucceeded(event -> {
             customer.setStoreCredit(customerTask.getValue().getStoreCredit());

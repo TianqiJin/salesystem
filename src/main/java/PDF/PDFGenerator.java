@@ -1,25 +1,41 @@
 package PDF;
 
 import com.itextpdf.text.*;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
 import javafx.scene.paint.Color;
 import model.Customer;
 import model.ProductTransaction;
 import model.Transaction;
+import org.apache.log4j.Logger;
+import util.AlertBuilder;
 import util.DateUtil;
 
+import java.awt.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by tjin on 12/28/15.
  */
 public class PDFGenerator {
+    private static Logger logger = Logger.getLogger(PDFGenerator.class);
+    private static Font tableTitle = new Font(Font.FontFamily.COURIER, 12, Font.BOLD);
+    private static Font totalFont = new Font(Font.FontFamily.COURIER, 9, Font.BOLD);
+    private static Font tableTitleInner = new Font(Font.FontFamily.COURIER, 7);
+    private static Font totalFontInner = new Font(Font.FontFamily.COURIER, 4);
+
     private Document document;
     private List<Transaction> transactionList;
     private final String destination;
@@ -49,23 +65,23 @@ public class PDFGenerator {
         table.setWidthPercentage(100);
         table.setWidths(new int[]{15,10,15,15,10,40});
         table.getDefaultCell().setBorder(Rectangle.BOTTOM);
-        table.addCell("Date");
+        table.addCell(getCell("Date", Element.ALIGN_LEFT, tableTitle));
         table.getDefaultCell().setBorder(Rectangle.BOTTOM);
-        table.addCell("Staff");
+        table.addCell(getCell("Staff", Element.ALIGN_LEFT, tableTitle));
         table.getDefaultCell().setBorder(Rectangle.BOTTOM);
-        table.addCell("Customer");
+        table.addCell(getCell("Customer", Element.ALIGN_LEFT, tableTitle));
         table.getDefaultCell().setBorder(Rectangle.BOTTOM);
-        table.addCell("Type");
+        table.addCell(getCell("Type", Element.ALIGN_LEFT, tableTitle));
         table.getDefaultCell().setBorder(Rectangle.BOTTOM);
-        table.addCell("Total");
+        table.addCell(getCell("Total", Element.ALIGN_LEFT, tableTitle));
         table.getDefaultCell().setBorder(Rectangle.BOTTOM);
-        table.addCell("Transaction Details");
+        table.addCell(getCell("Transaction Details", Element.ALIGN_LEFT, tableTitle));
         for(Transaction transaction : transactionList){
-            table.addCell(DateUtil.format(transaction.getDate()));
-            table.addCell(String.valueOf(transaction.getStaffId()));
-            table.addCell(String.valueOf(transaction.getInfo()));
-            table.addCell(transaction.getType().toString());
-            table.addCell(String.valueOf(transaction.getTotal()));
+            table.addCell(getCell(DateUtil.format(transaction.getDate()), Element.ALIGN_LEFT, totalFont));
+            table.addCell(getCell(String.valueOf(transaction.getStaffId()), Element.ALIGN_LEFT, totalFont));
+            table.addCell(getCell(String.valueOf(transaction.getInfo()), Element.ALIGN_LEFT, totalFont));
+            table.addCell(getCell(transaction.getType().toString(), Element.ALIGN_LEFT, totalFont));
+            table.addCell(getCell(String.valueOf(transaction.getTotal()), Element.ALIGN_LEFT, totalFont));
             generateInnerTable(table, transaction);
         }
         boolean flag = true;
@@ -77,22 +93,24 @@ public class PDFGenerator {
         }
         document.add(table);
         document.add(generateResult());
+        document.add(generateQuantityResult());
         document.close();
+        openPDF(destination);
     }
 
     private void generateInnerTable(PdfPTable outerTable, Transaction transaction) throws DocumentException {
         PdfPTable table = new PdfPTable(4);
         table.setWidthPercentage(100);
         table.setWidths(new int[]{25,25,25,25});
-        table.addCell("Product ID");
-        table.addCell("Unit Price");
-        table.addCell("Quantity");
-        table.addCell("Sub Total");
+        table.addCell(getCell("Product ID", Element.ALIGN_LEFT, tableTitleInner));
+        table.addCell(getCell("Unit Price", Element.ALIGN_LEFT, tableTitleInner));
+        table.addCell(getCell("Quantity", Element.ALIGN_LEFT, tableTitleInner));
+        table.addCell(getCell("Sub Total", Element.ALIGN_LEFT, tableTitleInner));
         for(ProductTransaction productTransaction: transaction.getProductTransactionList()){
-            table.addCell(String.valueOf(productTransaction.getProductId()));
-            table.addCell(String.valueOf(productTransaction.getUnitPrice()));
-            table.addCell(String.valueOf(productTransaction.getQuantity()));
-            table.addCell(String.valueOf(productTransaction.getSubTotal()));
+            table.addCell(getCell(String.valueOf(productTransaction.getProductId()), Element.ALIGN_LEFT, totalFontInner));
+            table.addCell(getCell(String.valueOf(productTransaction.getUnitPrice()), Element.ALIGN_LEFT, totalFontInner));
+            table.addCell(getCell(String.valueOf(productTransaction.getQuantity()), Element.ALIGN_LEFT, totalFontInner));
+            table.addCell(getCell(String.valueOf(productTransaction.getSubTotal()), Element.ALIGN_LEFT, totalFontInner));
         }
         table.setSpacingAfter(10);
         outerTable.addCell(table);
@@ -100,13 +118,14 @@ public class PDFGenerator {
 
     private PdfPTable generateResult() throws DocumentException{
         PdfPTable table = new PdfPTable(3);
-        table.setSpacingBefore(100);
-        table.setHorizontalAlignment(Element.ALIGN_RIGHT);
-        table.setWidthPercentage(50);
+        table.setHorizontalAlignment(Element.ALIGN_LEFT);
+        table.setWidthPercentage(70);
+        table.setSpacingBefore(50);
+        table.setSpacingAfter(10);
         table.setWidths(new int[]{35,35,35});
-        table.addCell("Total OUT");
-        table.addCell("Total IN");
-        table.addCell("Total RETURN");
+        table.addCell(getCell("Total OUT", Element.ALIGN_LEFT, tableTitle));
+        table.addCell(getCell("Total IN", Element.ALIGN_LEFT, tableTitle));
+        table.addCell(getCell("Total RETURN", Element.ALIGN_LEFT, tableTitle));
         double totalOut = 0;
         double totalIn = 0;
         double totalReturn = 0;
@@ -119,9 +138,43 @@ public class PDFGenerator {
                 totalReturn += transaction.getTotal();
             }
         }
-        table.addCell(new BigDecimal(totalOut).setScale(2, BigDecimal.ROUND_HALF_EVEN).toString());
-        table.addCell(new BigDecimal(totalIn).setScale(2, BigDecimal.ROUND_HALF_EVEN).toString());
-        table.addCell(new BigDecimal(totalReturn).setScale(2, BigDecimal.ROUND_HALF_EVEN).toString());
+        table.addCell(getCell(new BigDecimal(totalOut).setScale(2, BigDecimal.ROUND_HALF_EVEN).toString(), Element.ALIGN_LEFT, totalFont));
+        table.addCell(getCell(new BigDecimal(totalIn).setScale(2, BigDecimal.ROUND_HALF_EVEN).toString(), Element.ALIGN_LEFT, totalFont));
+        table.addCell(getCell(new BigDecimal(totalReturn).setScale(2, BigDecimal.ROUND_HALF_EVEN).toString(), Element.ALIGN_LEFT, totalFont));
+        return table;
+    }
+
+    private PdfPTable generateQuantityResult() throws DocumentException{
+        PdfPTable table = new PdfPTable(3);
+        table.setHorizontalAlignment(Element.ALIGN_LEFT);
+        table.setWidthPercentage(70);
+        table.setSpacingBefore(10);
+        table.setSpacingAfter(10);
+        table.setWidths(new int[]{35,35,35});
+        table.addCell(getCell("Total OUT Quantity", Element.ALIGN_LEFT, tableTitle));
+        table.addCell(getCell("Total IN Quantity", Element.ALIGN_LEFT, tableTitle));
+        table.addCell(getCell("Total RETURN Quantity", Element.ALIGN_LEFT, tableTitle));
+        double totalOut = 0;
+        double totalIn = 0;
+        double totalReturn = 0;
+        for(Transaction transaction : transactionList){
+            if(transaction.getType().equals(Transaction.TransactionType.IN)){
+                for(ProductTransaction p: transaction.getProductTransactionList()){
+                    totalIn += p.getQuantity();
+                }
+            }else if(transaction.getType().equals(Transaction.TransactionType.OUT) || transaction.getType().equals(Transaction.TransactionType.QUOTATION)){
+                for(ProductTransaction p: transaction.getProductTransactionList()){
+                    totalOut += p.getQuantity();
+                }
+            }else if(transaction.getType().equals(Transaction.TransactionType.RETURN)){
+                for(ProductTransaction p: transaction.getProductTransactionList()){
+                    totalReturn += p.getQuantity();
+                }
+            }
+        }
+        table.addCell(getCell(new BigDecimal(totalOut).setScale(2, BigDecimal.ROUND_HALF_EVEN).toString(), Element.ALIGN_LEFT, totalFont));
+        table.addCell(getCell(new BigDecimal(totalIn).setScale(2, BigDecimal.ROUND_HALF_EVEN).toString(), Element.ALIGN_LEFT, totalFont));
+        table.addCell(getCell(new BigDecimal(totalReturn).setScale(2, BigDecimal.ROUND_HALF_EVEN).toString(), Element.ALIGN_LEFT, totalFont));
         return table;
     }
 
@@ -177,6 +230,55 @@ public class PDFGenerator {
             transactionList.removeIf(transaction -> transaction.getProductTransactionList().size() == 0);
         }
         return transactionList;
+    }
+
+    private PdfPCell getCell(String value, int alignment, Font font) {
+        PdfPCell cell = new PdfPCell();
+        cell.setUseAscender(true);
+        cell.setUseDescender(true);
+        Paragraph p = new Paragraph(value, font);
+        p.setAlignment(alignment);
+        cell.addElement(p);
+        return cell;
+    }
+
+    private void openPDF(String path){
+        StringBuilder errorMsg = new StringBuilder();
+        ButtonType openType = new ButtonType("Open Report");
+        ButtonType cancelType = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        Alert alert = new AlertBuilder()
+                .alertType(Alert.AlertType.CONFIRMATION)
+                .alertTitle("Report Generation")
+                .alertHeaderText("Report Generation Successful!")
+                .alertContentText("Report is successfully generated at\n" + path + "\n\nClick Open Report to open it")
+                .alertButton(openType, cancelType)
+                .build();
+
+        Optional<ButtonType> result = alert.showAndWait();
+        if(result.isPresent() && result.get() == openType){
+            if(Desktop.isDesktopSupported()){
+                try {
+                    Desktop.getDesktop().open(new File(path));
+                } catch (IOException e) {
+                    logger.error(e.getMessage() + "\nThe full stack trace is: ", e);
+                    errorMsg.append(e.getMessage() + "\n");
+                }
+            }else{
+                logger.error("AWT Desktop is not supported!");
+                errorMsg.append("AWT Desktop is not supported!\n");
+            }
+        }else{
+            alert.close();
+        }
+        if(errorMsg.length() != 0){
+            new AlertBuilder()
+                    .alertType(Alert.AlertType.ERROR)
+                    .alertTitle("Invoice Generation")
+                    .alertHeaderText("Invoice generation is failed!")
+                    .alertContentText(errorMsg.toString())
+                    .build()
+                    .showAndWait();
+        }
     }
 }
 

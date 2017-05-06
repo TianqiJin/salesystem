@@ -121,6 +121,7 @@ public interface ObjectDeserializer<E> {
                         .payinfo(listPaymentRecord)
                         .gstTax(rs.getDouble("GstTax"))
                         .pstTax(rs.getDouble("PstTax"))
+                        .deleted(rs.getBoolean("Deleted"))
                         .build();
                 return transaction;
 

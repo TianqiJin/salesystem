@@ -32,6 +32,7 @@ public class Transaction{
     private List<PaymentRecord> payinfo;
     private DoubleProperty gstTax;
     private DoubleProperty pstTax;
+    private BooleanProperty deleted;
 
 
     public Transaction(TransactionBuilder builder){
@@ -48,6 +49,7 @@ public class Transaction{
         this.payinfo = builder.payinfo;
         this.gstTax = new SimpleDoubleProperty(builder.gstTax);
         this.pstTax = new SimpleDoubleProperty(builder.pstTax);
+        this.deleted = new SimpleBooleanProperty(builder.deleted);
     }
 
     public static class TransactionBuilder {
@@ -64,6 +66,7 @@ public class Transaction{
         private List<PaymentRecord> payinfo;
         private double gstTax;
         private double pstTax;
+        private boolean deleted = false;
 
         public TransactionBuilder transactionId(int transactionId) {
             this.transactionId = transactionId;
@@ -128,6 +131,11 @@ public class Transaction{
 
         public TransactionBuilder pstTax(double pstTax){
             this.pstTax = pstTax;
+            return this;
+        }
+
+        public TransactionBuilder deleted(boolean deleted){
+            this.deleted = deleted;
             return this;
         }
 
@@ -275,6 +283,18 @@ public class Transaction{
         this.pstTax.set(pstTax);
     }
 
+    public boolean isDeleted() {
+        return deleted.get();
+    }
+
+    public BooleanProperty deletedProperty() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted.set(deleted);
+    }
+
     public List<String> getProductTransactionListRevised(){
         List<String> list = new ArrayList<>();
         for(ProductTransaction productTransaction: this.productTransactionList){
@@ -290,6 +310,10 @@ public class Transaction{
 
     public void setProductTransactionList(List<ProductTransaction> productTransactionList) {
         this.productTransactionList = productTransactionList;
+    }
+
+    public Object[] getPropertiesForDeleteUpdate(){
+        return new Object[]{isDeleted(), getTransactionId()};
     }
 
 

@@ -394,7 +394,10 @@ public class InvoiceGenerator {
         table.addCell(getCellNoWrap("Subtotal:", Element.ALIGN_LEFT, tinyBold));
         table.addCell(getCellNoWrap("$CAD   " + new BigDecimal(total).setScale(2, BigDecimal.ROUND_HALF_EVEN), Element.ALIGN_JUSTIFIED_ALL, smallText));
 
-        double discount = invoice.getTotal()-invoice.getTransaction().getGstTax()-invoice.getTransaction().getPstTax()-total;
+        double discount =  new BigDecimal(
+                invoice.getTotal()-invoice.getTransaction().getGstTax()-invoice.getTransaction().getPstTax()-total)
+                .setScale(2, BigDecimal.ROUND_HALF_EVEN).doubleValue();
+
         if(discount>0){
             String msg = "Discount is greater than 0";
             logger.error(msg);

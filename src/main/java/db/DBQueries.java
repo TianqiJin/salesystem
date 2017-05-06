@@ -108,6 +108,9 @@ public class DBQueries {
             public final static String UPDATE_TRANSACTION_QUOTATION = "UPDATE transaction "
                     +"SET ProductInfo =?, Date = ?, Payment = ?, PaymentType = ?, StoreCredit = ?, payinfo = ?, Total =?, GstTax = ?, PstTax = ?"
                     +"WHERE TransactionID = ?";
+            public final static String UPDATE_TRANSACTION_DELETE = "UPDATE transaction "
+                    +"SET Deleted =? "
+                    +"WHERE TransactionID =?";
         }
     }
 

@@ -12,6 +12,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -20,6 +21,7 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Modality;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import model.*;
 import org.apache.log4j.Logger;
@@ -83,6 +85,11 @@ public class SaleSystem extends Application{
     public void showMainLayOut(Stage primaryStage){
         this.primaryStage = primaryStage;
         this.primaryStage.setTitle("Sales System");
+        Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
+        this.primaryStage.setX(bounds.getMinX());
+        this.primaryStage.setY(bounds.getMinY());
+        this.primaryStage.setWidth(bounds.getWidth());
+        this.primaryStage.setHeight(bounds.getHeight());
         initRootLayout();
         initMenuBar();
         initTab();
@@ -607,7 +614,7 @@ public class SaleSystem extends Application{
             protected Void call() throws Exception {
                 int count = 0;
                 while(true){
-                    logger.info("Refresh DB at " + count + " minute");
+//                    logger.info("Refresh DB at " + count + " minute");
                     dbExecuteProperty
                             .selectFirstFromDatabase(DBQueries.SelectQueries.Property.SELECT_ALL_PROPERTY);
                     Thread.sleep(60*1000*5);
