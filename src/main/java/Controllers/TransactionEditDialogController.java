@@ -673,22 +673,30 @@ public class TransactionEditDialogController {
             }
         };
         productListTask.setOnSucceeded(event -> {
+            List<String> missingProducts = new ArrayList<>();
             this.productList = productListTask.getValue();
             this.transaction.getProductTransactionList().forEach(p -> {
-                Product tmpProduct = this.productList.stream().filter(p1 -> p1.getProductId().equals(p.getProductId())).findFirst().get();
-                if(tmpProduct == null){
-                    new AlertBuilder()
-                            .alertTitle("Product Error!")
-                            .alertType(Alert.AlertType.ERROR)
-                            .alertContentText("Product - " + p.getProductId() + " does not exist!")
-                            .build()
-                            .showAndWait();
-                    dialogStage.close();
+                Optional<Product> tmpProduct = this.productList.stream().filter(p1 -> p1.getProductId().equals(p.getProductId())).findFirst();
+                if(!tmpProduct.isPresent()){
+                    missingProducts.add(p.getProductId());
+
                 }else{
-                    p.setTotalNum(tmpProduct.getTotalNum());
+                    p.setTotalNum(tmpProduct.get().getTotalNum());
                 }
             });
-            executor.execute(commitTask);
+            if(missingProducts.size() != 0){
+                StringBuilder sb = new StringBuilder();
+                missingProducts.forEach(p -> sb.append(p).append("\n"));
+                new AlertBuilder()
+                        .alertTitle("Product Error!")
+                        .alertType(Alert.AlertType.ERROR)
+                        .alertContentText("The following products do not exist!\n" + sb.toString())
+                        .build()
+                        .showAndWait();
+                dialogStage.close();
+            }else{
+                executor.execute(commitTask);
+            }
         });
 
         //What about two process wanna manipulate the same quotation
@@ -766,8 +774,7 @@ public class TransactionEditDialogController {
                         .build()
                         .showAndWait();
             } catch (SQLException e) {
-                logger.error(e.getMessage());
-                e.printStackTrace();
+                logger.error(e.getMessage() + "\nThe full stack trace is: ", e);
             }
             dialogStage.close();
         });
@@ -776,8 +783,7 @@ public class TransactionEditDialogController {
             try {
                 connection.setAutoCommit(true);
             } catch (SQLException e) {
-                logger.error(e.getMessage());
-                e.printStackTrace();
+                logger.error(e.getMessage() + "\nThe full stack trace is: ", e);
             }
             dialogStage.close();
         });

@@ -440,8 +440,11 @@ public class InvoiceGenerator {
         table.addCell(getCellNoWrap("Subtotal:", Element.ALIGN_LEFT, tinyBold));
         table.addCell(getCellNoWrap("$CAD   " + new BigDecimal(total).setScale(2, BigDecimal.ROUND_HALF_EVEN), Element.ALIGN_JUSTIFIED_ALL, smallText));
 
-        double discount = invoice.getTotal()-invoice.getTransaction().getGstTax()-invoice.getTransaction().getPstTax()-total;
-        if(discount > 0){
+        double discount =  new BigDecimal(
+                invoice.getTotal()-invoice.getTransaction().getGstTax()-invoice.getTransaction().getPstTax()-total)
+                .setScale(2, BigDecimal.ROUND_HALF_EVEN).doubleValue();
+
+        if(discount>0){
             String msg = "Discount is greater than 0";
             logger.error(msg);
             errorMsg.append(msg).append("\n");
@@ -463,10 +466,10 @@ public class InvoiceGenerator {
         table.addCell(getCellTop("Total:", Element.ALIGN_LEFT, totalFont));
         table.addCell(getCellTop("$CAD  " + invoice.getTotal(), Element.ALIGN_JUSTIFIED_ALL, totalFont));
 
-        if(!type.equals(InvoiceType.PO)) {
-            double paid = 0;
-            for (PaymentRecord paymentRecord : invoice.getPaymentRecords()) {
-                paid += paymentRecord.getPaid();
+        if(!type.equals(InvoiceType.PO)){
+            double paid =0;
+            for (PaymentRecord paymentRecord : invoice.getPaymentRecords()){
+                paid+=paymentRecord.getPaid();
             }
             getEmptyCellHolder(table, 4);
             table.addCell(getCellUnder("Paid:", Element.ALIGN_LEFT, totalFont));
@@ -474,7 +477,7 @@ public class InvoiceGenerator {
 
             getEmptyCellHolder(table, 4);
             table.addCell(getCellTop("Total Due:", Element.ALIGN_LEFT, totalFont));
-            table.addCell(getCellTop("$CAD  " + new BigDecimal((invoice.getTotal() - paid)).setScale(2, BigDecimal.ROUND_HALF_EVEN), Element.ALIGN_JUSTIFIED_ALL, totalFont));
+            table.addCell(getCellTop("$CAD  " + new BigDecimal((invoice.getTotal()-paid)).setScale(2, BigDecimal.ROUND_HALF_EVEN), Element.ALIGN_JUSTIFIED_ALL, totalFont));
         }
 
         try {
@@ -661,7 +664,7 @@ public class InvoiceGenerator {
                 "\n" +
                 "3. Delivery\n" +
                 "-  All deliveries should be arranged through the store of purchase.\n" +
-                "-  We are unable to provide you with specific delivery times – only that it will be a morning or \n" +
+                "-  We are unable to provide you with specific delivery times �?only that it will be a morning or \n" +
                 "afternoon delivery.\n" +
                 "-  Delivery on stocked products will be charge from $50 delivery fee which depends on the location.\n" +
                 "-  Special orders will be take more than 6 weeks to delivery.\n" +

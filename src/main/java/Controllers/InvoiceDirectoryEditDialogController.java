@@ -176,6 +176,7 @@ public class InvoiceDirectoryEditDialogController {
             invoiceCheckBox.setSelected(false);
             invoiceCheckBox.setDisable(true);
             quotationInvoiceCheckBox.setSelected(true);
+            poCheckBox.setDisable(true);
         }else{
             quotationInvoiceCheckBox.setDisable(true);
         }

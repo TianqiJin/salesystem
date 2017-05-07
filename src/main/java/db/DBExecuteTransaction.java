@@ -18,6 +18,7 @@ public class DBExecuteTransaction extends DBExecute<Transaction> {
     public List selectFromDatabase(String query, Object... params) throws SQLException{
         DBConnect.getConnection();
         selectResult = DBConnect.executeQuery(query, ObjectDeserializer.TRANSACTION_OBJECT_DESERIALIZER, params);
+        selectResult.removeIf(s -> s.isDeleted() == true);
         return  selectResult;
     }
 

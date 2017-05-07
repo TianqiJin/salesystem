@@ -41,7 +41,7 @@ public class ProductOverviewController implements OverviewController{
     private static Logger logger= Logger.getLogger(ProductOverviewController.class);
     private SaleSystem saleSystem;
     private ObservableList<Product> productList;
-    private List<Transaction> transactionList;
+    private List<Transaction> inTransactionList;
     private Executor executor;
     private DBExecuteProduct dbExecute;
     private DBExecuteTransaction dbExecuteTransaction;
@@ -139,6 +139,7 @@ public class ProductOverviewController implements OverviewController{
                 return new SimpleFloatProperty(param.getValue().getProductTransactionList().get(0).getQuantity());
             }
         });
+
         showProductDetail(null);
         productTable.getSelectionModel().selectedItemProperty().addListener(
                 new ChangeListener<Product>() {
@@ -277,7 +278,7 @@ public class ProductOverviewController implements OverviewController{
         };
         progressBar.progressProperty().bind(transactionListTask.progressProperty());
         transactionListTask.setOnSucceeded(event -> {
-            transactionList = FXCollections.observableArrayList(transactionListTask.getValue());
+            inTransactionList = FXCollections.observableArrayList(transactionListTask.getValue());
             progressBar.progressProperty().unbind();
             progressBar.progressProperty().bind(productListTask.progressProperty());
             executor.execute(productListTask);
@@ -367,7 +368,7 @@ public class ProductOverviewController implements OverviewController{
         }
     }
     private void showProductTransactionDetail(Product product){
-        List<Transaction> tmpTransactionList = transactionList.stream()
+        List<Transaction> tmpTransactionList = inTransactionList.stream()
                 .filter(t->t.getProductTransactionList().stream()
                         .anyMatch(p -> p.getProductId().equals(product.getProductId())))
                 .filter(t -> t.getType().equals(Transaction.TransactionType.IN))
@@ -386,6 +387,7 @@ public class ProductOverviewController implements OverviewController{
             tmpTransaction.setProductTransactionList(tmpProductTransactionList);
             realTransactionList.add(tmpTransaction);
         });
+
         productTransactionTableView.setItems(FXCollections.observableArrayList(realTransactionList));
     }
 
