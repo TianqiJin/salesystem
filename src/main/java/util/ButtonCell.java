@@ -18,10 +18,13 @@ import model.Transaction;
  */
 public class ButtonCell extends TableCell<ProductTransaction, Boolean> {
     Image image = new Image(getClass().getResourceAsStream("/pics/delete.png"));
-    Button cellButton = new Button();
+    Button cellButton = new Button("Delete");
     public ButtonCell(TableView<ProductTransaction>tableView){
         setAlignment(Pos.CENTER_LEFT);
-        cellButton.setGraphic(new ImageView(image));
+        ImageView imageView = new ImageView(image);
+        imageView.setFitHeight(20);
+        imageView.setFitWidth(25);
+        cellButton.setGraphic(imageView);
         cellButton.setPadding(Insets.EMPTY);
         cellButton.setOnAction(new EventHandler<ActionEvent>(){
             @Override

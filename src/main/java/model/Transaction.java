@@ -32,6 +32,7 @@ public class Transaction{
     private List<PaymentRecord> payinfo;
     private DoubleProperty gstTax;
     private DoubleProperty pstTax;
+    private StringProperty note;
     private BooleanProperty deleted;
 
 
@@ -49,6 +50,7 @@ public class Transaction{
         this.payinfo = builder.payinfo;
         this.gstTax = new SimpleDoubleProperty(builder.gstTax);
         this.pstTax = new SimpleDoubleProperty(builder.pstTax);
+        this.note = new SimpleStringProperty(builder.note);
         this.deleted = new SimpleBooleanProperty(builder.deleted);
     }
 
@@ -66,6 +68,7 @@ public class Transaction{
         private List<PaymentRecord> payinfo;
         private double gstTax;
         private double pstTax;
+        private String note = null;
         private boolean deleted = false;
 
         public TransactionBuilder transactionId(int transactionId) {
@@ -131,6 +134,11 @@ public class Transaction{
 
         public TransactionBuilder pstTax(double pstTax){
             this.pstTax = pstTax;
+            return this;
+        }
+
+        public TransactionBuilder note(String note){
+            this.note = note;
             return this;
         }
 
@@ -283,6 +291,18 @@ public class Transaction{
         this.pstTax.set(pstTax);
     }
 
+    public String getNote() {
+        return note.get();
+    }
+
+    public StringProperty noteProperty() {
+        return note;
+    }
+
+    public void setNote(String note) {
+        this.note.set(note);
+    }
+
     public boolean isDeleted() {
         return deleted.get();
     }
@@ -333,22 +353,5 @@ public class Transaction{
             }
             return null;
         }
-    }
-
-    public static Transaction returntransactionClone(Transaction transaction) {
-        return new TransactionBuilder()
-                .productInfoList(transaction.getProductTransactionList().stream().collect(Collectors.toList()))
-                .payinfo(new ArrayList<>())
-                .pstTax(transaction.getPstTax())
-                .gstTax(transaction.getGstTax())
-                .staffId(transaction.getStaffId())
-                .total(transaction.getTotal())
-                .payment(0)
-                .storeCredit(0)
-                .date(new SimpleDateFormat("yyyy-MM-dd").format(new Date()))
-                .info(transaction.getInfo())
-                .type(TransactionType.RETURN)
-                .paymentType(transaction.getPaymentType())
-                .build();
     }
 }

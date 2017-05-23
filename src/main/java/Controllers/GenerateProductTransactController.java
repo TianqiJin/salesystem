@@ -90,6 +90,22 @@ public class GenerateProductTransactController {
     @FXML
     private TextField supplierNameField;
 
+    //Transaction Information Labels
+    @FXML
+    private Label typeLabel;
+    @FXML
+    private Label dateLabel;
+    //Staff Information Labels
+    @FXML
+    private Label staffFullNameLabel;
+    @FXML
+    private Label staffPhoneLabel;
+    @FXML
+    private Label staffPositionLabel;
+    //Transaction Additional Note
+    @FXML
+    private TextArea noteArea;
+
     @FXML
     private void initialize(){
         confimButtonBinding = supplierNameField.textProperty().isEmpty().or(transactionTableView.itemsProperty().isNull());
@@ -206,6 +222,7 @@ public class GenerateProductTransactController {
         });
 
         subTotalCol.setCellValueFactory(new PropertyValueFactory<>("subTotal"));
+        showTransactionBasicDetails(null, null);
 
         executor = Executors.newCachedThreadPool(r -> {
             Thread t = new Thread(r);
@@ -231,46 +248,22 @@ public class GenerateProductTransactController {
         }
         else{
             transaction.setInfo(supplierNameField.getText().trim());
+            transaction.setNote(noteArea.getText());
             transaction.getProductTransactionList().addAll(effectiveList);
-
-            StringBuffer overviewTransactionString = new StringBuffer();
-            StringBuffer overviewProductTransactionString = new StringBuffer();
             BigDecimal total = new BigDecimal(0.00).setScale(2, BigDecimal.ROUND_HALF_EVEN);
             for(ProductTransaction tmp: transaction.getProductTransactionList()){
-                overviewProductTransactionString
-                        .append("Product ID: " + tmp.getProductId() + "\n")
-                        .append("Total Num: " + tmp.getTotalNum() + "\n")
-                        .append("Purchased Feet: " + tmp.getQuantity()+ "\n")
-                        .append("Unit Price: " + tmp.getUnitPrice() + "\n")
-                        .append("Sub Total: " + tmp.getSubTotal() + "\n")
-                        .append("\n");
                 total = total.add(new BigDecimal(tmp.getSubTotal()).setScale(2, BigDecimal.ROUND_HALF_EVEN));
             }
             transaction.setPayment(Double.valueOf(total.toString()));
             transaction.setTotal(Double.valueOf(total.toString()));
             transaction.getPayinfo().add(new PaymentRecord(
                     transaction.getDate().toString(),
-                    transaction.getPayment() + transaction.getStoreCredit(),
+                    transaction.getPayment(),
                     transaction.getPaymentType(),
                     false));
-
-            overviewTransactionString
-                    .append("Customer Name: " + transaction.getInfo() + "\n\n")
-                    .append(overviewProductTransactionString)
-                    .append("\n" + "Total: " + transaction.getPayment() + "\n")
-                    .append("Payment Type: " + transaction.getPaymentType() + "\n")
-                    .append("Date: " + transaction.getDate() + "\n");
-
-            Alert alert = new Alert(Alert.AlertType.INFORMATION, overviewTransactionString.toString(), ButtonType.OK, ButtonType.CANCEL);
-            alert.setTitle("Transaction Overview");
-            alert.setHeaderText("Please confirm the following transaction");
-            alert.setResizable(true);
-            alert.getDialogPane().setPrefWidth(500);
-            Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-            alertStage.getIcons().add(new Image(this.getClass().getResourceAsStream(Constant.Image.appIconPath)));
-            alert.getDialogPane().getStylesheets().add(getClass().getResource("/css/theme.css").toExternalForm());
-            Optional<ButtonType> result = alert.showAndWait();
-            if(result.isPresent() && result.get() == ButtonType.OK){
+            Customer tmpCustomer = new Customer.CustomerBuilder().firstName(transaction.getInfo()).build();
+            boolean confirmed = this.saleSystem.showTransactionConfirmationPanel(this.transaction, tmpCustomer);
+            if(confirmed){
                 commitTransactionToDatabase();
                 confirmedClicked = true;
             }else{
@@ -310,6 +303,27 @@ public class GenerateProductTransactController {
                 .paymentType("IN")
                 .payinfo(new ArrayList<>())
                 .build();
+        showTransactionBasicDetails(this.saleSystem.getStaff(), transaction);
+    }
+
+    private void showTransactionBasicDetails(Staff staff, Transaction transaction){
+        if(staff == null){
+            staffFullNameLabel.setText("");
+            staffPhoneLabel.setText("");
+            staffPositionLabel.setText("");
+        }else{
+            staffFullNameLabel.setText(staff.getFullName());
+            staffPhoneLabel.setText(staff.getPhone());
+            staffPositionLabel.setText(staff.getPosition().name());
+        }
+
+        if(transaction == null){
+            typeLabel.setText("");
+            dateLabel.setText("");
+        }else{
+            typeLabel.setText(transaction.getType().name());
+            dateLabel.setText(transaction.getDate().toString());
+        }
     }
 
     private boolean isTransactionValid(List<ProductTransaction> list){

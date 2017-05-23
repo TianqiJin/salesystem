@@ -11,6 +11,8 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <AnchorPane prefHeight="300.0" prefWidth="350.0" stylesheets="@/css/theme.css" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.PropertySettingDialogController">
    <children>
       <TabPane layoutX="31.0" layoutY="21.0" prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="35.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
@@ -76,8 +78,22 @@
       </TabPane>
       <HBox spacing="5.0" AnchorPane.bottomAnchor="5.0" AnchorPane.rightAnchor="5.0">
          <children>
-            <Button mnemonicParsing="false" onAction="#handleConfirmButton" text="Confirm" />
-            <Button mnemonicParsing="false" onAction="#handleCancelButton" text="Cancel" />
+            <Button mnemonicParsing="false" onAction="#handleConfirmButton" text="Confirm">
+                <fx:define>
+                    <Image fx:id="confirmImg" url="/pics/confirm.png" />
+                </fx:define>
+                <graphic>
+                    <ImageView image="$confirmImg" fitHeight="20.0" fitWidth="25.0" />
+                </graphic>
+            </Button>
+            <Button mnemonicParsing="false" onAction="#handleCancelButton" text="Cancel">
+                <fx:define>
+                    <Image fx:id="cancelImg" url="/pics/cancel.png" />
+                </fx:define>
+                <graphic>
+                    <ImageView image="$cancelImg" fitHeight="20.0" fitWidth="25.0" />
+                </graphic>
+            </Button>
          </children>
       </HBox>
    </children>

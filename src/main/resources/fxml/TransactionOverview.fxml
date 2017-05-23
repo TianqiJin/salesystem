@@ -15,6 +15,8 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.text.Font?>
 
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <AnchorPane id="AnchorPane" maxHeight="-1.0" maxWidth="-1.0" minHeight="-1.0" minWidth="-1.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.TransactionOverviewController">
   <children>
     <SplitPane dividerPositions="0.5" focusTraversable="true" prefHeight="600.0" prefWidth="1000.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
@@ -51,12 +53,54 @@
             <Separator prefWidth="200.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0" />
             <HBox id="HBox" alignment="BOTTOM_RIGHT" spacing="5.0" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0">
               <children>
-                  <Button mnemonicParsing="false" onAction="#handleInvoice" text="Invoice" />
-                  <Button mnemonicParsing="false" onAction="#handleAddTransaction" text="New" />
-                  <Button mnemonicParsing="false" onAction="#handleStockTransaction" text="Stock" />
-                  <Button mnemonicParsing="false" onAction="#handleReturnTransaction" text="Return" />
-                  <Button mnemonicParsing="false" onAction="#handleEditTransaction" text="Edit" />
-                  <Button fx:id="deleteButton" disable="true" mnemonicParsing="false" onAction="#handleDeleteTransaction" text="Delete" />
+                  <Button mnemonicParsing="false" onAction="#handleInvoice" text="Invoice">
+                      <fx:define>
+                          <Image fx:id="transactionInvoiceImg" url="/pics/transaction_invoice.png" />
+                      </fx:define>
+                      <graphic>
+                          <ImageView image="$transactionInvoiceImg" fitHeight="20.0" fitWidth="25.0" />
+                      </graphic>
+                  </Button>
+                  <Button mnemonicParsing="false" onAction="#handleAddTransaction" text="New">
+                      <fx:define>
+                          <Image fx:id="transactionAddImg" url="/pics/transaction_add.png" />
+                      </fx:define>
+                      <graphic>
+                          <ImageView image="$transactionAddImg" fitHeight="20.0" fitWidth="25.0" />
+                      </graphic>
+                  </Button>
+                  <Button mnemonicParsing="false" onAction="#handleStockTransaction" text="Stock">
+                      <fx:define>
+                          <Image fx:id="transactionStockImg" url="/pics/transaction_stock.png" />
+                      </fx:define>
+                      <graphic>
+                          <ImageView image="$transactionStockImg" fitHeight="20.0" fitWidth="25.0" />
+                      </graphic>
+                  </Button>
+                  <Button mnemonicParsing="false" onAction="#handleReturnTransaction" text="Return">
+                      <fx:define>
+                          <Image fx:id="transactionReturnImg" url="/pics/transaction_return.png" />
+                      </fx:define>
+                      <graphic>
+                          <ImageView image="$transactionReturnImg" fitHeight="20.0" fitWidth="25.0" />
+                      </graphic>
+                  </Button>
+                  <Button mnemonicParsing="false" onAction="#handleEditTransaction" text="Edit">
+                      <fx:define>
+                          <Image fx:id="transactionEditImg" url="/pics/edit.png" />
+                      </fx:define>
+                      <graphic>
+                          <ImageView image="$transactionEditImg" fitHeight="20.0" fitWidth="25.0" />
+                      </graphic>
+                  </Button>
+                  <Button fx:id="deleteButton" disable="true" mnemonicParsing="false" onAction="#handleDeleteTransaction" text="Delete">
+                      <fx:define>
+                          <Image fx:id="transactionDeleteImg" url="/pics/delete.png" />
+                      </fx:define>
+                      <graphic>
+                          <ImageView image="$transactionDeleteImg" fitHeight="20.0" fitWidth="25.0" />
+                      </graphic>
+                  </Button>
               </children>
             </HBox>
                   <SplitPane dividerPositions="0.55" layoutX="55.0" layoutY="33.0" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="35.0">
@@ -65,26 +109,62 @@
                            <children>
                         <GridPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="0.0">
                           <children>
-                            <Label text="TransactionId" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                            <Label text="Date" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                            <Label text="TransactionId" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                            <Label text="Date" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
                             <Label text="Payment" textAlignment="CENTER" GridPane.columnIndex="0" GridPane.rowIndex="7">
                                        <font>
                                           <Font name="System Bold" size="12.0" />
                                        </font></Label>
-                            <Label text="PaymentType" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-                            <Label text="Staff" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-                            <Label text="Type" GridPane.columnIndex="0" GridPane.rowIndex="4" />
-                            <Label text="Info" GridPane.columnIndex="0" GridPane.rowIndex="5" />
-                            <Label fx:id="transactionIdLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-                            <Label fx:id="dateLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                            <Label text="PaymentType" GridPane.columnIndex="0" GridPane.rowIndex="2">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                            <Label text="Staff" GridPane.columnIndex="0" GridPane.rowIndex="3">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                            <Label text="Type" GridPane.columnIndex="0" GridPane.rowIndex="4">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                            <Label text="Info" GridPane.columnIndex="0" GridPane.rowIndex="5">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                            <Label fx:id="transactionIdLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                            <Label fx:id="dateLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
                             <Label fx:id="paymentLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="7">
                                        <font>
                                           <Font name="System Bold" size="12.0" />
                                        </font></Label>
-                            <Label fx:id="paymentTypeLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                            <Label fx:id="staffLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                            <Label fx:id="typeLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-                            <Label fx:id="infoLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                            <Label fx:id="paymentTypeLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                            <Label fx:id="staffLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                            <Label fx:id="typeLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                            <Label fx:id="infoLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="5">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
                                     <Label text="Store Credit" GridPane.rowIndex="8">
                                        <font>
                                           <Font name="System Bold" size="12.0" />
@@ -99,6 +179,14 @@
                                        </font>
                                     </Label>
                                     <Label fx:id="totalLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="6">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                                    <Label text="Note" GridPane.rowIndex="9">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                                    <Label fx:id="noteLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="9">
                                        <font>
                                           <Font name="System Bold" size="12.0" />
                                        </font></Label>
@@ -117,6 +205,7 @@
                                     <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                             <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                     <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" />
+                                    <RowConstraints maxHeight="-Infinity" minHeight="-Infinity" />
                           </rowConstraints>
                         </GridPane>
                            </children>

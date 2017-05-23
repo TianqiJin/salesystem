@@ -112,6 +112,21 @@ public class GenerateReturnTransactController {
     private TextField returnAmountField;
     @FXML
     private ChoiceBox paymentTypeChoiceBox;
+    //Transaction Information Labels
+    @FXML
+    private Label typeLabel;
+    @FXML
+    private Label dateLabel;
+    //Staff Information Labels
+    @FXML
+    private Label staffFullNameLabel;
+    @FXML
+    private Label staffPhoneLabel;
+    @FXML
+    private Label staffPositionLabel;
+    //Transaction Additional Note
+    @FXML
+    private TextArea noteArea;
 
     @FXML
     private void initialize(){
@@ -174,6 +189,7 @@ public class GenerateReturnTransactController {
 
         showCustomerDetails(null);
         showPaymentDetails(null, null);
+        showTransactionBasicDetails(null, null);
 
         executor = Executors.newCachedThreadPool(r -> {
             Thread t = new Thread(r);
@@ -212,37 +228,10 @@ public class GenerateReturnTransactController {
                     transaction.getPayment() + transaction.getStoreCredit(),
                     transaction.getPaymentType(),
                     false));
-            StringBuffer overviewTransactionString = new StringBuffer();
-            StringBuffer overviewProductTransactionString = new StringBuffer();
+            transaction.setNote(noteArea.getText());
 
-            for(ProductTransaction tmp: transaction.getProductTransactionList()){
-                overviewProductTransactionString
-                        .append("Product ID: " + tmp.getProductId() + "\n")
-                        .append("Returned Quantity: " + tmp.getQuantity() + "\n")
-                        .append("Unit Price: " + tmp.getUnitPrice() + "\n")
-                        .append("Sub Total: " + tmp.getSubTotal() + "\n")
-                        .append("\n");
-            }
-            overviewTransactionString
-                    .append("Customer Name: " + customer.getFirstName() + " " + customer.getLastName() + "\n\n")
-                    .append(overviewProductTransactionString)
-                    .append("\n" + "Total: " + totalLabel.getText() + "\n")
-                    .append("Returned Store Credit: " + transaction.getStoreCredit() + "\n")
-                    .append("Returned Money: " + transaction.getPayment() + "\n")
-                    .append("Payment Type: " + transaction.getPaymentType() + "\n")
-                    .append("Date: " + transaction.getDate() + "\n");
-
-            Alert alert = new Alert(Alert.AlertType.INFORMATION, overviewTransactionString.toString(), ButtonType.OK, ButtonType.CANCEL);
-            alert.setTitle("Transaction Overview");
-            alert.setHeaderText("Please confirm the following transaction");
-            alert.setResizable(true);
-            alert.getDialogPane().setPrefWidth(500);
-            Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-            alertStage.getIcons().add(new Image(this.getClass().getResourceAsStream(Constant.Image.appIconPath)));
-            alert.getDialogPane().getStylesheets().add(getClass().getResource("/css/theme.css").toExternalForm());
-
-            Optional<ButtonType> result = alert.showAndWait();
-            if(result.isPresent() && result.get() == ButtonType.OK){
+            boolean confirmed = this.saleSystem.showTransactionConfirmationPanel(this.transaction, this.customer);
+            if(confirmed){
                 commitTransactionToDatabase();
                 confirmedClicked = true;
             }else{
@@ -283,6 +272,26 @@ public class GenerateReturnTransactController {
             lastNameLabel.setText("");
             discountLabel.setText("");
             storeCreditLabel.setText("");
+        }
+    }
+
+    private void showTransactionBasicDetails(Staff staff, Transaction transaction){
+        if(staff == null){
+            staffFullNameLabel.setText("");
+            staffPhoneLabel.setText("");
+            staffPositionLabel.setText("");
+        }else{
+            staffFullNameLabel.setText(staff.getFullName());
+            staffPhoneLabel.setText(staff.getPhone());
+            staffPositionLabel.setText(staff.getPosition().name());
+        }
+
+        if(transaction == null){
+            typeLabel.setText("");
+            dateLabel.setText("");
+        }else{
+            typeLabel.setText(transaction.getType().name());
+            dateLabel.setText(transaction.getDate().toString());
         }
     }
     /**
@@ -400,6 +409,7 @@ public class GenerateReturnTransactController {
             this.transaction.setDate(LocalDate.parse(new SimpleDateFormat("yyyy-MM-dd").format(new Date())));
             this.transaction.getPayinfo().clear();
             this.transaction.getProductTransactionList().clear();
+            showTransactionBasicDetails(this.saleSystem.getStaff(), this.transaction);
             executor.execute(customerTask);
         });
 

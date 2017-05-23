@@ -60,11 +60,14 @@ public class TransactionEditDialogController {
     private DBExecuteProduct dbExecuteProduct;
     private DBExecuteCustomer dbExecuteCustomer;
     private DBExecuteTransaction dbExecuteTransaction;
+    private DBExecuteStaff dbExecuteStaff;
 
     private SaleSystem saleSystem;
     private StringBuffer errorMsgBuilder;
     private boolean confirmedClicked;
     private Executor executor;
+    private Staff staff;
+    private boolean isEditable;
 
     @FXML
     private AnchorPane splitLeftAnchorPane;
@@ -136,6 +139,21 @@ public class TransactionEditDialogController {
     private CheckBox storeCreditCheckBox;
     @FXML
     private CheckBox isDepositCheckBox;
+
+    @FXML
+    private Label typeLabel;
+    @FXML
+    private Label dateLabel;
+    //Staff Information Labels
+    @FXML
+    private Label staffFullNameLabel;
+    @FXML
+    private Label staffPhoneLabel;
+    @FXML
+    private Label staffPositionLabel;
+    //Transaction Additional Note
+    @FXML
+    private TextArea noteArea;
 
     @FXML
     private void initialize(){
@@ -247,6 +265,8 @@ public class TransactionEditDialogController {
                 return new SimpleIntegerProperty(param.getValue().getBoxNum().getResidualTile());
             }
         });
+
+        showTransactionBasicDetails(null, null);
         new AutoCompleteComboBoxListener<>(productComboBox);
         executor = Executors.newCachedThreadPool(r -> {
             Thread t = new Thread(r);
@@ -293,7 +313,6 @@ public class TransactionEditDialogController {
 
     @FXML
     public void handleQuotationButton() throws IOException, SQLException {
-
         generateTransaction(Transaction.TransactionType.QUOTATION);
     }
 
@@ -305,7 +324,6 @@ public class TransactionEditDialogController {
             alert.setHeaderText("Please fix the following errors before proceed");
             alert.setContentText(errorMsgBuilder.toString());
             alert.showAndWait();
-            transaction.getProductTransactionList().clear();
         }
         else{
             generateTransaction(Transaction.TransactionType.OUT);
@@ -318,6 +336,7 @@ public class TransactionEditDialogController {
         dbExecuteProduct = new DBExecuteProduct();
         dbExecuteCustomer = new DBExecuteCustomer();
         dbExecuteTransaction = new DBExecuteTransaction();
+        dbExecuteStaff = new DBExecuteStaff();
         confirmedClicked = false;
         this.originalProductQuantity = new HashMap<>();
     }
@@ -393,6 +412,26 @@ public class TransactionEditDialogController {
         }
     }
 
+    private void showTransactionBasicDetails(Staff staff, Transaction transaction){
+        if(staff == null){
+            staffFullNameLabel.setText("");
+            staffPhoneLabel.setText("");
+            staffPositionLabel.setText("");
+        }else{
+            staffFullNameLabel.setText(staff.getFullName());
+            staffPhoneLabel.setText(staff.getPhone());
+            staffPositionLabel.setText(staff.getPosition().name());
+        }
+
+        if(transaction == null){
+            typeLabel.setText("");
+            dateLabel.setText("");
+        }else{
+            typeLabel.setText(transaction.getType().name());
+            dateLabel.setText(transaction.getDate().toString());
+        }
+    }
+
     private Integer returnDiscount(){
         if(this.customer != null){
             if(customer.getUserClass().toLowerCase().equals("a")){
@@ -443,6 +482,8 @@ public class TransactionEditDialogController {
         this.transaction.getProductTransactionList().forEach(p -> originalProductQuantity.put(p.getProductId(), p.getQuantity()));
         this.productTransactionObservableList = FXCollections.observableArrayList(transaction.getProductTransactionList());
         this.generateTransactionType = type;
+        this.isEditable = isTransactionEditable(this.transaction, type);
+        noteArea.setText(this.transaction.getNote());
         this.productTransactionObservableList.addListener(new ListChangeListener<ProductTransaction>() {
             @Override
             public void onChanged(Change<? extends ProductTransaction> c) {
@@ -456,7 +497,7 @@ public class TransactionEditDialogController {
     }
 
     private void setRelatedUI(Transaction.TransactionType type){
-        if(type.equals(Transaction.TransactionType.OUT)){
+        if(!isEditable){
             productComboBox.setVisible(false);
             addButton.setVisible(false);
             deleteCol.setVisible(false);
@@ -520,7 +561,11 @@ public class TransactionEditDialogController {
                     refreshTable();
                 }
             });
-            confirmButton.setDisable(true);
+            if(type.equals(Transaction.TransactionType.OUT)){
+                quotationButton.setDisable(true);
+            }else{
+                confirmButton.setDisable(true);
+            }
         }
     }
 
@@ -574,6 +619,38 @@ public class TransactionEditDialogController {
         return true;
     }
 
+    private boolean isTransactionEditable(Transaction transaction, Transaction.TransactionType type){
+        //Return true if the type is QUOTATION
+        if(type.equals(Transaction.TransactionType.QUOTATION)){
+            return true;
+        }
+        //Return false if the type is OUT and every thing is paid up
+        if(type.equals(Transaction.TransactionType.OUT) && transaction.getTotal() == transaction.getPayment()){
+            return false;
+        }
+
+        boolean hasDeposit = false;
+        boolean hasNonDeposit = false;
+        for(PaymentRecord paymentRecord: transaction.getPayinfo()){
+            if(paymentRecord.isDeposit()){
+                hasDeposit = true;
+                break;
+            }
+        }
+        for(PaymentRecord paymentRecord: transaction.getPayinfo()){
+            if(!paymentRecord.isDeposit() && paymentRecord.getPaid() != 0){
+                hasNonDeposit = true;
+                break;
+            }
+        }
+        //Return false if the type is OUT and the customer has made one deposit and one non-deposit payments
+        if(type.equals(Transaction.TransactionType.OUT) && hasDeposit && hasNonDeposit){
+            return false;
+        }
+
+        return true;
+    }
+
 
     public void loadDataFromDB(){
         Task<List<Product>> productTask = new Task<List<Product>>() {
@@ -588,6 +665,12 @@ public class TransactionEditDialogController {
                 return dbExecuteCustomer.selectFromDatabase(DBQueries.SelectQueries.Customer.SELECT_SINGLE_CUSTOMER, transaction.getInfo()).get(0);
             }
         };
+        Task<Staff> staffTask = new Task<Staff>() {
+            @Override
+            protected Staff call() throws Exception {
+                return dbExecuteStaff.selectFromDatabase(DBQueries.SelectQueries.Staff.SELECT_ID_STAFF, transaction.getStaffId()).get(0);
+            }
+        };
 
         customerTask.setOnSucceeded(event -> {
             this.customer = customerTask.getValue();
@@ -595,9 +678,6 @@ public class TransactionEditDialogController {
             showCustomerDetails();
             showPaymentDetails();
             setRelatedUI(this.generateTransactionType);
-            if(this.transaction.getType().equals(Transaction.TransactionType.QUOTATION)){
-                executor.execute(productTask);
-            }
         });
         customerTask.setOnFailed(event -> {
             new AlertBuilder()
@@ -622,7 +702,24 @@ public class TransactionEditDialogController {
                     .build()
                     .showAndWait();
         });
+
+        staffTask.setOnSucceeded(event -> {
+            this.staff = staffTask.getValue();
+            showTransactionBasicDetails(this.staff, this.transaction);
+        });
+
+        staffTask.setOnFailed(event -> {
+            new AlertBuilder()
+                    .alertType(Alert.AlertType.ERROR)
+                    .alertContentText(Constant.DatabaseError.databaseUpdateError + event.getSource().exceptionProperty().getValue())
+                    .alertTitle(Constant.DatabaseError.databaseErrorAlertTitle)
+                    .build()
+                    .showAndWait();
+        });
+
+        executor.execute(productTask);
         executor.execute(customerTask);
+        executor.execute(staffTask);
     }
 
     private void commitUpdatedQuotationToDatabase(){
@@ -662,7 +759,7 @@ public class TransactionEditDialogController {
                 } catch (IOException e) {
                     logger.error(e.getMessage() + "\nThe full stack trace is: ", e);
                 }
-                int row = dbExecuteTransaction.updateDatabase(DBQueries.UpdateQueries.Transaction.UPDATE_TRANSACTION_QUOTATION, objects);
+                int row = dbExecuteTransaction.updateDatabase(DBQueries.UpdateQueries.Transaction.UPDATE_TRANSACTION, objects);
                 if(row == 0){
                     connection.rollback();
                     throw new RuntimeException("Error occurred when updating database. This might be caused by conflict actions on the transaction");
@@ -743,8 +840,8 @@ public class TransactionEditDialogController {
                 Connection connection = DBConnect.getConnection();
 
                 connection.setAutoCommit(false);
-                Object[] objects = ObjectSerializer.TRANSACTION_OBJECT_SERIALIZER_UPDATE.serialize(transaction);
-                int row = dbExecuteTransaction.updateDatabase(DBQueries.UpdateQueries.Transaction.UPDATE_TRANSACTION_OUT, objects);
+                Object[] objects = ObjectSerializer.TRANSACTION_QUOTATION_SERIALIZER_UPDATE.serialize(transaction);
+                int row = dbExecuteTransaction.updateDatabase(DBQueries.UpdateQueries.Transaction.UPDATE_TRANSACTION, objects);
                 if(storeCreditCheckBox.isSelected()){
                     double remainStoreCredit = customer.getStoreCredit() - Double.valueOf(storeCreditField.getText());
                     dbExecuteCustomer.updateDatabase(DBQueries.UpdateQueries.Customer.UPDATE_CUSTOMER_STORE_CREDIT,
@@ -791,8 +888,6 @@ public class TransactionEditDialogController {
     }
 
     private void generateTransaction(Transaction.TransactionType type) throws IOException, SQLException {
-        StringBuffer overviewTransactionString = new StringBuffer();
-        StringBuffer overviewProductTransactionString = new StringBuffer();
         LocalDate originalDate = transaction.getDate();
         String originalPaymentType = transaction.getPaymentType();
         double originalPayment = transaction.getPayment();
@@ -801,11 +896,11 @@ public class TransactionEditDialogController {
         double originalGst = transaction.getGstTax();
         double originalPst = transaction.getPstTax();
         Transaction.TransactionType originalTransactionType = transaction.getType();
-        List<PaymentRecord> originalPayInfo = transaction.getPayinfo();
         transaction.setDate(DateUtil.parse(new SimpleDateFormat("yyyy-MM-dd").format(new Date())));
         transaction.setGstTax(Double.valueOf(gstLabel.getText()));
         transaction.setPstTax(Double.valueOf(pstLabel.getText()));
         transaction.setTotal(Double.valueOf(totalLabel.getText()));
+        transaction.setNote(noteArea.getText());
 
         if(type.equals(Transaction.TransactionType.OUT)){
             double currentPayment = 0;
@@ -826,61 +921,20 @@ public class TransactionEditDialogController {
                     transaction.getPaymentType(),
                     (isDepositCheckBox.isSelected())? true : false));
             transaction.setType(Transaction.TransactionType.OUT);
-            for(ProductTransaction tmp: this.transaction.getProductTransactionList()){
-                overviewProductTransactionString
-                        .append("Product ID: " + tmp.getProductId() + "\n")
-                        .append("Total Num: " + tmp.getTotalNum() + "\n")
-                        .append("Quantity: " + tmp.getQuantity() + "\n")
-                        .append("Unit Price: " + tmp.getUnitPrice() + "\n")
-                        .append("Sub Total: " + tmp.getSubTotal() + "\n")
-                        .append("\n");
-            }
-            overviewTransactionString
-                    .append("Customer Name: " + customer.getFirstName() + " " + customer.getLastName() + "\n\n")
-                    .append(overviewProductTransactionString)
-                    .append("\n" + "Total: " + totalLabel.getText() + "\n")
-                    .append("Payment: " + currentPayment + "\n")
-                    .append("Store Credit: " + currentStoreCredit + "\n")
-                    .append("Payment Type: " + transaction.getPaymentType() + "\n")
-                    .append("Date: " + transaction.getDate() + "\n");
-        }else{
-            for(ProductTransaction tmp: this.productTransactionObservableList){
-                overviewProductTransactionString
-                        .append("Product ID: " + tmp.getProductId() + "\n")
-                        .append("Total Num: " + tmp.getTotalNum() + "\n")
-                        .append("Quantity: " + tmp.getQuantity() + "\n")
-                        .append("Unit Price: " + tmp.getUnitPrice() + "\n")
-                        .append("Sub Total: " + tmp.getSubTotal() + "\n")
-                        .append("\n");
-            }
-            overviewTransactionString
-                    .append("Customer Name: " + customer.getFirstName() + " " + customer.getLastName() + "\n\n")
-                    .append(overviewProductTransactionString)
-                    .append("\n" + "Total: " + totalLabel.getText() + "\n")
-                    .append("Date: " + transaction.getDate() + "\n");
         }
-
-        Alert alert = new Alert(Alert.AlertType.INFORMATION, overviewTransactionString.toString(), ButtonType.OK, ButtonType.CANCEL);
-        alert.setTitle("Transaction Overview");
-        alert.setHeaderText("Please confirm the following transaction");
-        alert.setResizable(true);
-        alert.getDialogPane().setPrefWidth(500);
-        Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-        alertStage.getIcons().add(new Image(this.getClass().getResourceAsStream(Constant.Image.appIconPath)));
-        alert.getDialogPane().getStylesheets().add(getClass().getResource("/css/theme.css").toExternalForm());
-
-        Optional<ButtonType> result = alert.showAndWait();
-        if(result.isPresent() && result.get() == ButtonType.OK){
-            if(type.equals(Transaction.TransactionType.OUT)){
-                commitTransactionToDatabase();
+        boolean confirmed = this.saleSystem.showTransactionConfirmationPanel(this.transaction, this.customer, this.productTransactionObservableList);
+        if(confirmed){
+            if(!isEditable){
+            commitTransactionToDatabase();
             }else{
                 commitUpdatedQuotationToDatabase();
             }
             confirmedClicked = true;
         }else{
             if(type.equals(Transaction.TransactionType.OUT)){
-                transaction.getPayinfo().clear();
-                transaction.getPayinfo().addAll(originalPayInfo);
+                if(transaction.getPayinfo().size() != 0){
+                    transaction.getPayinfo().remove(transaction.getPayinfo().size() - 1);
+                }
                 transaction.setPayment(originalPayment);
                 transaction.setStoreCredit(originalStoreCredit);
                 transaction.setPaymentType(originalPaymentType);
@@ -891,10 +945,6 @@ public class TransactionEditDialogController {
             transaction.setTotal(originalTotal);
             transaction.setPstTax(originalPst);
         }
-    }
-
-    public Transaction returnNewTrasaction(){
-        return this.transaction;
     }
 
     public boolean isConfirmedClicked(){

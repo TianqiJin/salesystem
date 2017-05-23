@@ -4,7 +4,7 @@
 	-fx-font-weight: bold;
 }
 .button {
-	-fx-padding: 3 25 3 25;
+	-fx-padding: 3, 25, 3, 25;
 	-fx-border-width: 2;
 	-fx-background-radius: 0;
 }
@@ -15,4 +15,7 @@
 .text-field-table-cell:filled {
 	-fx-background-color:sandybrown;
 	-fx-border-color: cornsilk;
+}
+#deleteCol{
+	-fx-alignment: CENTER;
 }

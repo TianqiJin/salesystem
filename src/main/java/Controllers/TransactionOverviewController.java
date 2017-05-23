@@ -80,6 +80,8 @@ public class TransactionOverviewController implements OverviewController{
     @FXML
     private Label infoLabel;
     @FXML
+    private Label noteLabel;
+    @FXML
     private TableView<ProductTransaction> transactionDetaiTableView;
     @FXML
     private TableColumn<ProductTransaction, String> productIdCol;
@@ -520,6 +522,7 @@ public class TransactionOverviewController implements OverviewController{
             staffLabel.setText(String.valueOf(transaction.getStaffId()));
             typeLabel.setText(transaction.getType().name());
             infoLabel.setText(transaction.getInfo());
+            noteLabel.setText(transaction.getNote());
             if(!saleSystem.getStaff().getPosition().equals(Staff.Position.MANAGER)
                     && transaction.getType().equals(Transaction.TransactionType.IN)){
                 unitPriceCol.setVisible(false);
@@ -545,6 +548,7 @@ public class TransactionOverviewController implements OverviewController{
             staffLabel.setText("");
             typeLabel.setText("");
             infoLabel.setText("");
+            noteLabel.setText("");
         }
     }
 }

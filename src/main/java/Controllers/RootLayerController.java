@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class rootLayerController {
+public class RootLayerController {
     @FXML
     private TabPane tabPane;
     @FXML

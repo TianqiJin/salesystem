@@ -7,6 +7,7 @@ import db.DBQueries;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -29,9 +30,7 @@ import util.AlertBuilder;
 import util.PropertiesSys;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -240,7 +239,7 @@ public class SaleSystem extends Application{
     public boolean showTransactionEditDialog(Transaction transaction, Transaction.TransactionType type){
         try{
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(SaleSystem.class.getResource("/fxml/EditTransactionDialog.fxml"));
+            loader.setLocation(SaleSystem.class.getResource("/fxml/TransactionEditDialog.fxml"));
             AnchorPane page = loader.load();
 
             Stage dialogStage = new Stage();
@@ -508,6 +507,51 @@ public class SaleSystem extends Application{
         }catch(IOException e){
             logger.error(e.getMessage());
             e.printStackTrace();
+        }
+        return null;
+    }
+
+    public boolean showTransactionConfirmationPanel(Transaction transaction, Customer customer){
+        Stage dialogStage = new Stage();
+        TransactionConfirmationController controller = createDefaultTransactionConfirmationPanel(dialogStage, transaction, customer);
+        dialogStage.showAndWait();
+        if(controller != null){
+            return controller.isConfirmedClicked();
+        }
+        return false;
+    }
+
+    public boolean showTransactionConfirmationPanel(Transaction transaction, Customer customer, ObservableList<ProductTransaction> productTransactionObservableList){
+        Stage dialogStage = new Stage();
+        TransactionConfirmationController controller = createDefaultTransactionConfirmationPanel(dialogStage, transaction, customer);
+        if(controller != null){
+            controller.setProductTransactionObservableList(productTransactionObservableList);
+            dialogStage.showAndWait();
+            return controller.isConfirmedClicked();
+        }
+        return false;
+    }
+
+    private TransactionConfirmationController createDefaultTransactionConfirmationPanel(Stage dialogStage, Transaction transaction, Customer customer){
+        try{
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(SaleSystem.class.getResource("/fxml/TransactionConfirmation.fxml"));
+            SplitPane page = loader.load();
+
+            dialogStage.getIcons().add(new Image(SaleSystem.class.getResourceAsStream(Constant.Image.appIconPath)));
+            dialogStage.setTitle("Transaction Confirmation");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(primaryStage);
+            Scene scene = new Scene(page);
+            dialogStage.setScene(scene);
+
+            TransactionConfirmationController controller = loader.getController();
+            controller.setDialogStage(dialogStage);
+            controller.setSelectedTransaction(transaction);
+            controller.setCustomer(customer);
+            return controller;
+        }catch (IOException e){
+            logger.error(e.getMessage(), e);
         }
         return null;
     }

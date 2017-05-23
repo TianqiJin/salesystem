@@ -16,6 +16,8 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.text.Font?>
 
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <AnchorPane id="AnchorPane" maxHeight="-1.0" maxWidth="-1.0" minHeight="-1.0" minWidth="-1.0" prefHeight="-1.0" prefWidth="-1.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.CustomerOverviewController">
   <children>
     <SplitPane dividerPositions="0.4331103678929766" focusTraversable="true" prefHeight="600.0" prefWidth="1000.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
@@ -50,12 +52,29 @@
             <HBox id="HBox" alignment="BOTTOM_RIGHT" spacing="5.0" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0">
               <children>
                 <Button mnemonicParsing="false" onAction="#handleAddCustomer" text="New">
-                  <HBox.margin>
-                    <Insets />
-                  </HBox.margin>
+                    <fx:define>
+                        <Image fx:id="customerAddImg" url="/pics/customer_add.png" />
+                    </fx:define>
+                    <graphic>
+                        <ImageView image="$customerAddImg" fitHeight="20.0" fitWidth="25.0" />
+                    </graphic>
                 </Button>
-                <Button mnemonicParsing="false" onAction="#handleEditCustomer" text="Edit" />
-                <Button fx:id="deleteButton" mnemonicParsing="false" onAction="#handleDeleteCustomer" text="Delete" />
+                <Button mnemonicParsing="false" onAction="#handleEditCustomer" text="Edit">
+                  <fx:define>
+                      <Image fx:id="customerEditImg" url="/pics/edit.png" />
+                  </fx:define>
+                  <graphic>
+                      <ImageView image="$customerEditImg" fitHeight="20.0" fitWidth="25.0" />
+                  </graphic>
+                </Button>
+                <Button fx:id="deleteButton" mnemonicParsing="false" onAction="#handleDeleteCustomer" text="Delete">
+                    <fx:define>
+                        <Image fx:id="customerDeleteImg" url="/pics/delete.png" />
+                    </fx:define>
+                    <graphic>
+                        <ImageView image="$customerDeleteImg" fitHeight="20.0" fitWidth="25.0" />
+                    </graphic>
+                </Button>
               </children>
             </HBox>
                   <SplitPane dividerPositions="0.55" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="35.0">
@@ -64,29 +83,95 @@
                            <children>
                         <GridPane gridLinesVisible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="0.0">
                           <children>
-                            <Label text="First Name" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                            <Label text="Last Name" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                            <Label text="First Name" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                            <Label text="Last Name" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
                             <!--<Label text="Contact Phone" textAlignment="CENTER" GridPane.columnIndex="0" GridPane.rowIndex="2" />-->
-                            <Label text="Street" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-                            <Label fx:id="firstNameLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-                            <Label fx:id="lastNameLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                            <Label id="ContactPhoneLabel" fx:id="phoneLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                            <Label fx:id="streetLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                            <Label text="City" GridPane.columnIndex="0" GridPane.rowIndex="4" />
-                            <Label text="Postal Code" GridPane.columnIndex="0" GridPane.rowIndex="5" />
-                            <Label fx:id="cityLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-                            <Label fx:id="postalCodeLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="5" />
-                            <Label text="Contact Phone" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-                            <Label text="Class" GridPane.columnIndex="0" GridPane.rowIndex="6" />
-                            <Label id="class" fx:id="classLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="6" />
-                            <Label text="Email" GridPane.columnIndex="0" GridPane.rowIndex="7" />
-                            <Label fx:id="emailLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="7" />
-                            <Label text="Store Credit" GridPane.columnIndex="0" GridPane.rowIndex="8" />
-                            <Label fx:id="storeCreditLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="8" />
-                                    <Label text="Company" GridPane.rowIndex="9" />
-                                    <Label fx:id="companyLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="9" />
-                                    <Label text="PST Number" GridPane.rowIndex="10" />
-                                    <Label fx:id="pstNumberLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="10" />
+                            <Label text="Street" GridPane.columnIndex="0" GridPane.rowIndex="3">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                            <Label fx:id="firstNameLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                            <Label fx:id="lastNameLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                            <Label id="ContactPhoneLabel" fx:id="phoneLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                            <Label fx:id="streetLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                            <Label text="City" GridPane.columnIndex="0" GridPane.rowIndex="4">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                            <Label text="Postal Code" GridPane.columnIndex="0" GridPane.rowIndex="5">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                            <Label fx:id="cityLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                            <Label fx:id="postalCodeLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="5">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                            <Label text="Contact Phone" GridPane.columnIndex="0" GridPane.rowIndex="2">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                            <Label text="Class" GridPane.columnIndex="0" GridPane.rowIndex="6">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                            <Label id="class" fx:id="classLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="6">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                            <Label text="Email" GridPane.columnIndex="0" GridPane.rowIndex="7">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                            <Label fx:id="emailLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="7">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                            <Label text="Store Credit" GridPane.columnIndex="0" GridPane.rowIndex="8">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                            <Label fx:id="storeCreditLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="8">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                                    <Label text="Company" GridPane.rowIndex="9">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                                    <Label fx:id="companyLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="9">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                                    <Label text="PST Number" GridPane.rowIndex="10">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                                    <Label fx:id="pstNumberLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="10">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
                           </children>
                           <columnConstraints>
                             <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />

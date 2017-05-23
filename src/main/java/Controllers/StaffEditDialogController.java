@@ -45,6 +45,7 @@ public class StaffEditDialogController {
 
     public void setDialogStage(Stage dialogStage){
         this.dialogStage = dialogStage;
+        this.dialogStage.setResizable(false);
     }
     public void setTextField(Staff staff){
         this.staff = staff;

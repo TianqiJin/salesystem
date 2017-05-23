@@ -64,6 +64,11 @@ public class GenerateCustomerTransactController {
     private int discount;
     private Executor executor;
 
+    //Transaction table view
+    @FXML
+    private Button addItemButton;
+    @FXML
+    private ComboBox productComboBox;
     @FXML
     private TableView<ProductTransaction> transactionTableView;
     @FXML
@@ -88,7 +93,7 @@ public class GenerateCustomerTransactController {
     private TableColumn<ProductTransaction, Number> residualTileCol;
     @FXML
     private TableColumn<ProductTransaction, String> remarkCol;
-
+    //Customer details panel
     @FXML
     private Label firstNameLabel;
     @FXML
@@ -97,7 +102,11 @@ public class GenerateCustomerTransactController {
     private Label storeCreditLabel;
     @FXML
     private Label discountLabel;
-
+    @FXML
+    private ComboBox customerComboBox;
+    @FXML
+    private ComboBox customerPhoneComboBox;
+    //Item details panel
     @FXML
     private Label itemsCountLabel;
     @FXML
@@ -110,23 +119,6 @@ public class GenerateCustomerTransactController {
     private Label gstTaxLabel;
     @FXML
     private Label totalLabel;
-
-    @FXML
-    private Button addItemButton;
-    @FXML
-    private Button addNewCustomer;
-    @FXML
-    private TextField paymentField;
-    @FXML
-    private Button confirmButton;
-    @FXML
-    private Button cancelButton;
-    @FXML
-    private ComboBox customerComboBox;
-    @FXML
-    private ComboBox customerPhoneComboBox;
-    @FXML
-    private ComboBox productComboBox;
     @FXML
     private Label balanceLabel;
     @FXML
@@ -137,6 +129,29 @@ public class GenerateCustomerTransactController {
     private CheckBox storeCreditCheckBox;
     @FXML
     private CheckBox isDepositCheckBox;
+    @FXML
+    private TextField paymentField;
+    //Confirm and Cancel buttons
+    @FXML
+    private Button confirmButton;
+    @FXML
+    private Button cancelButton;
+    //Transaction Information Labels
+    @FXML
+    private Label typeLabel;
+    @FXML
+    private Label dateLabel;
+    //Staff Information Labels
+    @FXML
+    private Label staffFullNameLabel;
+    @FXML
+    private Label staffPhoneLabel;
+    @FXML
+    private Label staffPositionLabel;
+    //Transaction Additional Note
+    @FXML
+    private TextArea noteArea;
+
 
     @FXML
     private void initialize(){
@@ -296,6 +311,7 @@ public class GenerateCustomerTransactController {
         });
         showCustomerDetails(null);
         showPaymentDetails(null, null);
+        showTransactionBasicDetails(null, null);
 
         paymentTypeChoiceBox.getSelectionModel().selectFirst();
         paymentTypeChoiceBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
@@ -511,42 +527,10 @@ public class GenerateCustomerTransactController {
                     transaction.getPaymentType(),
                     (isDepositCheckBox.isSelected())? true : false));
         }
-
+        transaction.setNote(noteArea.getText());
         transaction.setType(type);
-
-        StringBuffer overviewTransactionString = new StringBuffer();
-        StringBuffer overviewProductTransactionString = new StringBuffer();
-        for(ProductTransaction tmp: transaction.getProductTransactionList()){
-            overviewProductTransactionString
-                    .append("Product ID: " + tmp.getProductId() + "\n")
-                    .append("Total Num: " + tmp.getTotalNum() + "\n")
-                    .append("Quantity: " + tmp.getQuantity() + "\n")
-                    .append("Unit Price: " + tmp.getUnitPrice() + "\n")
-                    .append("Discount (%): " + tmp.getDiscount() + "\n")
-                    .append("Sub Total: " + tmp.getSubTotal() + "\n")
-                    .append("Remark: " + tmp.getRemark() + "\n")
-                    .append("\n");
-        }
-        overviewTransactionString
-                .append("Customer Name: " + customer.getFirstName() + " " + customer.getLastName() + "\n\n")
-                .append(overviewProductTransactionString)
-                .append("\n" + "Total: " + totalLabel.getText() + "\n")
-                .append("Payment: " + transaction.getPayment() + "\n")
-                .append("Store Credit: " + transaction.getStoreCredit() + "\n")
-                .append("Payment Type: " + transaction.getPaymentType() + "\n")
-                .append("Date: " + transaction.getDate() + "\n");
-
-        Alert alert = new Alert(Alert.AlertType.INFORMATION, overviewTransactionString.toString(), ButtonType.OK, ButtonType.CANCEL);
-        alert.setTitle("Transaction Overview");
-        alert.setHeaderText("Please confirm the following transaction");
-        alert.setResizable(true);
-        alert.getDialogPane().setPrefWidth(500);
-        Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-        alertStage.getIcons().add(new Image(this.getClass().getResourceAsStream(Constant.Image.appIconPath)));
-        alert.getDialogPane().getStylesheets().add(getClass().getResource("/css/theme.css").toExternalForm());
-
-        Optional<ButtonType> result = alert.showAndWait();
-        if(result.isPresent() && result.get() == ButtonType.OK){
+        boolean confirmed = this.saleSystem.showTransactionConfirmationPanel(this.transaction, this.customer);
+        if(confirmed){
             commitTransactionToDatabase();
             confirmedClicked = true;
         }else{
@@ -640,6 +624,26 @@ public class GenerateCustomerTransactController {
             balanceLabel.setText("");
         }
     }
+
+    private void showTransactionBasicDetails(Staff staff, Transaction transaction){
+        if(staff == null){
+            staffFullNameLabel.setText("");
+            staffPhoneLabel.setText("");
+            staffPositionLabel.setText("");
+        }else{
+            staffFullNameLabel.setText(staff.getFullName());
+            staffPhoneLabel.setText(staff.getPhone());
+            staffPositionLabel.setText(staff.getPosition().name());
+        }
+
+        if(transaction == null){
+            typeLabel.setText("");
+            dateLabel.setText("");
+        }else{
+            typeLabel.setText(transaction.getType().name());
+            dateLabel.setText(transaction.getDate().toString());
+        }
+    }
     /*
     * Initilize the main class for this class
     * */
@@ -655,6 +659,7 @@ public class GenerateCustomerTransactController {
                 .payment(0)
                 .paymentType(INIT_TRANSACTION_PAYMENT_TYPE)
                 .build();
+        showTransactionBasicDetails(this.saleSystem.getStaff(), transaction);
         productTransactionObservableList = FXCollections.observableArrayList(transaction.getProductTransactionList());
         transactionTableView.setItems(productTransactionObservableList);
         productTransactionObservableList.addListener(new ListChangeListener<ProductTransaction>() {

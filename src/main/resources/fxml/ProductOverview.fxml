@@ -16,6 +16,8 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.text.Font?>
 
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <AnchorPane id="AnchorPane" maxHeight="-1.0" maxWidth="-1.0" minHeight="-1.0" minWidth="-1.0" prefHeight="-1.0" prefWidth="-1.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.ProductOverviewController">
   <children>
     <SplitPane dividerPositions="0.4331103678929766" focusTraversable="true" prefHeight="600.0" prefWidth="1000.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
@@ -50,12 +52,29 @@
             <HBox id="HBox" alignment="BOTTOM_RIGHT" spacing="5.0" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0">
               <children>
                 <Button mnemonicParsing="false" onAction="#handleAddProduct" text="New">
-                  <HBox.margin>
-                    <Insets />
-                  </HBox.margin>
+                    <fx:define>
+                        <Image fx:id="productAddImg" url="/pics/product_add.png" />
+                    </fx:define>
+                    <graphic>
+                        <ImageView image="$productAddImg" fitHeight="20.0" fitWidth="25.0" />
+                    </graphic>
                 </Button>
-                <Button mnemonicParsing="false" onAction="#handleEditProduct" text="Edit" />
-                        <Button mnemonicParsing="false" onAction="#handleDeleteProduct" text="Delete" />
+                <Button mnemonicParsing="false" onAction="#handleEditProduct" text="Edit">
+                    <fx:define>
+                        <Image fx:id="productEditImg" url="/pics/edit.png" />
+                    </fx:define>
+                    <graphic>
+                        <ImageView image="$productEditImg" fitHeight="20.0" fitWidth="25.0" />
+                    </graphic>
+                </Button>
+                <Button mnemonicParsing="false" onAction="#handleDeleteProduct" text="Delete">
+                    <fx:define>
+                        <Image fx:id="productDeleteImg" url="/pics/delete.png" />
+                    </fx:define>
+                    <graphic>
+                        <ImageView image="$productDeleteImg" fitHeight="20.0" fitWidth="25.0" />
+                    </graphic>
+                </Button>
                 <!--<Button mnemonicParsing="false" onAction="#handleDeleteProduct" text="Delete" />-->
               </children>
             </HBox>
@@ -65,18 +84,54 @@
                            <children>
                         <GridPane gridLinesVisible="false" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0">
                           <children>
-                            <Label text="ProductId" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                            <Label text="Texture" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                            <Label text="Size" textAlignment="CENTER" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-                            <Label fx:id="productIdLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-                            <Label fx:id="textualLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                            <Label fx:id="sizeLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                                    <Label text="Unit Price" GridPane.rowIndex="3" />
-                                    <Label fx:id="unitPriceLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                                    <Label text="Total Feet:" GridPane.rowIndex="4" />
-                                    <Label fx:id="totalNumLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-                                    <Label text="Pieces Per Box: " GridPane.rowIndex="5" />
-                                    <Label fx:id="piecesPerBoxLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                            <Label text="ProductId" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                            <Label text="Texture" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                            <Label text="Size" textAlignment="CENTER" GridPane.columnIndex="0" GridPane.rowIndex="2">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                            <Label fx:id="productIdLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                            <Label fx:id="textualLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                            <Label fx:id="sizeLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                                    <Label text="Unit Price" GridPane.rowIndex="3">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                                    <Label fx:id="unitPriceLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                                    <Label text="Total Feet:" GridPane.rowIndex="4">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                                    <Label fx:id="totalNumLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                                    <Label text="Pieces Per Box: " GridPane.rowIndex="5">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
+                                    <Label fx:id="piecesPerBoxLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="5">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Label>
                           </children>
                           <columnConstraints>
                             <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />

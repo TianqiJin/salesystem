@@ -65,6 +65,7 @@ public interface ObjectSerializer<E> {
                     payInfoWriter.toString(),
                     transaction.getGstTax(),
                     transaction.getPstTax(),
+                    transaction.getNote()
             };
         }
     };
@@ -91,8 +92,7 @@ public interface ObjectSerializer<E> {
                 jsonGenerator.close();
                 typeJson = typeWriter.toString();
             } catch (IOException e) {
-                logger.error(e.getMessage());
-                e.printStackTrace();
+                logger.error(e.getMessage(), e);
             }
             return new Object[]{
                     productInfoWriter.toString(),
@@ -102,6 +102,7 @@ public interface ObjectSerializer<E> {
                     transaction.getPaymentType(),
                     transaction.getStoreCredit(),
                     payInfoWriter.toString(),
+                    transaction.getNote(),
                     transaction.getTransactionId(),
             };
         }
@@ -115,8 +116,25 @@ public interface ObjectSerializer<E> {
             ObjectMapper mapper = new ObjectMapper();
             mapper.writeValue(payInfoWriter, transaction.getPayinfo());
             mapper.writeValue(productInfoWriter, transaction.getProductTransactionList());
+            StringWriter typeWriter = new StringWriter();
+            JsonFactory jsonfactory = new JsonFactory();
+            String typeJson = null;
+            try {
+                JsonGenerator jsonGenerator = jsonfactory.createJsonGenerator(typeWriter);
+                jsonGenerator.writeStartObject();
+                jsonGenerator.writeFieldName("type");
+                jsonGenerator.writeString(transaction.getType().toString());
+                jsonGenerator.writeFieldName("info");
+                jsonGenerator.writeString(transaction.getInfo());
+                jsonGenerator.writeEndObject();
+                jsonGenerator.close();
+                typeJson = typeWriter.toString();
+            } catch (IOException e) {
+                logger.error(e.getMessage(), e);
+            }
             return new Object[]{
                     productInfoWriter.toString(),
+                    typeJson,
                     transaction.getDate(),
                     transaction.getPayment(),
                     transaction.getPaymentType(),
@@ -125,6 +143,7 @@ public interface ObjectSerializer<E> {
                     transaction.getTotal(),
                     transaction.getGstTax(),
                     transaction.getPstTax(),
+                    transaction.getNote(),
                     transaction.getTransactionId(),
             };
         }

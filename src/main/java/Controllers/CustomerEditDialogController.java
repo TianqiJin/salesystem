@@ -42,11 +42,7 @@ public class CustomerEditDialogController {
     private String errorMsg;
     private boolean okClicked;
 
-    private ObservableList<String> options = FXCollections.observableArrayList(
-                    "A",
-                    "B",
-                    "C"
-            );
+    private ObservableList<String> options = FXCollections.observableArrayList("A", "B", "C");
 
     @FXML
     private void initialize(){}
@@ -57,6 +53,7 @@ public class CustomerEditDialogController {
     }
     public void setDialogStage(Stage dialogStage){
         this.dialogStage = dialogStage;
+        this.dialogStage.setResizable(false);
     }
     public void setTextField(Customer customer){
         this.customer = customer;

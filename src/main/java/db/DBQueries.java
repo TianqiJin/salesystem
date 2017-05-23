@@ -22,6 +22,7 @@ public class DBQueries {
         public static class Staff{
             public final static String SELECT_ALL_STAFF = "SELECT * FROM staff";
             public final static String SELECT_USERNAME_STAFF = "SELECT * FROM staff WHERE UserName = ?";
+            public final static String SELECT_ID_STAFF = "SELECT * FROM staff WHERE StaffID = ?";
             public final static String SELECT_STAFF_MAX_NUM = "SELECT * from staff order by StaffID desc limit 1";
         }
         public static class Property{
@@ -55,8 +56,8 @@ public class DBQueries {
         }
         public static class Transaction{
             public final static String INSERT_INTO_TRANSACTION = "INSERT INTO transaction "
-                    +"(ProductInfo, Date, Payment, PaymentType, StoreCredit, StaffID, Type, Total, payinfo, GstTax, PstTax) "
-                    +"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    +"(ProductInfo, Date, Payment, PaymentType, StoreCredit, StaffID, Type, Total, payinfo, GstTax, PstTax, Note) "
+                    +"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         }
         public static class Staff{
             public final static String INSERT_INTO_STAFF = "INSERT INTO staff "
@@ -102,11 +103,8 @@ public class DBQueries {
                     +"WHERE PropertyId = 1";
         }
         public static class Transaction{
-            public final static String UPDATE_TRANSACTION_OUT = "UPDATE transaction "
-                    +"SET ProductInfo =?, Type = ?, Date = ?, Payment = ?, PaymentType = ?, StoreCredit = ?, payinfo = ? "
-                    +"WHERE TransactionID = ?";
-            public final static String UPDATE_TRANSACTION_QUOTATION = "UPDATE transaction "
-                    +"SET ProductInfo =?, Date = ?, Payment = ?, PaymentType = ?, StoreCredit = ?, payinfo = ?, Total =?, GstTax = ?, PstTax = ?"
+            public final static String UPDATE_TRANSACTION = "UPDATE transaction "
+                    +"SET ProductInfo =?, Type = ?, Date = ?, Payment = ?, PaymentType = ?, StoreCredit = ?, payinfo = ?, Total =?, GstTax = ?, PstTax = ?, Note = ? "
                     +"WHERE TransactionID = ?";
             public final static String UPDATE_TRANSACTION_DELETE = "UPDATE transaction "
                     +"SET Deleted =? "

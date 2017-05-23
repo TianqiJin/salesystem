@@ -34,7 +34,7 @@ public class DBExecuteStaff extends DBExecute<Staff>{
     }
 
     @Override
-    public List selectFromDatabase(String query, Object... params) throws SQLException{
+    public List<Staff> selectFromDatabase(String query, Object... params) throws SQLException{
         DBConnect.getConnection();
         selectResult = DBConnect.executeQuery(query, ObjectDeserializer.STAFF_OBJECT_DESERIALIZER, params);
         return selectResult;
