@@ -61,9 +61,9 @@ public class PDFGenerator {
         document.setMargins(50, 45, 90, 40);
         document.open();
         header.setHeader("MILAN TILE CORPORATION REVENUE REPORT");
-        PdfPTable table = new PdfPTable(6);
+        PdfPTable table = new PdfPTable(5);
         table.setWidthPercentage(100);
-        table.setWidths(new int[]{15,10,15,15,10,40});
+        table.setWidths(new int[]{15,10,15,15,10});
         table.getDefaultCell().setBorder(Rectangle.BOTTOM);
         table.addCell(getCell("Date", Element.ALIGN_LEFT, tableTitle));
         table.getDefaultCell().setBorder(Rectangle.BOTTOM);
@@ -74,15 +74,13 @@ public class PDFGenerator {
         table.addCell(getCell("Type", Element.ALIGN_LEFT, tableTitle));
         table.getDefaultCell().setBorder(Rectangle.BOTTOM);
         table.addCell(getCell("Total", Element.ALIGN_LEFT, tableTitle));
-        table.getDefaultCell().setBorder(Rectangle.BOTTOM);
-        table.addCell(getCell("Transaction Details", Element.ALIGN_LEFT, tableTitle));
+
         for(Transaction transaction : transactionList){
             table.addCell(getCell(DateUtil.format(transaction.getDate()), Element.ALIGN_LEFT, totalFont));
             table.addCell(getCell(String.valueOf(transaction.getStaffId()), Element.ALIGN_LEFT, totalFont));
             table.addCell(getCell(String.valueOf(transaction.getInfo()), Element.ALIGN_LEFT, totalFont));
             table.addCell(getCell(transaction.getType().toString(), Element.ALIGN_LEFT, totalFont));
             table.addCell(getCell(String.valueOf(transaction.getTotal()), Element.ALIGN_LEFT, totalFont));
-            generateInnerTable(table, transaction);
         }
         boolean flag = true;
         for(PdfPRow row: table.getRows().subList(1, table.getRows().size())) {
@@ -98,23 +96,6 @@ public class PDFGenerator {
         openPDF(destination);
     }
 
-    private void generateInnerTable(PdfPTable outerTable, Transaction transaction) throws DocumentException {
-        PdfPTable table = new PdfPTable(4);
-        table.setWidthPercentage(100);
-        table.setWidths(new int[]{25,25,25,25});
-        table.addCell(getCell("Product ID", Element.ALIGN_LEFT, tableTitleInner));
-        table.addCell(getCell("Unit Price", Element.ALIGN_LEFT, tableTitleInner));
-        table.addCell(getCell("Quantity", Element.ALIGN_LEFT, tableTitleInner));
-        table.addCell(getCell("Sub Total", Element.ALIGN_LEFT, tableTitleInner));
-        for(ProductTransaction productTransaction: transaction.getProductTransactionList()){
-            table.addCell(getCell(String.valueOf(productTransaction.getProductId()), Element.ALIGN_LEFT, totalFontInner));
-            table.addCell(getCell(String.valueOf(productTransaction.getUnitPrice()), Element.ALIGN_LEFT, totalFontInner));
-            table.addCell(getCell(String.valueOf(productTransaction.getQuantity()), Element.ALIGN_LEFT, totalFontInner));
-            table.addCell(getCell(String.valueOf(productTransaction.getSubTotal()), Element.ALIGN_LEFT, totalFontInner));
-        }
-        table.setSpacingAfter(10);
-        outerTable.addCell(table);
-    }
 
     private PdfPTable generateResult() throws DocumentException{
         PdfPTable table = new PdfPTable(3);
@@ -280,43 +261,46 @@ public class PDFGenerator {
                     .showAndWait();
         }
     }
+
+    public static class TableHeader extends PdfPageEventHelper {
+        String header;
+        PdfTemplate total;
+
+        public void setHeader(String header) {
+            this.header = header;
+        }
+
+        public void onOpenDocument(PdfWriter writer, Document document) {
+            total = writer.getDirectContent().createTemplate(30, 16);
+        }
+
+        public void onEndPage(PdfWriter writer, Document document) {
+            PdfPTable table = new PdfPTable(3);
+            try {
+                table.setWidths(new int[]{24, 48, 24});
+                table.setTotalWidth(527);
+                table.setLockedWidth(true);
+                table.getDefaultCell().setBorder(Rectangle.BOTTOM);
+                table.addCell(new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+                table.getDefaultCell().setFixedHeight(20);
+                table.getDefaultCell().setBorder(Rectangle.BOTTOM);
+                table.getDefaultCell().setHorizontalAlignment(Element.ALIGN_CENTER);
+                table.addCell(header);
+                table.getDefaultCell().setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(String.format("Page %d", writer.getPageNumber()));
+                table.writeSelectedRows(0, -1, 34, 803, writer.getDirectContent());
+            }
+            catch(DocumentException de) {
+                throw new ExceptionConverter(de);
+            }
+        }
+
+        public void onCloseDocument(PdfWriter writer, Document document) {
+            ColumnText.showTextAligned(total, Element.ALIGN_LEFT,
+                    new Phrase(String.valueOf(writer.getPageNumber() - 1)),
+                    (document.left() + document.right())/2 , document.bottom()-20, 0);
+        }
+    }
 }
 
-class TableHeader extends PdfPageEventHelper {
-    String header;
-    PdfTemplate total;
 
-    public void setHeader(String header) {
-        this.header = header;
-    }
-
-    public void onOpenDocument(PdfWriter writer, Document document) {
-        total = writer.getDirectContent().createTemplate(30, 16);
-    }
-
-    public void onEndPage(PdfWriter writer, Document document) {
-        PdfPTable table = new PdfPTable(3);
-        try {
-            table.setWidths(new int[]{24, 24, 24});
-            table.setTotalWidth(527);
-            table.setLockedWidth(true);
-            table.getDefaultCell().setBorder(Rectangle.BOTTOM);
-            table.addCell(new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
-            table.getDefaultCell().setFixedHeight(20);
-            table.getDefaultCell().setBorder(Rectangle.BOTTOM);
-            table.addCell(header);
-            table.getDefaultCell().setHorizontalAlignment(Element.ALIGN_RIGHT);
-            table.addCell(String.format("Page %d", writer.getPageNumber()));
-            table.writeSelectedRows(0, -1, 34, 803, writer.getDirectContent());
-        }
-        catch(DocumentException de) {
-            throw new ExceptionConverter(de);
-        }
-    }
-
-    public void onCloseDocument(PdfWriter writer, Document document) {
-        ColumnText.showTextAligned(total, Element.ALIGN_LEFT,
-                new Phrase(String.valueOf(writer.getPageNumber() - 1)),
-                (document.left() + document.right())/2 , document.bottom()-20, 0);
-    }
-}

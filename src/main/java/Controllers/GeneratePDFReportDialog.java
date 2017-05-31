@@ -102,37 +102,28 @@ public class GeneratePDFReportDialog {
         new AutoCompleteComboBoxListener<>(productComboBox);
         new AutoCompleteComboBoxListener<>(staffComboBox);
 
-        customerComboBox.valueProperty().addListener(new ChangeListener() {
-            @Override
-            public void changed(ObservableValue observable, Object oldValue, Object newValue) {
-                for(Customer tmpCustomer: customerList){
-                    if(tmpCustomer.getCustomerInfo().equals(newValue)){
-                        customer = tmpCustomer;
-                        break;
-                    }
+        customerComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+            for(Customer tmpCustomer: customerList){
+                if(tmpCustomer.getCustomerInfo().equals(newValue)){
+                    customer = tmpCustomer;
+                    break;
                 }
             }
         });
 
-        staffComboBox.valueProperty().addListener(new ChangeListener() {
-            @Override
-            public void changed(ObservableValue observable, Object oldValue, Object newValue) {
-                for(Staff tmpStaff: staffList){
-                    if(tmpStaff.getInfo().equals(newValue)){
-                        staffId = tmpStaff.getStaffId();
-                        break;
-                    }
+        staffComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+            for(Staff tmpStaff: staffList){
+                if(tmpStaff.getInfo().equals(newValue)){
+                    staffId = tmpStaff.getStaffId();
+                    break;
                 }
             }
         });
-        productComboBox.valueProperty().addListener(new ChangeListener() {
-            @Override
-            public void changed(ObservableValue observable, Object oldValue, Object newValue) {
-                for(Product tmpProduct: productList){
-                    if(tmpProduct.getProductId().equals(newValue)){
-                        productId = tmpProduct.getProductId();
-                        break;
-                    }
+        productComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+            for(Product tmpProduct: productList){
+                if(tmpProduct.getProductId().equals(newValue)){
+                    productId = tmpProduct.getProductId();
+                    break;
                 }
             }
         });
@@ -201,6 +192,7 @@ public class GeneratePDFReportDialog {
 
     public void setDialogStage(Stage dialogStage){
         this.dialogStage = dialogStage;
+        this.dialogStage.setResizable(false);
     }
 
     public GeneratePDFReportDialog(){

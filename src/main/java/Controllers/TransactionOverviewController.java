@@ -3,9 +3,11 @@ package Controllers;
 
 import Constants.Constant;
 import MainClass.SaleSystem;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import db.*;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleBinding;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -14,17 +16,21 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
+import javafx.print.PrinterJob;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Callback;
+import javafx.util.StringConverter;
 import model.*;
 import org.apache.log4j.Logger;
 import util.AlertBuilder;
 import util.DateUtil;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -97,6 +103,26 @@ public class TransactionOverviewController implements OverviewController{
     private ProgressBar progressBar;
     @FXML
     private Button deleteButton;
+    @FXML
+    private Button stockButton;
+    @FXML
+    private HBox buttonHbox;
+    @FXML
+    private ComboBox<Transaction.TransactionType> transactionTypeComboBox;
+    @FXML
+    private DatePicker fromDatePicker;
+    @FXML
+    private DatePicker toDatePicker;
+    @FXML
+    private TableView<PaymentRecord> paymentRecordTableView;
+    @FXML
+    private TableColumn<PaymentRecord, String> paymentDateCol;
+    @FXML
+    private TableColumn<PaymentRecord, String> paymentTypeCol;
+    @FXML
+    private TableColumn<PaymentRecord, Double> paymentAmountCol;
+    @FXML
+    private TableColumn<PaymentRecord, String> paymentIsDepositCol;
 
 
     @FXML
@@ -129,41 +155,87 @@ public class TransactionOverviewController implements OverviewController{
             }
         });
 
-        phoneCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Transaction, String>, ObservableValue<String>>() {
-            @Override
-            public ObservableValue<String> call(TableColumn.CellDataFeatures<Transaction, String> param) {
-                if(param.getValue().getType().equals(Transaction.TransactionType.IN)){
-                    return null;
-                }else{
+        phoneCol.setCellValueFactory(param -> {
+            if(param.getValue().getType().equals(Transaction.TransactionType.IN)){
+                return null;
+            }else{
 
-                    Customer customer = customerList.stream().filter(c -> c.getUserName().equals(param.getValue().getInfo())).findFirst().orElse(null);
-                    if(customer != null && customer.getPhone() != null){
-                        return new SimpleStringProperty(customer.getPhone());
-                    }else{
-                        return null;
-                    }
-//                    if(customer.getPhone() != null){
-//                        return new SimpleStringProperty(customer.getPhone());
-//                    }else{
-//                        return null;
-//                    }
+                Customer customer = customerList.stream().filter(c -> c.getUserName().equals(param.getValue().getInfo())).findFirst().orElse(null);
+                if(customer != null && customer.getPhone() != null){
+                    return new SimpleStringProperty(customer.getPhone());
+                }else{
+                    return null;
                 }
             }
         });
         showTransactionDetail(null);
         transactionTable.getSelectionModel().selectedItemProperty().addListener(
-                new ChangeListener<Transaction>() {
-                    @Override
-                    public void changed(ObservableValue<? extends Transaction> observable, Transaction oldValue, Transaction newValue) {
-                        showTransactionDetail(newValue);
-                    }
-                }
+                (observable, oldValue, newValue) -> showTransactionDetail(newValue)
         );
+
+        transactionTypeComboBox.setItems(FXCollections.observableArrayList(Transaction.TransactionType.values()));
+        transactionTypeComboBox.setConverter(new StringConverter<Transaction.TransactionType>() {
+            @Override
+            public String toString(Transaction.TransactionType object) {
+                if(object == null){
+                    return null;
+                }
+                return object.toString();
+            }
+
+            @Override
+            public Transaction.TransactionType fromString(String string) {
+                if(string == null){
+                    return null;
+                }
+                return Transaction.TransactionType.valueOf(string);
+            }
+        });
+
+        paymentAmountCol.setCellValueFactory(new PropertyValueFactory<>("paid"));
+        paymentDateCol.setCellValueFactory(new PropertyValueFactory<>("date"));
+        paymentIsDepositCol.setCellValueFactory(param -> {
+            if(param.getValue().isDeposit()){
+                return new SimpleStringProperty("Yes");
+            }else{
+                return new SimpleStringProperty("No");
+            }
+        });
+        paymentTypeCol.setCellValueFactory(new PropertyValueFactory<>("paymentType"));
+
         executor = Executors.newCachedThreadPool(r -> {
             Thread t = new Thread(r);
             t.setDaemon(true);
             return t;
         });
+    }
+
+    @FXML
+    private void handleFilterTransaction(){
+        LocalDate fromDate = fromDatePicker.getValue();
+        LocalDate toDate = toDatePicker.getValue();
+        Transaction.TransactionType type = transactionTypeComboBox.getValue();
+
+        ObservableList<Transaction> subList = FXCollections.observableArrayList(transactionList);
+        if(type != null){
+            subList = subList.stream().filter(transaction -> transaction.getType().equals(type)).collect(Collectors.toCollection(FXCollections::observableArrayList));
+        }
+        if(fromDate != null){
+            subList = subList.stream().filter(transaction -> transaction.getDate().isAfter(fromDate)).collect(Collectors.toCollection(FXCollections::observableArrayList));
+        }
+        if(toDate != null){
+            subList = subList.stream().filter(transaction -> transaction.getDate().isBefore(toDate)).collect(Collectors.toCollection(FXCollections::observableArrayList));
+        }
+
+        transactionTable.setItems(subList);
+    }
+
+    @FXML
+    private void handleClearFilter(){
+        transactionTypeComboBox.getEditor().clear();
+        fromDatePicker.getEditor().clear();
+        toDatePicker.getEditor().clear();
+        transactionTable.setItems(transactionList);
     }
 
     @FXML
@@ -178,6 +250,7 @@ public class TransactionOverviewController implements OverviewController{
             }
         }
     }
+
 
     @FXML
     private void handleStockTransaction(){
@@ -277,7 +350,7 @@ public class TransactionOverviewController implements OverviewController{
                     dbExecuteTransaction.updateDatabase(DBQueries.UpdateQueries.Transaction.UPDATE_TRANSACTION_DELETE, deleteTransaction.getPropertiesForDeleteUpdate());
                     connection.commit();
                 }catch (SQLException e){
-                    logger.error(e.getMessage());
+                    logger.error(e.getMessage(), e);
                     connection.rollback();
                     Alert alert = new Alert(Alert.AlertType.ERROR, "Unable to store transaction to database!\n" + e.getMessage());
                     alert.showAndWait();
@@ -502,8 +575,9 @@ public class TransactionOverviewController implements OverviewController{
     @Override
     public void setMainClass(SaleSystem saleSystem) {
         this.saleSystem = saleSystem;
-        if(this.saleSystem.getStaff().getPosition().equals(Staff.Position.MANAGER)){
-            deleteButton.setDisable(false);
+        if(!this.saleSystem.getStaff().getPosition().equals(Staff.Position.MANAGER)){
+            buttonHbox.getChildren().remove(deleteButton);
+            buttonHbox.getChildren().remove(stockButton);
         }
         loadDataFromDB();
     }
@@ -537,6 +611,7 @@ public class TransactionOverviewController implements OverviewController{
             }
             transactionDetaiTableView.setItems(
                     FXCollections.observableArrayList(transaction.getProductTransactionList()));
+            paymentRecordTableView.setItems(FXCollections.observableArrayList(transaction.getPayinfo()));
         }
         else{
             transactionIdLabel.setText("");

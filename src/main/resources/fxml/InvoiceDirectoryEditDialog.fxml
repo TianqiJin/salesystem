@@ -6,38 +6,33 @@
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="500.0" stylesheets="@/css/theme.css" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.InvoiceDirectoryEditDialogController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="500.0" stylesheets="@/css/bootstrap3.css" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.InvoiceDirectoryEditDialogController">
    <children>
-      <HBox layoutX="330.0" layoutY="237.0" spacing="5.0" AnchorPane.bottomAnchor="5.0" AnchorPane.rightAnchor="10.0">
+      <HBox layoutX="330.0" layoutY="237.0" spacing="5.0" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="5.0">
          <children>
             <Button mnemonicParsing="false" onAction="#handleConfirmButton" text="Confirm">
-                <fx:define>
-                    <Image fx:id="confirmImg" url="/pics/confirm.png" />
-                </fx:define>
+                <Image fx:id="confirmImg" url="/pics/confirm.png" />
                 <graphic>
-                    <ImageView image="$confirmImg" fitHeight="20.0" fitWidth="25.0" />
+                    <ImageView fitHeight="20.0" fitWidth="25.0" image="$confirmImg" />
                 </graphic>
             </Button>
             <Button mnemonicParsing="false" onAction="#handleCancelButton" text="Cancel">
-                <fx:define>
-                    <Image fx:id="cancelImg" url="/pics/cancel.png" />
-                </fx:define>
+                <Image fx:id="cancelImg" url="/pics/cancel.png" />
                 <graphic>
-                    <ImageView image="$cancelImg" fitHeight="20.0" fitWidth="25.0" />
+                    <ImageView fitHeight="20.0" fitWidth="25.0" image="$cancelImg" />
                 </graphic>
             </Button>
          </children>
       </HBox>
-    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
-      <SplitPane dividerPositions="0.2, 0.45" layoutX="244.0" layoutY="66.0" orientation="VERTICAL" prefHeight="244.0" prefWidth="500.0" AnchorPane.bottomAnchor="35.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <SplitPane dividerPositions="0.2, 0.45" layoutX="244.0" layoutY="66.0" orientation="VERTICAL" prefHeight="450.0" prefWidth="500.0" AnchorPane.bottomAnchor="100.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <items>
             <AnchorPane prefHeight="200.0" prefWidth="200.0">
                <children>
@@ -84,11 +79,9 @@
                                 </rowConstraints>
                                  <children>
                                     <Button mnemonicParsing="false" onAction="#handleInvoiceDirectory" text="Invoice Directory">
-                                        <fx:define>
-                                            <Image fx:id="selectDirectoryImg" url="/pics/directory_select.png" />
-                                        </fx:define>
+                                        <Image fx:id="selectDirectoryImg" url="/pics/directory_select.png" />
                                         <graphic>
-                                            <ImageView image="$selectDirectoryImg" fitHeight="20.0" fitWidth="25.0" />
+                                            <ImageView fitHeight="20.0" fitWidth="25.0" image="$selectDirectoryImg" />
                                         </graphic>
                                     </Button>
                                     <Label fx:id="invoiceDirectoryLabel" text="Label" GridPane.columnIndex="1" />

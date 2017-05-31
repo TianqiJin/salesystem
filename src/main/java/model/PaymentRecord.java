@@ -7,7 +7,6 @@ import org.apache.log4j.Logger;
  */
 public class PaymentRecord {
     private static Logger logger = Logger.getLogger(PaymentRecord.class);
-
     private String date;
     private double paid;
     private String paymentType;
@@ -19,7 +18,6 @@ public class PaymentRecord {
         this.paymentType = (String)params[2];
         this.isDeposit = (Boolean)params[3];
     }
-
 
     public String getDate() {
         return date;

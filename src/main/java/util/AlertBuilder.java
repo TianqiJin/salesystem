@@ -12,6 +12,7 @@ import Constants.Constant;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.DialogPane;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import org.apache.log4j.Logger;
@@ -31,6 +32,8 @@ public class AlertBuilder{
         alert.setTitle(null);
         Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
         alertStage.getIcons().add(new Image(AlertBuilder.class.getResourceAsStream(Constant.Image.appIconPath)));
+        DialogPane dialogPane = alert.getDialogPane();
+        dialogPane.getStylesheets().add(this.getClass().getResource("/css/bootstrap3.css").toExternalForm());
     }
 
     public AlertBuilder alertType(Alert.AlertType type){
@@ -53,6 +56,7 @@ public class AlertBuilder{
         alert.getButtonTypes().setAll(buttonTypes);
         return this;
     }
+
     public Alert build(){
         return alert;
     }

@@ -55,6 +55,8 @@ public class TransactionConfirmationController {
     private Label phoneLabel;
     @FXML
     private Label emailLabel;
+    @FXML
+    private Button confirmButton;
 
     @FXML
     private void initialize(){
@@ -75,6 +77,7 @@ public class TransactionConfirmationController {
     @FXML
     public void handleConfirmButton() throws IOException {
         this.confirmedClicked = true;
+        confirmButton.setDisable(true);
         dialogStage.close();
     }
     /*

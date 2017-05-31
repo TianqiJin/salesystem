@@ -108,7 +108,7 @@ public class ProductOverviewController implements OverviewController{
                         }else{
                             setText(String.valueOf(item));
                             if(item < saleSystem.getProperty().getProductWarnLimit()){
-                                getTableRow().setStyle("-fx-background-color: lightcoral; -fx-border-color: cornsilk");
+                                getTableRow().setStyle("-fx-border-color: lightcoral; -fx-border-width: 0 0 1 0");
                             }
                             else{
                                 getTableRow().setStyle("");

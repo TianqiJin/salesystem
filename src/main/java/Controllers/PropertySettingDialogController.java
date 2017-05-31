@@ -102,9 +102,12 @@ public class PropertySettingDialogController {
     public PropertySettingDialogController(){
         dbExecuteProperty = new DBExecuteProperty();
     }
+
     public void setDialogStage(Stage dialogStage){
         this.dialogStage = dialogStage;
+        this.dialogStage.setResizable(false);
     }
+
     public void setMainClass(SaleSystem saleSystem) {
         this.saleSystem = saleSystem;
         productWarnLimitField.setText(String.valueOf(this.saleSystem.getProperty().getProductWarnLimit()));

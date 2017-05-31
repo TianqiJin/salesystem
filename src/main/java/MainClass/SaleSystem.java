@@ -2,9 +2,14 @@ package MainClass;
 
 import Constants.Constant;
 import Controllers.*;
+import com.sun.deploy.uitoolkit.impl.fx.HostServicesFactory;
+import com.sun.javafx.application.HostServicesDelegate;
 import db.DBExecuteProperty;
 import db.DBQueries;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
@@ -18,20 +23,40 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
 import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.FlowPane;
 import javafx.stage.Modality;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import model.*;
+import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.log4j.Logger;
+import org.json.JSONObject;
+
 import util.AlertBuilder;
 import util.PropertiesSys;
 
+import java.awt.*;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -48,6 +73,7 @@ public class SaleSystem extends Application{
     private static Property property;
     private DBExecuteProperty dbExecuteProperty;
     private Executor executor;
+    private HttpClient client;
 
     @FXML
     public TabPane tabPane;
@@ -70,10 +96,25 @@ public class SaleSystem extends Application{
             return t;
         });
         showLoginDialog();
-        if (state!=0){
+        if (state != 0){
             loadPropertyFromDB();
             showMainLayOut(primaryStage);
             executor.execute(refreshDB());
+            Thread threadCheckUpgrade =  new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    while(true){
+                        checkNewVersion(false);
+                        try {
+                            Thread.sleep(60 * 1000 * 120);
+                        } catch (InterruptedException e) {
+                            logger.error(e.getMessage(), e);
+                        }
+                    }
+                }
+            });
+            threadCheckUpgrade.setDaemon(true);
+            threadCheckUpgrade.start();
         }
     }
 
@@ -89,6 +130,7 @@ public class SaleSystem extends Application{
         this.primaryStage.setY(bounds.getMinY());
         this.primaryStage.setWidth(bounds.getWidth());
         this.primaryStage.setHeight(bounds.getHeight());
+        this.client = HttpClientBuilder.create().build();
         initRootLayout();
         initMenuBar();
         initTab();
@@ -98,51 +140,39 @@ public class SaleSystem extends Application{
         Menu menuReport = new Menu("Report");
         Menu menuEdit = new Menu("Edit");
         Menu menuHelp = new Menu("Help");
-        MenuItem generateReportMenuItem = new MenuItem("Generate Report");
+        MenuItem generateRevenueReportMenuItem = new MenuItem("Revenue Report");
+        MenuItem generateTransactionReportMenuItem = new MenuItem("Transaction Report");
         MenuItem settingsMenuItem = new MenuItem("Settings");
         MenuItem aboutMenuItem = new MenuItem("About");
+        MenuItem checkUpdateMenuItem = new MenuItem("Check for Update");
         MenuItem logOutMenuItem = new MenuItem("Log out");
-        menuReport.getItems().add(generateReportMenuItem);
+        menuReport.getItems().add(generateRevenueReportMenuItem);
+        menuReport.getItems().add(generateTransactionReportMenuItem);
         menuEdit.getItems().add(settingsMenuItem);
         menuHelp.getItems().add(aboutMenuItem);
+        menuHelp.getItems().add(checkUpdateMenuItem);
         menuHelp.getItems().add(new SeparatorMenuItem());
         menuHelp.getItems().add(logOutMenuItem);
         menuBar.getMenus().add(menuReport);
         menuBar.getMenus().add(menuEdit);
         menuBar.getMenus().add(menuHelp);
 
-        generateReportMenuItem.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                showPDFGenerateDialog();
-            }
-        });
-        settingsMenuItem.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                showPropertySettingDialog();
-            }
-        });
-        aboutMenuItem.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                new AlertBuilder()
-                        .alertType(Alert.AlertType.INFORMATION)
-                        .alertContentText(Constant.CopyRight.copyRightConntent)
-                        .alertTitle("About")
-                        .build()
-                        .showAndWait();
-            }
-        });
-        logOutMenuItem.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                primaryStage.close();
-                showLoginDialog();
-                if (state!=0){
-                    loadPropertyFromDB();
-                    showMainLayOut(primaryStage);
-                }
+        generateRevenueReportMenuItem.setOnAction(event -> showGenerateRevenueReportDialog());
+        generateTransactionReportMenuItem.setOnAction(event -> showGenerateTransactionReportDialog());
+        settingsMenuItem.setOnAction(event -> showPropertySettingDialog());
+        aboutMenuItem.setOnAction(event -> new AlertBuilder()
+                .alertType(Alert.AlertType.INFORMATION)
+                .alertContentText(Constant.CopyRight.copyRightConntent)
+                .alertTitle("About")
+                .build()
+                .showAndWait());
+        checkUpdateMenuItem.setOnAction(event -> checkNewVersion(true));
+        logOutMenuItem.setOnAction(event -> {
+            primaryStage.close();
+            showLoginDialog();
+            if (state!=0){
+                loadPropertyFromDB();
+                showMainLayOut(primaryStage);
             }
         });
     }
@@ -174,10 +204,9 @@ public class SaleSystem extends Application{
                         tabControllerMap.put(newValue.getText(), controller);
 
                     } catch (IOException ex) {
-                        ex.printStackTrace();
+                        logger.error(ex.getMessage(), ex);
                     }
                 } else {
-                    //Parent root = (Parent)newValue.getContent();
                     OverviewController controller = tabControllerMap.get(newValue.getText());
                     controller.loadDataFromDB();
                 }
@@ -206,7 +235,7 @@ public class SaleSystem extends Application{
                 }
             }
         }catch(IOException e){
-            logger.error(e.getMessage());
+            logger.error(e.getMessage(), e);
         }
     }
 
@@ -230,8 +259,7 @@ public class SaleSystem extends Application{
             dialogStage.showAndWait();
             return controller.isOKClicked();
         }catch(IOException e){
-            logger.error(e.getMessage());
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
             return false;
         }
     }
@@ -258,8 +286,7 @@ public class SaleSystem extends Application{
             dialogStage.showAndWait();
             return controller.isConfirmedClicked();
         }catch (IOException e){
-            logger.error(e.getMessage());
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
             return false;
         }
     }
@@ -286,8 +313,7 @@ public class SaleSystem extends Application{
             dialogStage.showAndWait();
             return controller.isOKClicked();
         }catch(IOException e){
-            logger.error(e.getMessage());
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
             return false;
         }
     }
@@ -314,8 +340,7 @@ public class SaleSystem extends Application{
             dialogStage.showAndWait();
             return controller.isOKClicked();
         }catch(IOException e){
-            logger.error(e.getMessage());
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
             return false;
         }
     }
@@ -342,12 +367,35 @@ public class SaleSystem extends Application{
             this.staff = controller.returnStaff();
 
         }catch(IOException e){
-            logger.error(e.getMessage());
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
         }
     }
 
-    public void showPDFGenerateDialog(){
+    public void showGenerateTransactionReportDialog(){
+        try{
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(SaleSystem.class.getResource("/fxml/GenerateTransactionReport.fxml"));
+            AnchorPane page = loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.getIcons().add(new Image(SaleSystem.class.getResourceAsStream(Constant.Image.appIconPath)));
+            dialogStage.setTitle("Transaction Report");
+            Scene scene = new Scene(page);
+            dialogStage.setScene(scene);
+            dialogStage.initOwner(primaryStage);
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+
+            TransactionReportController controller = loader.getController();
+            controller.setDialogStage(dialogStage);
+            controller.loadDataFromDB();
+            dialogStage.showAndWait();
+
+        }catch(IOException e){
+            logger.error(e.getMessage(), e);
+        }
+    }
+
+    public void showGenerateRevenueReportDialog(){
         try{
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(SaleSystem.class.getResource("/fxml/GeneratePDFReportDialog.fxml"));
@@ -355,21 +403,19 @@ public class SaleSystem extends Application{
 
             Stage dialogStage = new Stage();
             dialogStage.getIcons().add(new Image(SaleSystem.class.getResourceAsStream(Constant.Image.appIconPath)));
-            dialogStage.setTitle("Generate Report");
+            dialogStage.setTitle("Revenue Report");
             Scene scene = new Scene(page);
             dialogStage.setScene(scene);
             dialogStage.initOwner(primaryStage);
             dialogStage.initModality(Modality.WINDOW_MODAL);
 
             GeneratePDFReportDialog controller = loader.getController();
-            System.out.println(controller);
             controller.setDialogStage(dialogStage);
             dialogStage.showAndWait();
             loadPropertyFromDB();
 
         }catch(IOException e){
-            logger.error(e.getMessage());
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
         }
     }
 
@@ -420,8 +466,7 @@ public class SaleSystem extends Application{
             dialogStage.showAndWait();
 
         }catch(IOException e){
-            logger.error(e.getMessage());
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
         }
     }
 
@@ -447,8 +492,7 @@ public class SaleSystem extends Application{
                 return controller.returnContainer();
             }
         }catch(IOException e){
-            logger.error(e.getMessage());
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
         }
         return null;
     }
@@ -476,8 +520,7 @@ public class SaleSystem extends Application{
                 return controller.returnNewTrasaction();
             }
         }catch(IOException e){
-            logger.error(e.getMessage());
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
         }
         return null;
     }
@@ -505,8 +548,7 @@ public class SaleSystem extends Application{
                 return controller.returnNewTrasaction();
             }
         }catch(IOException e){
-            logger.error(e.getMessage());
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
         }
         return null;
     }
@@ -540,7 +582,7 @@ public class SaleSystem extends Application{
 
             dialogStage.getIcons().add(new Image(SaleSystem.class.getResourceAsStream(Constant.Image.appIconPath)));
             dialogStage.setTitle("Transaction Confirmation");
-            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initModality(Modality.APPLICATION_MODAL);
             dialogStage.initOwner(primaryStage);
             Scene scene = new Scene(page);
             dialogStage.setScene(scene);
@@ -584,73 +626,9 @@ public class SaleSystem extends Application{
         executor.execute(getPropertyTask);
     }
 
-//    public int getProductWarnLimit(){
-//        return property.getProductWarnLimit();
-//    }
-//
-//    public int getPstRate(){ return property.getPstRate();}
-//
-//    public int getGstRate(){ return property.getGstRate();}
-//
-//    public String getGstNum(){ return property.getGstNumber();}
-
     public Property getProperty(){ return property; }
 
-//    public void setProductLimit(Integer productLimit){
-//        try{
-//            dbExecuteProperty.updateDatabase(DBQueries.UpdateQueries.Property.UPDATE_PRODUCT_WARN_LIMIT, productLimit);
-//        }catch(SQLException e){
-//            logger.error(e.getMessage());
-//            new AlertBuilder()
-//                    .alertType(Alert.AlertType.ERROR)
-//                    .alertContentText(Constant.DatabaseError.databaseUpdateError + e.toString())
-//                    .build()
-//                    .showAndWait();
-//        }
-//        loadPropertyFromDB();
-//    }
 
-//    public void setPstRate(Integer pstRate){
-//        try{
-//            dbExecuteProperty.updateDatabase(DBQueries.UpdateQueries.Property.UPDATE_PST_RATE, pstRate);
-//        }catch(SQLException e){
-//            logger.error(e.getMessage());
-//            new AlertBuilder()
-//                    .alertType(Alert.AlertType.ERROR)
-//                    .alertContentText(Constant.DatabaseError.databaseUpdateError + e.toString())
-//                    .build()
-//                    .showAndWait();
-//        }
-//        loadPropertyFromDB();
-//    }
-//
-//    public void setGstRate(Integer gstRate){
-//        try{
-//            dbExecuteProperty.updateDatabase(DBQueries.UpdateQueries.Property.UPDATE_GST_RATE, gstRate);
-//        }catch(SQLException e){
-//            logger.error(e.getMessage());
-//            new AlertBuilder()
-//                    .alertType(Alert.AlertType.ERROR)
-//                    .alertContentText(Constant.DatabaseError.databaseUpdateError + e.toString())
-//                    .build()
-//                    .showAndWait();
-//        }
-//        loadPropertyFromDB();
-//    }
-//
-//    public void setGstNumber(String gstNumber){
-//        try{
-//            dbExecuteProperty.updateDatabase(DBQueries.UpdateQueries.Property.UPDATE_GST_NUMBER, gstNumber);
-//        }catch(SQLException e){
-//            logger.error(e.getMessage());
-//            new AlertBuilder()
-//                    .alertType(Alert.AlertType.ERROR)
-//                    .alertContentText(Constant.DatabaseError.databaseUpdateError + e.toString())
-//                    .build()
-//                    .showAndWait();
-//        }
-//        loadPropertyFromDB();
-//    }
 
     private Task<Void> refreshDB(){
         Task<Void> refreshDB = new Task<Void>() {
@@ -658,7 +636,6 @@ public class SaleSystem extends Application{
             protected Void call() throws Exception {
                 int count = 0;
                 while(true){
-//                    logger.info("Refresh DB at " + count + " minute");
                     dbExecuteProperty
                             .selectFirstFromDatabase(DBQueries.SelectQueries.Property.SELECT_ALL_PROPERTY);
                     Thread.sleep(60*1000*5);
@@ -669,4 +646,89 @@ public class SaleSystem extends Application{
         return refreshDB;
     }
 
+    private void checkNewVersion(boolean isManuallyTriggered){
+        HttpGet request = new HttpGet("https://api.github.com/repos/t6jin/salesystem/releases/latest");
+        request.addHeader("accept", "application/json");
+
+        try {
+            HttpResponse response = client.execute(request);
+            if(response.getStatusLine().getStatusCode() == 200){
+                JSONObject jsonObject = new JSONObject(IOUtils.toString(response.getEntity().getContent()));
+                String version = jsonObject.getString("tag_name");
+                String changeLog = jsonObject.getString("body");
+                JSONObject asset = (JSONObject) jsonObject.getJSONArray("assets").get(0);
+                String url = asset.getString("browser_download_url");
+
+                String currentVersion = IOUtils.toString(
+                        getClass().getClassLoader().getResourceAsStream("version"), StandardCharsets.UTF_8);
+                StringBuilder contentBuilder = new StringBuilder();
+                contentBuilder.append("Milan Sale System Version " + version + " is available!")
+                        .append("\n")
+                        .append("The following is the change log")
+                        .append("\n\n")
+                        .append(changeLog)
+                        .append("\n\n")
+                        .append("Please click on the following link to download")
+                        .append("\n");
+                if(currentVersion.compareTo(version) < 0){
+                    Platform.runLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            FlowPane fp = new FlowPane();
+                            Label lbl = new Label(contentBuilder.toString());
+                            Hyperlink link = new Hyperlink(url);
+                            fp.getChildren().addAll( lbl, link);
+                            link.setOnAction(event -> {
+                                if (Desktop.isDesktopSupported()){
+                                    Desktop desktop = Desktop.getDesktop();
+                                    if (desktop.isSupported(Desktop.Action.BROWSE)){
+                                        try {
+                                            desktop.browse(new URI(url));
+                                        } catch (IOException | URISyntaxException e) {
+                                            logger.info(e.getMessage(), e);
+                                        }
+                                    }
+                                }else{
+                                    new AlertBuilder().alertType(Alert.AlertType.WARNING)
+                                            .alertTitle("Warning")
+                                            .alertHeaderText("System Default Browser Error")
+                                            .alertContentText("Unable to open system default browser. Please copy and paste the url manually")
+                                            .build()
+                                            .showAndWait();
+                                }
+                            });
+
+                            Alert alert = new AlertBuilder().alertTitle("Version Upgrade")
+                                    .alertType(Alert.AlertType.INFORMATION)
+                                    .alertHeaderText("New Version is Available")
+                                    .alertContentText(contentBuilder.toString())
+                                    .build();
+                            alert.getDialogPane().contentProperty().set(fp);
+                            Optional<ButtonType> result = alert.showAndWait();
+                            if(result.isPresent() && result.get() == ButtonType.OK){
+                                System.exit(0);
+                            }
+                        }
+                    });
+                }else{
+                    if(isManuallyTriggered){
+                        new AlertBuilder().alertTitle("Upgrade Check")
+                                .alertContentText("You've already had the latest version!")
+                                .build()
+                                .showAndWait();
+                    }
+                }
+            }else{
+                new AlertBuilder().alertType(Alert.AlertType.ERROR)
+                        .alertTitle("Upgrade Error")
+                        .alertHeaderText("Upgrade Check Error")
+                        .alertContentText("We've encountered an issue when checking the version. Please the reason: "+ "\n\n" +
+                                response.getStatusLine().getReasonPhrase())
+                        .build()
+                        .showAndWait();
+            }
+        } catch (IOException e) {
+            logger.info(e.getMessage(), e);
+        }
+    }
 }

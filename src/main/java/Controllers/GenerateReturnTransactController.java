@@ -229,7 +229,6 @@ public class GenerateReturnTransactController {
                     transaction.getPaymentType(),
                     false));
             transaction.setNote(noteArea.getText());
-
             boolean confirmed = this.saleSystem.showTransactionConfirmationPanel(this.transaction, this.customer);
             if(confirmed){
                 commitTransactionToDatabase();

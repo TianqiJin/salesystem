@@ -46,7 +46,6 @@ public class DBConnect {
                     connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
                     break;
                 } catch (SQLException e) {
-                    System.out.println(count);
                     if (++count == max_retry) {
                         logger.error(e.getMessage());
                         break;

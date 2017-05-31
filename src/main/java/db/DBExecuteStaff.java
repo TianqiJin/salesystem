@@ -27,8 +27,7 @@ public class DBExecuteStaff extends DBExecute<Staff>{
                 }
             }
         } catch (SQLException e) {
-            logger.error(e.getMessage());
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
         }
         return result;
     }
@@ -48,7 +47,7 @@ public class DBExecuteStaff extends DBExecute<Staff>{
                 return selectResult.get(0).getStaffId()+1;
             }
         } catch (SQLException e) {
-            logger.error(e.getMessage());
+            logger.error(e.getMessage(), e);
         }
         return 0;
     }

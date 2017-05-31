@@ -4,16 +4,16 @@
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.layout.BorderPane?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="1000.0" prefWidth="2300.0" stylesheets="@/css/theme.css" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="1000.0" prefWidth="2300.0" stylesheets="@/css/bootstrap3.css" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1">
   <top>
     <MenuBar>
     </MenuBar>
   </top>
-   <left>
-      <TabPane fx:id="tabPane" tabClosingPolicy="UNAVAILABLE"  tabMaxWidth="80.0" tabMinWidth="80.0" BorderPane.alignment="CENTER">
+   <center>
+      <TabPane fx:id="tabPane" tabClosingPolicy="UNAVAILABLE" tabMaxWidth="80.0" tabMinWidth="80.0" BorderPane.alignment="CENTER">
         <tabs>
         </tabs>
      </TabPane>
 
-   </left>
+   </center>
 </BorderPane>

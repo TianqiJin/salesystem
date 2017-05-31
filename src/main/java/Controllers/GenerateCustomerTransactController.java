@@ -135,7 +135,7 @@ public class GenerateCustomerTransactController {
     @FXML
     private Button confirmButton;
     @FXML
-    private Button cancelButton;
+    private Button quoteButton;
     //Transaction Information Labels
     @FXML
     private Label typeLabel;
@@ -529,6 +529,7 @@ public class GenerateCustomerTransactController {
         }
         transaction.setNote(noteArea.getText());
         transaction.setType(type);
+        quoteButton.setDisable(true);
         boolean confirmed = this.saleSystem.showTransactionConfirmationPanel(this.transaction, this.customer);
         if(confirmed){
             commitTransactionToDatabase();
@@ -539,6 +540,7 @@ public class GenerateCustomerTransactController {
             transaction.setPayment(0);
             transaction.setStoreCredit(0);
         }
+        quoteButton.setDisable(false);
     }
 
     private void showCustomerDetails(Customer customer){
