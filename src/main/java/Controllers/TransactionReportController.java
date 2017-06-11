@@ -262,6 +262,24 @@ public class TransactionReportController {
                 return dbExecuteCustomer.selectFromDatabase(DBQueries.SelectQueries.Customer.SELECT_ALL_CUSTOMER);
             }
         };
+       staffTask.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+            if(newValue != null) {
+                Exception ex = (Exception) newValue;
+                logger.error(ex.getMessage(), ex);
+            }
+        });
+        transactionTask.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+            if(newValue != null) {
+                Exception ex = (Exception) newValue;
+                logger.error(ex.getMessage(), ex);
+            }
+        });
+        customerTask.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+            if(newValue != null) {
+                Exception ex = (Exception) newValue;
+                logger.error(ex.getMessage(), ex);
+            }
+        });
         transactionTask.setOnSucceeded(event -> {
             List<Transaction> tmpTransactions = transactionTask.getValue();
             tmpTransactions.forEach(transaction -> {

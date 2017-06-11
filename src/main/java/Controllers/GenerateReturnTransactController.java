@@ -369,6 +369,18 @@ public class GenerateReturnTransactController {
                 return dbExecuteProduct.selectFromDatabase(DBQueries.SelectQueries.Product.SELECT_ALL_PRODUCT);
             }
         };
+        customerTask.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+            if(newValue != null) {
+                Exception ex = (Exception) newValue;
+                logger.error(ex.getMessage(), ex);
+            }
+        });
+        productListTask.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+            if(newValue != null) {
+                Exception ex = (Exception) newValue;
+                logger.error(ex.getMessage(), ex);
+            }
+        });
 
         productListTask.setOnSucceeded(event -> {
             this.productList = productListTask.getValue();
@@ -505,6 +517,18 @@ public class GenerateReturnTransactController {
                 return null;
             }
         };
+        productListTask.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+            if(newValue != null) {
+                Exception ex = (Exception) newValue;
+                logger.error(ex.getMessage(), ex);
+            }
+        });
+        commitTask.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+            if(newValue != null) {
+                Exception ex = (Exception) newValue;
+                logger.error(ex.getMessage(), ex);
+            }
+        });
         productListTask.setOnSucceeded(event -> {
             List<String> missingProducts = new ArrayList<String>();
             transaction.getProductTransactionList().forEach(productTransaction -> {

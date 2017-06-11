@@ -199,6 +199,12 @@ public class StaffOverviewController implements OverviewController{
                 return tmpStaffList;
             }
         };
+        staffListTask.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+            if(newValue != null) {
+                Exception ex = (Exception) newValue;
+                logger.error(ex.getMessage(), ex);
+            }
+        });
         progressBar.progressProperty().bind(staffListTask.progressProperty());
         staffListTask.setOnFailed(event -> {
             new AlertBuilder()

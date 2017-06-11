@@ -10,6 +10,7 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Arrays;
 
 /**
  * Created by tjin on 12/13/2015.
@@ -22,16 +23,18 @@ public abstract class ProductBase {
     private FloatProperty unitPrice;
     private IntegerProperty piecesPerBox;
     private StringProperty size;
+    private StringProperty displayName;
     private FloatProperty sizeNumeric;
 
     public ProductBase(Object... params){
-        if (params[0]!=null) {
+        if (params[0] != null) {
             this.productId = new SimpleStringProperty((String) params[0]);
             this.totalNum = new SimpleFloatProperty((Float) params[1]);
             this.unitPrice = new SimpleFloatProperty((Float) params[2]);
             this.piecesPerBox = new SimpleIntegerProperty((Integer) params[3]);
             this.size = new SimpleStringProperty((String) params[4]);
             this.sizeNumeric = new SimpleFloatProperty((Float) params[5]);
+            this.displayName = new SimpleStringProperty((String) params[6]);
         }else{
             this.productId = new SimpleStringProperty(null);
             this.totalNum = new SimpleFloatProperty(0) ;
@@ -39,6 +42,7 @@ public abstract class ProductBase {
             this.piecesPerBox = new SimpleIntegerProperty(0);
             this.size = new SimpleStringProperty(null);
             this.sizeNumeric = new SimpleFloatProperty(0);
+            this.displayName = new SimpleStringProperty(null);
         }
     }
 
@@ -109,6 +113,18 @@ public abstract class ProductBase {
             logger.error(e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    public String getDisplayName() {
+        return displayName.get();
+    }
+
+    public StringProperty displayNameProperty() {
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName.set(displayName);
     }
 
     public float getSizeNumeric() {

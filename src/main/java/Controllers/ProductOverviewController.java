@@ -70,6 +70,8 @@ public class ProductOverviewController implements OverviewController{
     @FXML
     private Label piecesPerBoxLabel;
     @FXML
+    private Label displayNameLabel;
+    @FXML
     private TableView<Transaction> productTransactionTableView;
     @FXML
     private TableColumn<Transaction, LocalDate> productTransactionDateCol;
@@ -253,6 +255,7 @@ public class ProductOverviewController implements OverviewController{
         dbExecute = new DBExecuteProduct();
         dbExecuteTransaction = new DBExecuteTransaction();
     }
+
     public void loadDataFromDB(){
         Task<List<Product>> productListTask = new Task<List<Product>>() {
             @Override
@@ -276,6 +279,18 @@ public class ProductOverviewController implements OverviewController{
                 return tmpTransactionList;
             }
         };
+        transactionListTask.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+            if(newValue != null) {
+                Exception ex = (Exception) newValue;
+                logger.error(ex.getMessage(), ex);
+            }
+        });
+        productListTask.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+            if(newValue != null) {
+                Exception ex = (Exception) newValue;
+                logger.error(ex.getMessage(), ex);
+            }
+        });
         progressBar.progressProperty().bind(transactionListTask.progressProperty());
         transactionListTask.setOnSucceeded(event -> {
             inTransactionList = FXCollections.observableArrayList(transactionListTask.getValue());
@@ -356,6 +371,7 @@ public class ProductOverviewController implements OverviewController{
             totalNumLabel.setText(String.valueOf(product.getTotalNum()));
             unitPriceLabel.setText(String.valueOf(product.getUnitPrice()));
             piecesPerBoxLabel.setText(String.valueOf(product.getPiecesPerBox()));
+            displayNameLabel.setText(product.getDisplayName());
             showProductTransactionDetail(product);
         }
         else{
@@ -365,6 +381,7 @@ public class ProductOverviewController implements OverviewController{
             totalNumLabel.setText("");
             unitPriceLabel.setText("");
             piecesPerBoxLabel.setText("");
+            displayNameLabel.setText("");
         }
     }
     private void showProductTransactionDetail(Product product){

@@ -28,6 +28,8 @@ import model.*;
 import org.apache.log4j.Logger;
 import util.AlertBuilder;
 import util.DateUtil;
+
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -481,15 +483,28 @@ public class TransactionOverviewController implements OverviewController{
                 return tmpProductList;
             }
         };
-        final int numTasks = 3;
-        DoubleBinding totalProgress = Bindings.createDoubleBinding(new Callable<Double>() {
-            @Override
-            public Double call() throws Exception {
-                return ( Math.max(0, transactionListTask.getProgress())
-                        + Math.max(0, customerListTask.getProgress())
-                        + Math.max(0, productListTask.getProgress())) / numTasks ;
+        transactionListTask.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+            if(newValue != null) {
+                Exception ex = (Exception) newValue;
+                logger.error(ex.getMessage(), ex);
             }
-        }, transactionListTask.progressProperty(), customerListTask.progressProperty(), productListTask.progressProperty());
+        });
+        productListTask.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+            if(newValue != null) {
+                Exception ex = (Exception) newValue;
+                logger.error(ex.getMessage(), ex);
+            }
+        });
+        customerListTask.exceptionProperty().addListener((observable, oldValue, newValue) -> {
+            if(newValue != null) {
+                Exception ex = (Exception) newValue;
+                logger.error(ex.getMessage(), ex);
+            }
+        });
+        final int numTasks = 3;
+        DoubleBinding totalProgress = Bindings.createDoubleBinding(() -> ( Math.max(0, transactionListTask.getProgress())
+                + Math.max(0, customerListTask.getProgress())
+                + Math.max(0, productListTask.getProgress())) / numTasks, transactionListTask.progressProperty(), customerListTask.progressProperty(), productListTask.progressProperty());
 
         progressBar.progressProperty().bind(totalProgress);
         transactionListTask.setOnSucceeded(event -> {
@@ -531,21 +546,18 @@ public class TransactionOverviewController implements OverviewController{
         });
         customerListTask.setOnSucceeded(event -> {
             customerList = customerListTask.getValue();
-            infoCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Transaction, String>, ObservableValue<String>>() {
-                @Override
-                public ObservableValue<String> call(TableColumn.CellDataFeatures<Transaction, String> param) {
-                   if(param.getValue().getType().equals(Transaction.TransactionType.IN)){
-                       return new SimpleStringProperty(param.getValue().getInfo());
+            infoCol.setCellValueFactory(param -> {
+               if(param.getValue().getType().equals(Transaction.TransactionType.IN)){
+                   return new SimpleStringProperty(param.getValue().getInfo());
+               }else{
+                   Optional<Customer> tmpCustomer = customerList.stream().filter(customer -> customer.getUserName().equals(param.getValue().getInfo()))
+                           .findFirst();
+                   if(tmpCustomer.isPresent()){
+                       return new SimpleStringProperty(tmpCustomer.get().getFirstName() + " " + tmpCustomer.get().getLastName());
                    }else{
-                       Optional<Customer> tmpCustomer = customerList.stream().filter(customer -> customer.getUserName().equals(param.getValue().getInfo()))
-                               .findFirst();
-                       if(tmpCustomer.isPresent()){
-                           return new SimpleStringProperty(tmpCustomer.get().getFirstName() + " " + tmpCustomer.get().getLastName());
-                       }else{
-                           return new SimpleStringProperty("");
-                       }
+                       return new SimpleStringProperty("");
                    }
-                }
+               }
             });
         });
         customerListTask.setOnFailed(event -> {

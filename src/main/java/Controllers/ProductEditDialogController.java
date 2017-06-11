@@ -1,17 +1,13 @@
 package Controllers;
 
 import MainClass.SaleSystem;
-import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
-import javafx.scene.control.TableColumn;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
-import javafx.util.Callback;
-import model.Customer;
 import model.Product;
 import model.Staff;
-import model.Transaction;
+import org.apache.commons.lang3.StringUtils;
 import util.AlertBuilder;
 
 /**
@@ -30,6 +26,8 @@ public class ProductEditDialogController {
     private TextField widthField;
     @FXML
     private TextField piecesPerBoxField;
+    @FXML
+    private TextField displayNameField;
 
 
     private Stage dialogStage;
@@ -58,6 +56,7 @@ public class ProductEditDialogController {
             String[] sizeArray = product.getSize().split("\\*");
             lengthField.setText(sizeArray[0]);
             widthField.setText(sizeArray[1]);
+            displayNameField.setText(product.getDisplayName());
         }
         else{
             productIdField.setText("");
@@ -66,6 +65,7 @@ public class ProductEditDialogController {
             piecesPerBoxField.setText("");
             lengthField.setText("");
             widthField.setText("");
+            displayNameField.setText("");
         }
 
     }
@@ -76,6 +76,11 @@ public class ProductEditDialogController {
             product.setUnitPrice(Float.valueOf(unitPriceField.getText()));
             product.setSize(lengthField.getText() + "*" + widthField.getText());
             product.setPiecesPerBox(Integer.parseInt(piecesPerBoxField.getText()));
+            if(StringUtils.isBlank(displayNameField.getText())){
+                product.setDisplayName(productIdField.getText());
+            }else{
+                product.setDisplayName(displayNameField.getText());
+            }
             okClicked = true;
             dialogStage.close();
         }

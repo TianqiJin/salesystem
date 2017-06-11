@@ -31,7 +31,7 @@ public class InvoiceGenerator {
     static Font catFont = new Font(Font.FontFamily.TIMES_ROMAN, 20);
     static Font subFont = new Font(Font.FontFamily.TIMES_ROMAN, 18);
     static Font smallBold = new Font(Font.FontFamily.TIMES_ROMAN, 14,Font.BOLD);
-    static Font tableTitle = new Font(Font.FontFamily.COURIER, 12, Font.BOLD,BaseColor.WHITE);
+    static Font tableTitle = new Font(Font.FontFamily.COURIER, 11, Font.BOLD,BaseColor.WHITE);
     static Font totalFont = new Font(Font.FontFamily.COURIER, 9, Font.BOLD);
     static Font addressFont = new Font(Font.FontFamily.TIMES_ROMAN, 12);
     static Font smallText = new Font(Font.FontFamily.TIMES_ROMAN, 8);
@@ -132,18 +132,20 @@ public class InvoiceGenerator {
         // Address seller / buyer
         createPartyAddress(document, basic);
         // line items
-        PdfPTable table = new PdfPTable(4);
+        PdfPTable table = new PdfPTable(5);
         table.setWidthPercentage(100);
         table.setSpacingBefore(10);
         table.setSpacingAfter(10);
-        table.setWidths(new int[]{3, 2, 3, 3});
+        table.setWidths(new int[]{3, 3, 3, 3, 3});
         table.addCell(getCellTitle("Item", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
+        table.addCell(getCellTitle("Name", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
         table.addCell(getCellTitle("Size", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
         table.addCell(getCellTitle("Qty(Boxes)", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
         table.addCell(getCellTitle("Remark", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
         int row=0;
         for (ProductTransaction product : invoice.getProducts()) {
             table.addCell(getCellwithBackground(product.getProductId(), Element.ALIGN_LEFT, totalFont, row));
+            table.addCell(getCellwithBackground(product.getDisplayName(), Element.ALIGN_LEFT, totalFont, row));
             table.addCell(getCellwithBackground(product.getSize(), Element.ALIGN_LEFT, totalFont, row));
             int boxes = product.getBoxNum().getBox();
             int res = product.getBoxNum().getResidualTile();
@@ -399,20 +401,21 @@ public class InvoiceGenerator {
     }
 
     private void createItemList(Document document, InvoiceType type){
-        PdfPTable table = new PdfPTable(6);
+        PdfPTable table = new PdfPTable(7);
         table.setWidthPercentage(100);
         table.setSpacingBefore(10);
         table.setSpacingAfter(10);
         try {
-            table.setWidths(new int[]{3, 2, 2, 2, 2, 3});
+            table.setWidths(new int[]{3, 3, 2, 2, 2, 2, 3});
         } catch (DocumentException e) {
             logger.error(e.getMessage() + "\nThe full stack trace is: ", e);
             errorMsg.append(e.getMessage()).append("\n");
         }
         table.addCell(getCellTitle("Item", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
+        table.addCell(getCellTitle("Name", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
         table.addCell(getCellTitle("Size", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
         table.addCell(getCellTitle("Price", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
-        table.addCell(getCellTitle("Qty(feet)", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
+        table.addCell(getCellTitle("Qty(ft)", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
         table.addCell(getCellTitle("Subtotal", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
         table.addCell(getCellTitle("Remark", Element.ALIGN_CENTER, tableTitle,BaseColor.BLACK));
         int row=0;
@@ -421,6 +424,7 @@ public class InvoiceGenerator {
             double tmpSubTotal = Double.valueOf(InvoiceData.format2dec(InvoiceData.round(product.getSubTotal()*100/(100-product.getDiscount()))));
             total+=tmpSubTotal;
             table.addCell(getCellwithBackground(product.getProductId(), Element.ALIGN_LEFT, totalFont, row));
+            table.addCell(getCellwithBackground(product.getDisplayName(), Element.ALIGN_LEFT, totalFont, row));
             table.addCell(getCellwithBackground(product.getSize(), Element.ALIGN_LEFT, totalFont, row));
             table.addCell(getCellwithBackground(InvoiceData.format2dec(InvoiceData.round(product.getUnitPrice())), Element.ALIGN_LEFT, totalFont, row));
             table.addCell(getCellwithBackground(String.valueOf(product.getQuantity()), Element.ALIGN_LEFT, totalFont, row));
@@ -428,7 +432,7 @@ public class InvoiceGenerator {
             table.addCell(getCellwithBackground(product.getRemark(), Element.ALIGN_LEFT, chineseFont, row));
             row++;
         }
-        getEmptyCellHolder(table, 4);
+        getEmptyCellHolder(table, 5);
         table.addCell(getCellNoWrap("Subtotal:", Element.ALIGN_LEFT, tinyBold));
         table.addCell(getCellNoWrap("$CAD   " + new BigDecimal(total).setScale(2, BigDecimal.ROUND_HALF_EVEN), Element.ALIGN_JUSTIFIED_ALL, smallText));
 
@@ -441,20 +445,20 @@ public class InvoiceGenerator {
             logger.error(msg);
             errorMsg.append(msg).append("\n");
         }
-        getEmptyCellHolder(table, 4);
+        getEmptyCellHolder(table, 5);
         table.addCell(getCellNoWrap("Discount:", Element.ALIGN_LEFT, tinyBold));
         table.addCell(getCellNoWrap("$CAD   " + new BigDecimal(discount).setScale(2, BigDecimal.ROUND_HALF_EVEN), Element.ALIGN_JUSTIFIED_ALL, smallText));
 
 
-        getEmptyCellHolder(table, 4);
+        getEmptyCellHolder(table, 5);
         table.addCell(getCellNoWrap("GST:", Element.ALIGN_LEFT, tinyBold));
         table.addCell(getCellNoWrap("$CAD   " + (invoice.getTransaction().getGstTax()), Element.ALIGN_JUSTIFIED_ALL, smallText));
 
-        getEmptyCellHolder(table, 4);
+        getEmptyCellHolder(table, 5);
         table.addCell(getCellUnder("PST:", Element.ALIGN_LEFT, tinyBold));
         table.addCell(getCellUnder("$CAD   " + (invoice.getTransaction().getPstTax()), Element.ALIGN_JUSTIFIED_ALL, smallText));
 
-        getEmptyCellHolder(table, 4);
+        getEmptyCellHolder(table, 5);
         table.addCell(getCellTop("Total:", Element.ALIGN_LEFT, totalFont));
         table.addCell(getCellTop("$CAD  " + invoice.getTotal(), Element.ALIGN_JUSTIFIED_ALL, totalFont));
 
@@ -463,11 +467,11 @@ public class InvoiceGenerator {
             for (PaymentRecord paymentRecord : invoice.getPaymentRecords()){
                 paid+=paymentRecord.getPaid();
             }
-            getEmptyCellHolder(table, 4);
+            getEmptyCellHolder(table, 5);
             table.addCell(getCellUnder("Paid:", Element.ALIGN_LEFT, totalFont));
             table.addCell(getCell("$CAD  " + paid, Element.ALIGN_JUSTIFIED_ALL, totalFont));
 
-            getEmptyCellHolder(table, 4);
+            getEmptyCellHolder(table, 5);
             table.addCell(getCellTop("Total Due:", Element.ALIGN_LEFT, totalFont));
             table.addCell(getCellTop("$CAD  " + new BigDecimal((invoice.getTotal()-paid)).setScale(2, BigDecimal.ROUND_HALF_EVEN), Element.ALIGN_JUSTIFIED_ALL, totalFont));
         }

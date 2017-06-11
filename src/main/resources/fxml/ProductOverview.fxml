@@ -80,12 +80,12 @@
                                                       <Font name="System Bold" size="12.0" />
                                                    </font>
                                                 </Label>
-                                        <Label text="Texture" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                                        <Label text="Texture" GridPane.columnIndex="0" GridPane.rowIndex="2">
                                                    <font>
                                                       <Font name="System Bold" size="12.0" />
                                                    </font>
                                                 </Label>
-                                        <Label text="Size" textAlignment="CENTER" GridPane.columnIndex="0" GridPane.rowIndex="2">
+                                        <Label text="Size" textAlignment="CENTER" GridPane.columnIndex="0" GridPane.rowIndex="3">
                                                    <font>
                                                       <Font name="System Bold" size="12.0" />
                                                    </font>
@@ -95,42 +95,52 @@
                                                       <Font name="System Bold" size="12.0" />
                                                    </font>
                                                 </Label>
-                                        <Label fx:id="textualLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                        <Label fx:id="textualLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="2">
                                                    <font>
                                                       <Font name="System Bold" size="12.0" />
                                                    </font>
                                                 </Label>
-                                        <Label fx:id="sizeLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                        <Label fx:id="sizeLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="3">
                                                    <font>
                                                       <Font name="System Bold" size="12.0" />
                                                    </font>
                                                 </Label>
-                                                <Label text="Unit Price" GridPane.rowIndex="3">
+                                                <Label text="Unit Price" GridPane.rowIndex="4">
                                                    <font>
                                                       <Font name="System Bold" size="12.0" />
                                                    </font>
                                                 </Label>
-                                                <Label fx:id="unitPriceLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                                                <Label fx:id="unitPriceLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="4">
                                                    <font>
                                                       <Font name="System Bold" size="12.0" />
                                                    </font>
                                                 </Label>
-                                                <Label text="Total Feet:" GridPane.rowIndex="4">
+                                                <Label text="Total Feet:" GridPane.rowIndex="5">
                                                    <font>
                                                       <Font name="System Bold" size="12.0" />
                                                    </font>
                                                 </Label>
-                                                <Label fx:id="totalNumLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                                                <Label fx:id="totalNumLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="5">
                                                    <font>
                                                       <Font name="System Bold" size="12.0" />
                                                    </font>
                                                 </Label>
-                                                <Label text="Pieces Per Box: " GridPane.rowIndex="5">
+                                                <Label text="Pieces Per Box: " GridPane.rowIndex="6">
                                                    <font>
                                                       <Font name="System Bold" size="12.0" />
                                                    </font>
                                                 </Label>
-                                                <Label fx:id="piecesPerBoxLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="5">
+                                                <Label fx:id="piecesPerBoxLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="6">
+                                                   <font>
+                                                      <Font name="System Bold" size="12.0" />
+                                                   </font>
+                                                </Label>
+                                                <Label text="Display Name" GridPane.rowIndex="1">
+                                                   <font>
+                                                      <Font name="System Bold" size="12.0" />
+                                                   </font>
+                                                </Label>
+                                                <Label fx:id="displayNameLabel" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="1">
                                                    <font>
                                                       <Font name="System Bold" size="12.0" />
                                                    </font>
@@ -142,6 +152,7 @@
                                       </columnConstraints>
                                       <rowConstraints>
                                         <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                         <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                         <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                         <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />

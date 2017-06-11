@@ -250,6 +250,18 @@ public class CustomerOverviewController implements OverviewController{
                 return tmpTransactionList;
             }
         };
+        transactionListTask.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+            if(newValue != null) {
+                Exception ex = (Exception) newValue;
+                logger.error(ex.getMessage(), ex);
+            }
+        });
+        customerListTask.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+            if(newValue != null) {
+                Exception ex = (Exception) newValue;
+                logger.error(ex.getMessage(), ex);
+            }
+        });
 
         progressBar.progressProperty().bind(transactionListTask.progressProperty());
         transactionListTask.setOnSucceeded(event -> {

@@ -50,6 +50,7 @@ public interface ObjectDeserializer<E> {
                     .piecesPerBox(rs.getInt("PiecesPerBox"))
                     .size(rs.getString("Size"))
                     .sizeNumeric(rs.getFloat("SizeNumeric"))
+                    .displayName(rs.getString("DisplayName"))
                     .build();
             return product;
         }
@@ -67,6 +68,7 @@ public interface ObjectDeserializer<E> {
                     .size(rs.getString("Size"))
                     .sizeNumeric(rs.getFloat("SizeNumeric"))
                     .boxNum(new BoxNum.boxNumBuilder().build())
+                    .displayName(rs.getString("DisplayName"))
                     .build();
             return productTransaction;
         }
@@ -97,6 +99,7 @@ public interface ObjectDeserializer<E> {
                             .subTotal(new BigDecimal(String.valueOf(tmpNode.path("subTotal").asDouble())).setScale(2, BigDecimal.ROUND_HALF_EVEN).floatValue())
                             .boxNum(new BoxNum.boxNumBuilder().boxNum(rootBox.path("box").intValue()).residualTileNum(rootBox.path("residualTile").intValue()).build())
                             .remark(tmpNode.path("remark").asText())
+                            .displayName(tmpNode.path("displayName").asText())
                             .build()
                     );
                 }

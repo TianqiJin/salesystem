@@ -374,6 +374,18 @@ public class GenerateProductTransactController {
                 return null;
             }
         };
+        productListTask.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+            if(newValue != null) {
+                Exception ex = (Exception) newValue;
+                logger.error(ex.getMessage(), ex);
+            }
+        });
+        commitTask.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+            if(newValue != null) {
+                Exception ex = (Exception) newValue;
+                logger.error(ex.getMessage(), ex);
+            }
+        });
         productListTask.setOnSucceeded(event -> {
             List<String> missingProducts = new ArrayList<String>();
             transaction.getProductTransactionList().forEach(productTransaction -> {

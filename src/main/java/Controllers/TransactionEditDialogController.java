@@ -301,6 +301,7 @@ public class TransactionEditDialogController {
                     .size(selectedProduct.getSize())
                     .sizeNumeric(selectedProduct.getSizeNumeric())
                     .boxNum(new BoxNum.boxNumBuilder().build())
+                    .displayName(selectedProduct.getDisplayName())
                     .build();
             this.productTransactionObservableList.add(newProductTransaction);
         }
@@ -671,6 +672,24 @@ public class TransactionEditDialogController {
                 return dbExecuteStaff.selectFromDatabase(DBQueries.SelectQueries.Staff.SELECT_ID_STAFF, transaction.getStaffId()).get(0);
             }
         };
+        productTask.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+            if(newValue != null) {
+                Exception ex = (Exception) newValue;
+                logger.error(ex.getMessage(), ex);
+            }
+        });
+        customerTask.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+            if(newValue != null) {
+                Exception ex = (Exception) newValue;
+                logger.error(ex.getMessage(), ex);
+            }
+        });
+        staffTask.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+            if(newValue != null) {
+                Exception ex = (Exception) newValue;
+                logger.error(ex.getMessage(), ex);
+            }
+        });
 
         customerTask.setOnSucceeded(event -> {
             this.customer = customerTask.getValue();
@@ -769,6 +788,18 @@ public class TransactionEditDialogController {
 
             }
         };
+        commitTask.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+            if(newValue != null) {
+                Exception ex = (Exception) newValue;
+                logger.error(ex.getMessage(), ex);
+            }
+        });
+        productListTask.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+            if(newValue != null) {
+                Exception ex = (Exception) newValue;
+                logger.error(ex.getMessage(), ex);
+            }
+        });
         productListTask.setOnSucceeded(event -> {
             List<String> missingProducts = new ArrayList<>();
             this.productList = productListTask.getValue();
@@ -855,6 +886,18 @@ public class TransactionEditDialogController {
                 return null;
             }
         };
+        customerTask.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+            if(newValue != null) {
+                Exception ex = (Exception) newValue;
+                logger.error(ex.getMessage(), ex);
+            }
+        });
+        commitTask.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+            if(newValue != null) {
+                Exception ex = (Exception) newValue;
+                logger.error(ex.getMessage(), ex);
+            }
+        });
         customerTask.setOnSucceeded(event -> {
             this.customer.setStoreCredit(customerTask.getValue().getStoreCredit());
             executor.execute(commitTask);

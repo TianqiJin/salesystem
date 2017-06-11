@@ -1,5 +1,6 @@
 package model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.FloatBinding;
 import javafx.beans.binding.NumberBinding;
@@ -18,6 +19,7 @@ import java.util.Arrays;
 /**
  * Created by tjin on 12/12/2015.
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProductTransaction extends ProductBase{
     private FloatProperty quantity;
     private FloatProperty subTotal;
@@ -26,7 +28,7 @@ public class ProductTransaction extends ProductBase{
     private BoxNum boxNum;
 
     public ProductTransaction(ProductTransactionBuilder builder){
-        super(builder.productId, builder.totalNum, builder.unitPrice, builder.piecesPerBox, builder.size, builder.sizeNumeric);
+        super(builder.productId, builder.totalNum, builder.unitPrice, builder.piecesPerBox, builder.size, builder.sizeNumeric, builder.displayName);
         this.quantity = new SimpleFloatProperty(builder.quantity);
         this.discount = new SimpleIntegerProperty(builder.discount);
         this.subTotal = new SimpleFloatProperty(builder.subTotal);
@@ -47,6 +49,7 @@ public class ProductTransaction extends ProductBase{
         private float subTotal = 0;
         private String remark = "";
         private BoxNum boxNum;
+        private String displayName;
 
         public ProductTransactionBuilder productId(String productId){
             this.productId = productId;
@@ -90,6 +93,10 @@ public class ProductTransaction extends ProductBase{
         }
         public ProductTransactionBuilder remark(String remark){
             this.remark = remark;
+            return this;
+        }
+        public ProductTransactionBuilder displayName(String displayName){
+            this.displayName = displayName;
             return this;
         }
         public ProductTransaction build(){

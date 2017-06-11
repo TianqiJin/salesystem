@@ -21,7 +21,7 @@ public class Product extends ProductBase{
     private StringProperty texture;
 
     public Product(ProductBuilder builder){
-        super(builder.productId, builder.totalNum, builder.unitPrice, builder.piecesPerBox, builder.size, builder.sizeNumeric);
+        super(builder.productId, builder.totalNum, builder.unitPrice, builder.piecesPerBox, builder.size, builder.sizeNumeric, builder.displayName);
         this.texture = new SimpleStringProperty(builder.texture);
     }
 
@@ -33,6 +33,7 @@ public class Product extends ProductBase{
         private String size = null;
         private int piecesPerBox;
         private float sizeNumeric;
+        private String displayName = null;
 
         public ProductBuilder productId(String productId){
             this.productId = productId;
@@ -62,6 +63,10 @@ public class Product extends ProductBase{
             this.piecesPerBox = piecesPerBox;
             return this;
         }
+        public ProductBuilder displayName(String displayName){
+            this.displayName = displayName;
+            return this;
+        }
 
         public Product build(){
             return new Product(this);
@@ -76,11 +81,11 @@ public class Product extends ProductBase{
     }
 
     public Object[] getAllProperties(){
-        return (new Object[]{getProductId(), getTexture(), getTotalNum(), getUnitPrice(), getPiecesPerBox(), getSize(), getSizeNumeric()});
+        return (new Object[]{getProductId(), getTexture(), getTotalNum(), getUnitPrice(), getPiecesPerBox(), getSize(), getSizeNumeric(), getDisplayName()});
     }
 
     public Object[] getAllPropertiesForUpdate(){
-        return (new Object[]{ getTexture(), getUnitPrice(), getPiecesPerBox(),getSize(), getSizeNumeric() ,getProductId()});
+        return (new Object[]{ getTexture(), getUnitPrice(), getPiecesPerBox(),getSize(), getSizeNumeric() , getDisplayName(), getProductId()});
     }
 
 }
