@@ -179,7 +179,8 @@ public class ProductOverviewController implements OverviewController{
                     alert.showAndWait();
                 }finally{
                     if(flag){
-                        productTable.getItems().remove(selectedIndex);
+                        productList.remove(selectedIndex);
+                        productTable.setItems(productList);
                         Alert alert = new Alert(Alert.AlertType.INFORMATION);
                         alert.setTitle("Delete Product Successfully");
                         alert.setHeaderText(null);
