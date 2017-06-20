@@ -109,6 +109,9 @@ public class DBQueries {
             public final static String UPDATE_TRANSACTION_DELETE = "UPDATE transaction "
                     +"SET Deleted =? "
                     +"WHERE TransactionID =?";
+            public final static String UPDATE_TRANSACTION_NOTE = "UPDATE transaction "
+                    +"SET NOTE = ? "
+                    +"WHERE TransactionID = ?";
         }
     }
 

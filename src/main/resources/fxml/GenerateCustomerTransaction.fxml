@@ -25,7 +25,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane id="AnchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="850.0" prefWidth="1700.0" stylesheets="@/css/bootstrap3.css" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.GenerateCustomerTransactController">
+<AnchorPane id="AnchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="850.0" prefWidth="1700.0" stylesheets="@/css/bootstrap3.css" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.GenerateCustomerTransactController">
   <children>
     <SplitPane dividerPositions="0.8" focusTraversable="true" prefHeight="160.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
       <items>
@@ -158,6 +158,7 @@
                         <TableView fx:id="transactionTableView" editable="true" prefHeight="500.0" prefWidth="200.0" tableMenuButtonVisible="false" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="50.0">
                           <columns>
                             <TableColumn fx:id="productIdCol" prefWidth="98.99996948242188" text="Product ID" />
+                                    <TableColumn fx:id="displayNameCol" prefWidth="75.0" text="Display Name" />
                             <TableColumn fx:id="stockCol" maxWidth="5000.0" minWidth="10.0" prefWidth="189.0" text="Stock (ft)" />
                             <TableColumn fx:id="unitPriceCol" prefWidth="65.0" text="Price" />
                                     <TableColumn fx:id="sizeCol" prefWidth="75.0" text="Size (per piece)" />
@@ -196,16 +197,26 @@
                               </HBox>
                               <HBox spacing="10.0" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="10.0">
                                  <children>
-                                    <ComboBox fx:id="productComboBox" editable="true" prefHeight="25.0" prefWidth="200.0" promptText="Select Product Here" />
-                              <Button fx:id="addItemButton" disable="true" mnemonicParsing="false" onAction="#handleAddItem" text="Add">
-                                  <Image fx:id="addItemImg" url="/pics/product_add.png" />
-                                  <graphic>
-                                      <ImageView fitHeight="20.0" fitWidth="25.0" image="$addItemImg" />
-                                  </graphic>
+                                    <ComboBox fx:id="productComboBox" editable="true" prefHeight="25.0" prefWidth="200.0" promptText="Select Product By Product ID" />
+                                    <Button fx:id="addItemButton" disable="true" mnemonicParsing="false" onAction="#handleAddItem" text="Add">
+                                      <Image fx:id="addItemImg" url="/pics/product_add.png" />
+                                      <graphic>
+                                          <ImageView fitHeight="20.0" fitWidth="25.0" image="$addItemImg" />
+                                      </graphic>
                                        <tooltip>
                                           <Tooltip text="Select a customer to enable button" />
                                        </tooltip>
                                     </Button>
+                                    <ComboBox fx:id="displayNameComboBox" editable="true" prefHeight="25.0" prefWidth="200.0" promptText="Select Product By Display Name" />
+                                     <Button fx:id="addItemByDisplayNameButton" disable="true" mnemonicParsing="false" onAction="#handleAddItemByDisplayName" text="Add">
+                                         <Image fx:id="addItemByDisplayNameImg" url="/pics/product_add.png" />
+                                         <graphic>
+                                             <ImageView fitHeight="20.0" fitWidth="25.0" image="$addItemByDisplayNameImg" />
+                                         </graphic>
+                                         <tooltip>
+                                             <Tooltip text="Select a customer to enable button" />
+                                         </tooltip>
+                                     </Button>
                                  </children>
                               </HBox>
                            </children>

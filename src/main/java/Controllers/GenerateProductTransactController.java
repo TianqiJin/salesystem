@@ -58,6 +58,8 @@ public class GenerateProductTransactController {
     @FXML
     private TableColumn<ProductTransaction, Integer> productIdCol;
     @FXML
+    private TableColumn<ProductTransaction, String> displayNameCol;
+    @FXML
     private TableColumn<ProductTransaction, Integer> stockCol;
     @FXML
     private TableColumn<ProductTransaction, Float> unitPriceCol;
@@ -111,6 +113,7 @@ public class GenerateProductTransactController {
         confimButtonBinding = supplierNameField.textProperty().isEmpty().or(transactionTableView.itemsProperty().isNull());
         confirmButton.disableProperty().bind(confimButtonBinding);
         productIdCol.setCellValueFactory(new PropertyValueFactory<>("productId"));
+        displayNameCol.setCellValueFactory(new PropertyValueFactory<>("displayName"));
         stockCol.setCellValueFactory(new PropertyValueFactory<>("totalNum"));
         unitPriceCol.setCellValueFactory(new PropertyValueFactory<>("unitPrice"));
         qtyCol.setCellValueFactory(new PropertyValueFactory<>("quantity"));

@@ -267,6 +267,7 @@
                               <TableView fx:id="transactionDetaiTableView" layoutX="81.0" layoutY="14.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0">
                                 <columns>
                                   <TableColumn fx:id="productIdCol" prefWidth="75.0" text="Product ID" />
+                                    <TableColumn fx:id="displayNameCol" prefWidth="75.0" text="Display Name" />
                                   <TableColumn fx:id="qtyCol" prefWidth="75.0" text="Total Purchase (ft)" />
                                     <TableColumn fx:id="unitPriceCol" prefWidth="75.0" text="Unit Price" />
                                     <TableColumn fx:id="subTotalCol" prefWidth="75.0" text="SubTotal" />

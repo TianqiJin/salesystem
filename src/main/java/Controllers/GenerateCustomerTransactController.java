@@ -68,11 +68,17 @@ public class GenerateCustomerTransactController {
     @FXML
     private Button addItemButton;
     @FXML
+    private Button addItemByDisplayNameButton;
+    @FXML
     private ComboBox productComboBox;
+    @FXML
+    private ComboBox displayNameComboBox;
     @FXML
     private TableView<ProductTransaction> transactionTableView;
     @FXML
     private TableColumn<ProductTransaction, Integer> productIdCol;
+    @FXML
+    private TableColumn<ProductTransaction, String> displayNameCol;
     @FXML
     private TableColumn<ProductTransaction, Number> stockCol;
     @FXML
@@ -158,6 +164,7 @@ public class GenerateCustomerTransactController {
         confimButtonBinding = Bindings.size(transactionTableView.getItems()).greaterThan(0);
         confirmButton.disableProperty().bind(confimButtonBinding);
         productIdCol.setCellValueFactory(new PropertyValueFactory<>("productId"));
+        displayNameCol.setCellValueFactory(new PropertyValueFactory<>("displayName"));
         stockCol.setCellValueFactory(new PropertyValueFactory<>("totalNum"));
         unitPriceCol.setCellValueFactory(new PropertyValueFactory<>("unitPrice"));
         qtyCol.setCellValueFactory(new PropertyValueFactory<>("quantity"));
@@ -372,10 +379,16 @@ public class GenerateCustomerTransactController {
                 .stream()
                 .map(product -> product.getProductId())
                 .collect(Collectors.toList());
+        List<String> tmpDisplayNameList = productList
+                .stream()
+                .map(product -> product.getDisplayName())
+                .collect(Collectors.toList());
         productComboBox.setItems(FXCollections.observableArrayList(tmpProductList));
+        displayNameComboBox.setItems(FXCollections.observableArrayList(tmpDisplayNameList));
         new AutoCompleteComboBoxListener<>(customerComboBox);
         new AutoCompleteComboBoxListener<>(customerPhoneComboBox);
         new AutoCompleteComboBoxListener<>(productComboBox);
+        new AutoCompleteComboBoxListener<>(displayNameComboBox);
         storeCreditCheckBox.selectedProperty().addListener(new ChangeListener<Boolean>() {
             @Override
             public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
@@ -407,6 +420,38 @@ public class GenerateCustomerTransactController {
                     .alertType(Alert.AlertType.ERROR)
                     .alertContentText("Product Add Error")
                     .alertContentText(selectedProduct.getProductId() + " has already been added!")
+                    .build()
+                    .showAndWait();
+        }else{
+            ProductTransaction newProductTransaction = new ProductTransaction.ProductTransactionBuilder()
+                    .productId(selectedProduct.getProductId())
+                    .totalNum(selectedProduct.getTotalNum())
+                    .unitPrice(selectedProduct.getUnitPrice())
+                    .piecesPerBox(selectedProduct.getPiecesPerBox())
+                    .size(selectedProduct.getSize())
+                    .sizeNumeric(selectedProduct.getSizeNumeric())
+                    .boxNum(new BoxNum.boxNumBuilder().build())
+                    .displayName(selectedProduct.getDisplayName())
+                    .build();
+            productTransactionObservableList.add(newProductTransaction);
+        }
+    }
+
+    @FXML
+    public void handleAddItemByDisplayName(){
+        Product selectedProduct = productList
+                .stream()
+                .filter(product -> product.getDisplayName().equals(displayNameComboBox.getSelectionModel().getSelectedItem()))
+                .findFirst()
+                .get();
+        List<String> displayNameList = productTransactionObservableList.stream()
+                .map(ProductTransaction::getDisplayName)
+                .collect(Collectors.toList());
+        if(displayNameList.contains(selectedProduct.getDisplayName())){
+            new AlertBuilder()
+                    .alertType(Alert.AlertType.ERROR)
+                    .alertContentText("Product Add Error")
+                    .alertContentText(selectedProduct.getDisplayName() + " has already been added!")
                     .build()
                     .showAndWait();
         }else{
@@ -547,6 +592,7 @@ public class GenerateCustomerTransactController {
     private void showCustomerDetails(Customer customer){
         if(customer != null){
             addItemButton.setDisable(false);
+            addItemByDisplayNameButton.setDisable(false);
             transaction.setInfo(customer.getUserName());
             firstNameLabel.setText(customer.getFirstName());
             lastNameLabel.setText(customer.getLastName());
@@ -555,6 +601,7 @@ public class GenerateCustomerTransactController {
         }
         else{
             addItemButton.setDisable(true);
+            addItemByDisplayNameButton.setDisable(true);
             firstNameLabel.setText("");
             lastNameLabel.setText("");
             storeCreditLabel.setText("");
@@ -887,8 +934,7 @@ public class GenerateCustomerTransactController {
                         .build()
                         .showAndWait();
             } catch (SQLException e) {
-                logger.error(e.getMessage());
-                e.printStackTrace();
+                logger.error(e.getMessage(), e);
             }
             dialogStage.close();
         });
@@ -897,8 +943,7 @@ public class GenerateCustomerTransactController {
             try {
                 connection.setAutoCommit(true);
             } catch (SQLException e) {
-                logger.error(e.getMessage());
-                e.printStackTrace();
+                logger.error(e.getMessage(), e);
             }
             dialogStage.close();
         });

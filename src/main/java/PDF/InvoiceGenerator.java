@@ -462,19 +462,17 @@ public class InvoiceGenerator {
         table.addCell(getCellTop("Total:", Element.ALIGN_LEFT, totalFont));
         table.addCell(getCellTop("$CAD  " + invoice.getTotal(), Element.ALIGN_JUSTIFIED_ALL, totalFont));
 
-        if(!type.equals(InvoiceType.PO)){
-            double paid =0;
-            for (PaymentRecord paymentRecord : invoice.getPaymentRecords()){
-                paid+=paymentRecord.getPaid();
-            }
-            getEmptyCellHolder(table, 5);
-            table.addCell(getCellUnder("Paid:", Element.ALIGN_LEFT, totalFont));
-            table.addCell(getCell("$CAD  " + paid, Element.ALIGN_JUSTIFIED_ALL, totalFont));
-
-            getEmptyCellHolder(table, 5);
-            table.addCell(getCellTop("Total Due:", Element.ALIGN_LEFT, totalFont));
-            table.addCell(getCellTop("$CAD  " + new BigDecimal((invoice.getTotal()-paid)).setScale(2, BigDecimal.ROUND_HALF_EVEN), Element.ALIGN_JUSTIFIED_ALL, totalFont));
+        double paid = 0;
+        for (PaymentRecord paymentRecord : invoice.getPaymentRecords()){
+            paid+=paymentRecord.getPaid();
         }
+        getEmptyCellHolder(table, 5);
+        table.addCell(getCellUnder("Paid:", Element.ALIGN_LEFT, totalFont));
+        table.addCell(getCell("$CAD  " + paid, Element.ALIGN_JUSTIFIED_ALL, totalFont));
+
+        getEmptyCellHolder(table, 5);
+        table.addCell(getCellTop("Total Due:", Element.ALIGN_LEFT, totalFont));
+        table.addCell(getCellTop("$CAD  " + new BigDecimal((invoice.getTotal()-paid)).setScale(2, BigDecimal.ROUND_HALF_EVEN), Element.ALIGN_JUSTIFIED_ALL, totalFont));
 
         try {
             document.add(table);

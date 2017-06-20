@@ -94,6 +94,8 @@ public class TransactionOverviewController implements OverviewController{
     @FXML
     private TableColumn<ProductTransaction, String> productIdCol;
     @FXML
+    private TableColumn<ProductTransaction, String> displayNameCol;
+    @FXML
     private TableColumn<ProductTransaction, Integer> qtyCol;
     @FXML
     private TableColumn<ProductTransaction, Float> subTotalCol;
@@ -133,6 +135,7 @@ public class TransactionOverviewController implements OverviewController{
         dateCol.setCellValueFactory(new PropertyValueFactory<>("Date"));
         typeCol.setCellValueFactory(new PropertyValueFactory<>("Type"));
         productIdCol.setCellValueFactory(new PropertyValueFactory<>("productId"));
+        displayNameCol.setCellValueFactory(new PropertyValueFactory<>("displayName"));
         qtyCol.setCellValueFactory(new PropertyValueFactory<>("quantity"));
         unitPriceCol.setCellValueFactory(new PropertyValueFactory<>("unitPrice"));
         subTotalCol.setCellValueFactory(new PropertyValueFactory<>("subTotal"));

@@ -149,6 +149,16 @@ public interface ObjectSerializer<E> {
         }
     };
 
+    public static final ObjectSerializer<Transaction> TRANSACTION_NOTE_SERIALIZER_UPDATE = new ObjectSerializer<Transaction>() {
+        @Override
+        public Object[] serialize(Transaction transaction) throws SQLException, IOException {
+            return new Object[]{
+                    transaction.getNote(),
+                    transaction.getTransactionId()
+            };
+        }
+    };
+
     public static final ObjectSerializer<Property> PROPERTY_OBJECT_SERIALIZER = new ObjectSerializer<Property>() {
         @Override
         public Object[] serialize(Property property) throws SQLException, IOException {

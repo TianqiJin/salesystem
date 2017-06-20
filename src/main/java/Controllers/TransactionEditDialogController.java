@@ -76,6 +76,8 @@ public class TransactionEditDialogController {
     @FXML
     private TableColumn<ProductTransaction, Integer> productIdCol;
     @FXML
+    private TableColumn<ProductTransaction, String> displayNameCol;
+    @FXML
     private TableColumn<ProductTransaction, BigDecimal> unitPriceCol;
     @FXML
     private TableColumn<ProductTransaction, Float> qtyCol;
@@ -126,9 +128,13 @@ public class TransactionEditDialogController {
     @FXML
     private Button addButton;
     @FXML
+    private Button addDisplayNameButton;
+    @FXML
     private Button quotationButton;
     @FXML
     private ComboBox productComboBox;
+    @FXML
+    private ComboBox displayNameComboBox;
     @FXML
     private Label balanceLabel;
     @FXML
@@ -158,6 +164,7 @@ public class TransactionEditDialogController {
     @FXML
     private void initialize(){
         productIdCol.setCellValueFactory(new PropertyValueFactory<>("productId"));
+        displayNameCol.setCellValueFactory(new PropertyValueFactory<>("displayName"));
         unitPriceCol.setCellValueFactory(new PropertyValueFactory<>("unitPrice"));
         qtyCol.setCellValueFactory(new PropertyValueFactory<ProductTransaction, Float>("quantity"));
         discountCol.setCellValueFactory(new PropertyValueFactory<ProductTransaction, Integer>("discount"));
@@ -268,6 +275,7 @@ public class TransactionEditDialogController {
 
         showTransactionBasicDetails(null, null);
         new AutoCompleteComboBoxListener<>(productComboBox);
+        new AutoCompleteComboBoxListener<>(displayNameComboBox);
         executor = Executors.newCachedThreadPool(r -> {
             Thread t = new Thread(r);
             t.setDaemon(true);
@@ -308,6 +316,38 @@ public class TransactionEditDialogController {
     }
 
     @FXML
+    public void handleAddItemDisplayName(){
+        Product selectedProduct = this.productList
+                .stream()
+                .filter(product -> product.getDisplayName().equals(displayNameComboBox.getSelectionModel().getSelectedItem()))
+                .findFirst()
+                .get();
+        List<String> displayNameList = this.productTransactionObservableList.stream()
+                .map(ProductTransaction::getDisplayName)
+                .collect(Collectors.toList());
+        if(displayNameList.contains(selectedProduct.getDisplayName())){
+            new AlertBuilder()
+                    .alertType(Alert.AlertType.ERROR)
+                    .alertContentText("Product Add Error")
+                    .alertContentText(selectedProduct.getDisplayName() + " has already been added!")
+                    .build()
+                    .showAndWait();
+        }else{
+            ProductTransaction newProductTransaction = new ProductTransaction.ProductTransactionBuilder()
+                    .productId(selectedProduct.getProductId())
+                    .totalNum(selectedProduct.getTotalNum())
+                    .unitPrice(selectedProduct.getUnitPrice())
+                    .piecesPerBox(selectedProduct.getPiecesPerBox())
+                    .size(selectedProduct.getSize())
+                    .sizeNumeric(selectedProduct.getSizeNumeric())
+                    .boxNum(new BoxNum.boxNumBuilder().build())
+                    .displayName(selectedProduct.getDisplayName())
+                    .build();
+            this.productTransactionObservableList.add(newProductTransaction);
+        }
+    }
+
+    @FXML
     public void handleCancelButton(){
         this.dialogStage.close();
     }
@@ -315,6 +355,54 @@ public class TransactionEditDialogController {
     @FXML
     public void handleQuotationButton() throws IOException, SQLException {
         generateTransaction(Transaction.TransactionType.QUOTATION);
+    }
+
+    @FXML
+    public void handleAddNoteButton(){
+        Task<Integer> updateNoteTask = new Task<Integer>() {
+            @Override
+            protected Integer call() throws Exception {
+                transaction.setNote(noteArea.getText());
+                return dbExecuteTransaction.updateDatabase(DBQueries.UpdateQueries.Transaction.UPDATE_TRANSACTION_NOTE,
+                        ObjectSerializer.TRANSACTION_NOTE_SERIALIZER_UPDATE.serialize(transaction));
+            }
+        };
+
+        updateNoteTask.exceptionProperty().addListener((observable, oldValue, newValue) -> {
+            if(newValue != null) {
+                Exception ex = (Exception) newValue;
+                logger.error(ex.getMessage(), ex);
+            }
+        });
+
+        updateNoteTask.setOnSucceeded(event -> {
+            int returnValue = updateNoteTask.getValue();
+            if(returnValue == 1){
+                new AlertBuilder()
+                        .alertType(Alert.AlertType.INFORMATION)
+                        .alertTitle("Transaction Note")
+                        .alertContentText("Transaction Note is updated successfully")
+                        .build()
+                        .showAndWait();
+            }else{
+                new AlertBuilder()
+                        .alertType(Alert.AlertType.ERROR)
+                        .alertTitle("Transaction Note")
+                        .alertContentText("Transaction Note is failed to update. No Transaction is affected.")
+                        .build()
+                        .showAndWait();
+            }
+        });
+
+        updateNoteTask.setOnFailed(event ->
+                new AlertBuilder()
+                        .alertType(Alert.AlertType.ERROR)
+                        .alertTitle("Transaction Note")
+                        .alertContentText("Transaction Note is failed to update. No Transaction is affected.")
+                        .build()
+                        .showAndWait());
+
+        executor.execute(updateNoteTask);
     }
 
     @FXML
@@ -500,7 +588,9 @@ public class TransactionEditDialogController {
     private void setRelatedUI(Transaction.TransactionType type){
         if(!isEditable){
             productComboBox.setVisible(false);
+            displayNameComboBox.setVisible(false);
             addButton.setVisible(false);
+            addDisplayNameButton.setVisible(false);
             deleteCol.setVisible(false);
             splitLeftAnchorPane.setTopAnchor(transactionTableView, 10.0);
             qtyCol.setEditable(false);
@@ -711,7 +801,9 @@ public class TransactionEditDialogController {
         productTask.setOnSucceeded(event -> {
             this.productList = productTask.getValue();
             List<String> tmpProductIdList = productList.stream().map(Product::getProductId).collect(Collectors.toList());
+            List<String> tmpDisplayNameList = productList.stream().map(Product::getDisplayName).collect(Collectors.toList());
             productComboBox.setItems(FXCollections.observableArrayList(tmpProductIdList));
+            displayNameComboBox.setItems(FXCollections.observableArrayList(tmpDisplayNameList));
         });
         productTask.setOnFailed(event -> {
             new AlertBuilder()

@@ -66,6 +66,8 @@ public class GenerateReturnTransactController {
     @FXML
     private TableColumn<ProductTransaction, Integer> productIdCol;
     @FXML
+    private TableColumn<ProductTransaction, String> displayNameCol;
+    @FXML
     private TableColumn<ProductTransaction, Integer> stockCol;
     @FXML
     private TableColumn<ProductTransaction, BigDecimal> unitPriceCol;
@@ -131,6 +133,7 @@ public class GenerateReturnTransactController {
     @FXML
     private void initialize(){
         productIdCol.setCellValueFactory(new PropertyValueFactory<>("productId"));
+        displayNameCol.setCellValueFactory(new PropertyValueFactory<>("displayName"));
         unitPriceCol.setCellValueFactory(new PropertyValueFactory<>("unitPrice"));
         stockCol.setCellValueFactory(new PropertyValueFactory<>("totalNum"));
         sizeCol.setCellValueFactory(new PropertyValueFactory<>("sizeNumeric"));

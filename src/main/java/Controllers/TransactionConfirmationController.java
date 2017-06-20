@@ -30,6 +30,8 @@ public class TransactionConfirmationController {
     @FXML
     private TableColumn<ProductTransaction, Integer> productIdCol;
     @FXML
+    private TableColumn<ProductTransaction, String> displayNameCol;
+    @FXML
     private TableColumn<ProductTransaction, BigDecimal> unitPriceCol;
     @FXML
     private TableColumn<ProductTransaction, Float> qtyCol;
@@ -61,6 +63,7 @@ public class TransactionConfirmationController {
     @FXML
     private void initialize(){
         productIdCol.setCellValueFactory(new PropertyValueFactory<>("productId"));
+        displayNameCol.setCellValueFactory(new PropertyValueFactory<>("displayName"));
         unitPriceCol.setCellValueFactory(new PropertyValueFactory<>("unitPrice"));
         qtyCol.setCellValueFactory(new PropertyValueFactory<>("quantity"));
         discountCol.setCellValueFactory(new PropertyValueFactory<>("discount"));

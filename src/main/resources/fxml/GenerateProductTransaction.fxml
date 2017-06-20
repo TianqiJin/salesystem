@@ -18,7 +18,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane id="AnchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="850.0" prefWidth="1200.0" stylesheets="@/css/bootstrap3.css" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.GenerateProductTransactController">
+<AnchorPane id="AnchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="850.0" prefWidth="1200.0" stylesheets="@/css/bootstrap3.css" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.GenerateProductTransactController">
   <children>
     <SplitPane dividerPositions="0.17" focusTraversable="true" orientation="VERTICAL" prefHeight="160.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
       <items>
@@ -150,6 +150,7 @@
               </columnResizePolicy>
               <columns>
                 <TableColumn fx:id="productIdCol" prefWidth="65.0" text="Product ID" />
+                        <TableColumn fx:id="displayNameCol" prefWidth="75.0" text="Display Name" />
                 <TableColumn fx:id="stockCol" maxWidth="5000.0" minWidth="10.0" prefWidth="65.0" text="Stock" />
                 <TableColumn fx:id="unitPriceCol" prefWidth="65.0" text="Price" />
                         <TableColumn prefWidth="75.0" text="Stock Information">
