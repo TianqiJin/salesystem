@@ -82,6 +82,7 @@ public class SaleSystem extends Application{
 
     private String[] tabList = {"Transaction", "Product", "Customer"};
     private String[] tabList_High = {"Transaction", "Product", "Customer", "Staff"};
+    private String[] tabList_Dist = {"Product"};
     private Map<String, OverviewController> tabControllerMap = new HashMap<>();
 
     public static void main(String []args){
@@ -153,8 +154,10 @@ public class SaleSystem extends Application{
         menuHelp.getItems().add(checkUpdateMenuItem);
         menuHelp.getItems().add(new SeparatorMenuItem());
         menuHelp.getItems().add(logOutMenuItem);
-        menuBar.getMenus().add(menuReport);
-        menuBar.getMenus().add(menuEdit);
+        if(state < 3){
+            menuBar.getMenus().add(menuReport);
+            menuBar.getMenus().add(menuEdit);
+        }
         menuBar.getMenus().add(menuHelp);
 
         generateRevenueReportMenuItem.setOnAction(event -> showGenerateRevenueReportDialog());
@@ -185,6 +188,11 @@ public class SaleSystem extends Application{
                 break;
             case 2:
                 for (String tab : tabList) {
+                    tabPane.getTabs().add(new Tab(tab));
+                }
+                break;
+            case 3:
+                for (String tab : tabList_Dist) {
                     tabPane.getTabs().add(new Tab(tab));
                 }
                 break;

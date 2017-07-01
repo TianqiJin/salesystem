@@ -94,6 +94,9 @@ public class LoginDialogController {
                 try{
                     returnedStaff = dbExecute.selectFromDatabase(DBQueries.SelectQueries.Staff.SELECT_USERNAME_STAFF,
                             userName);
+                    if(returnedStaff != null && returnedStaff.get(0).getPosition().equals(Staff.Position.DISTRIBUTOR)){
+                        this.state = 3;
+                    }
                 }catch(SQLException e){
                     logger.error(e.getMessage(), e);
                     new AlertBuilder()

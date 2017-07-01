@@ -67,6 +67,7 @@
                               <String fx:value="SALES" />
                               <String fx:value="MANAGER" />
                               <String fx:value="DISCARD" />
+                                <String fx:value="DISTRIBUTOR" />
                             </FXCollections>
                           </items>
                         </ChoiceBox>

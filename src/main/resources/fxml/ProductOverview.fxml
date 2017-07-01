@@ -44,19 +44,25 @@
           <children>
             <HBox id="HBox" alignment="BOTTOM_RIGHT" spacing="5.0" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0">
               <children>
-                <Button mnemonicParsing="false" onAction="#handleAddProduct" text="New">
+                <Button fx:id="refreshButton" mnemonicParsing="false" onAction="#handleRefreshButton" text="Refresh" visible="false">
+                    <Image fx:id="refreshImg" url="/pics/refresh.png" />
+                    <graphic>
+                        <ImageView fitHeight="20.0" fitWidth="25.0" image="$refreshImg" />
+                    </graphic>
+                </Button>
+                <Button fx:id="newButton" mnemonicParsing="false" onAction="#handleAddProduct" text="New">
                     <Image fx:id="productAddImg" url="/pics/product_add.png" />
                     <graphic>
                         <ImageView fitHeight="20.0" fitWidth="25.0" image="$productAddImg" />
                     </graphic>
                 </Button>
-                <Button mnemonicParsing="false" onAction="#handleEditProduct" text="Edit">
+                <Button fx:id="editButton" mnemonicParsing="false" onAction="#handleEditProduct" text="Edit">
                     <Image fx:id="productEditImg" url="/pics/edit.png" />
                     <graphic>
                         <ImageView fitHeight="20.0" fitWidth="25.0" image="$productEditImg" />
                     </graphic>
                 </Button>
-                <Button mnemonicParsing="false" onAction="#handleDeleteProduct" text="Delete">
+                <Button fx:id="deleteButton" mnemonicParsing="false" onAction="#handleDeleteProduct" text="Delete">
                     <Image fx:id="productDeleteImg" url="/pics/delete.png" />
                     <graphic>
                         <ImageView fitHeight="20.0" fitWidth="25.0" image="$productDeleteImg" />

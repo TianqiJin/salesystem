@@ -160,7 +160,7 @@ public class Staff {
     }
 
     public enum Position{
-        SALES("sales"),MANAGER("manager"), DISCARD("discard");
+        SALES("sales"),MANAGER("manager"), DISCARD("discard"),DISTRIBUTOR("distributor");
         private String pos;
         private Position(String pos){
             this.pos = pos;

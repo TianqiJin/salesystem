@@ -91,6 +91,14 @@ public class ProductOverviewController implements OverviewController{
     private TableColumn<Transaction, Number> productTransactionTotalFeetCol;
     @FXML
     private ProgressBar progressBar;
+    @FXML
+    private Button refreshButton;
+    @FXML
+    private Button newButton;
+    @FXML
+    private Button editButton;
+    @FXML
+    private Button deleteButton;
 
     @FXML
     private void initialize(){
@@ -252,6 +260,11 @@ public class ProductOverviewController implements OverviewController{
         }
     }
 
+    @FXML
+    public void handleRefreshButton(){
+        loadDataFromDB();
+    }
+
     public ProductOverviewController(){
         dbExecute = new DBExecuteProduct();
         dbExecuteTransaction = new DBExecuteTransaction();
@@ -356,6 +369,12 @@ public class ProductOverviewController implements OverviewController{
             });
             productTransactionTableView.getColumns().add(productTransactionUnitPriceCol);
             productTransactionTableView.getColumns().add(productTransactionSubtotalCol);
+        }
+        if(this.saleSystem.getStaff().getPosition().equals(Staff.Position.DISTRIBUTOR)){
+            refreshButton.setVisible(true);
+            newButton.setDisable(true);
+            editButton.setDisable(true);
+            deleteButton.setDisable(true);
         }
     }
 
