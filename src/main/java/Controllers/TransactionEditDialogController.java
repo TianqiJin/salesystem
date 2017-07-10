@@ -191,6 +191,13 @@ public class TransactionEditDialogController {
                 transaction.setPaymentType(newValue);
             }
         });
+        paymentTypeChoiceBox.showingProperty().addListener((observable, oldValue, newValue) -> {
+            if(!newValue){
+                transaction.setPaymentType(paymentTypeChoiceBox.getValue());
+            }
+        });
+
+
         storeCreditCheckBox.selectedProperty().addListener(new ChangeListener<Boolean>() {
             @Override
             public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
