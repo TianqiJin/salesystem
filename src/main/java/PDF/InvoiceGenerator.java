@@ -466,9 +466,10 @@ public class InvoiceGenerator {
         for (PaymentRecord paymentRecord : invoice.getPaymentRecords()){
             paid+=paymentRecord.getPaid();
         }
+        BigDecimal paidRoundEven = new BigDecimal(paid).setScale(2, BigDecimal.ROUND_HALF_EVEN);
         getEmptyCellHolder(table, 5);
         table.addCell(getCellUnder("Paid:", Element.ALIGN_LEFT, totalFont));
-        table.addCell(getCell("$CAD  " + paid, Element.ALIGN_JUSTIFIED_ALL, totalFont));
+        table.addCell(getCell("$CAD  " + paidRoundEven.toString(), Element.ALIGN_JUSTIFIED_ALL, totalFont));
 
         getEmptyCellHolder(table, 5);
         table.addCell(getCellTop("Total Due:", Element.ALIGN_LEFT, totalFont));
