@@ -121,7 +121,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>saleSystem</mainClass>
+                            <mainClass>MainClass.SaleSystem</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
