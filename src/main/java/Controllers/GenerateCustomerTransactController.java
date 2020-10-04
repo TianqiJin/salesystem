@@ -25,6 +25,7 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 import model.*;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import util.AlertBuilder;
 import util.AutoCompleteComboBoxListener;
@@ -625,7 +626,7 @@ public class GenerateCustomerTransactController {
             }
             BigDecimal paymentDiscount = subTotalBeforediscount.subtract(subTotalAfterDiscount).setScale(2, BigDecimal.ROUND_HALF_EVEN);
             BigDecimal pstTax;
-            if(customer != null && customer.getPstNumber() != null){
+            if(customer != null && StringUtils.isNotBlank(customer.getPstNumber())){
                 pstTax = new BigDecimal("0.0");
             }else{
                 pstTax = new BigDecimal(saleSystem.getProperty().getPstRate()).multiply(subTotalAfterDiscount).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
